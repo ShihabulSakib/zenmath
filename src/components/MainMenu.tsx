@@ -1,5 +1,6 @@
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode } from '../hooks/useGameLogic';
+import { useGameLogic } from '../hooks/useGameLogic';
 
 interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
@@ -8,6 +9,7 @@ interface MainMenuProps {
 
 export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
+    const game = useGameLogic();
 
     const ops: { mode: GameMode; symbol: string; label: string }[] = [
         { mode: 'addition', symbol: '+', label: 'Addition' },
@@ -25,7 +27,7 @@ export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
                     onClick={toggleTheme}
                     className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-primary/10 transition-colors text-secondary"
                 >
-                    <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
+                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 22 }}>
                         {theme === 'dark' ? 'light_mode' : 'dark_mode'}
                     </span>
                 </button>
@@ -96,16 +98,26 @@ export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
                         </div>
                     </div>
 
-                    {/* Daily Goal – decorative */}
+                    {/* Daily Goal */}
                     <div className="mt-2 p-6 bg-primary/10 rounded-2xl border border-primary/20">
-                        <div className="flex justify-between items-end mb-2">
+                        <div className="flex justify-between items-center mb-2">
                             <div>
                                 <h3 className="text-primary font-semibold">Daily Goal</h3>
                                 <p className="text-xs text-primary/70 mt-1">Keep your streak alive</p>
                             </div>
-                            <span className="text-2xl font-bold text-primary">
-                                0<span className="text-sm font-normal text-primary/60">/20</span>
-                            </span>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={game.settings.dailyGoal}
+                                onChange={(e) => {
+                                    const newGoal = parseInt(e.target.value, 10);
+                                    if (!isNaN(newGoal) && newGoal >= 1 && newGoal <= 100) {
+                                        game.updateSettings({ ...game.settings, dailyGoal: newGoal });
+                                    }
+                                }}
+                                className="w-20 bg-transparent text-2xl font-bold text-primary text-right focus:outline-none focus:ring-0"
+                            />
                         </div>
                         <div className="w-full bg-primary/10 rounded-full h-1.5 overflow-hidden">
                             <div className="bg-primary h-1.5 rounded-full transition-all duration-500" style={{ width: '0%' }} />
@@ -124,13 +136,10 @@ export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
                         </div>
                         <span className="text-[10px] font-medium text-primary tracking-wide">Practice</span>
                     </button>
-                    <button className="flex flex-col items-center gap-1 p-2 group text-secondary hover:text-main transition-colors">
-                        <span className="material-symbols-outlined group-hover:scale-110 transition-transform">bar_chart</span>
-                        <span className="text-[10px] font-medium tracking-wide">Statistics</span>
-                    </button>
+
                     <button
                         onClick={onSettings}
-                        className="flex flex-col items-center gap-1 p-2 group text-secondary hover:text-main transition-colors"
+                        className="flex flex-col items-center gap-1 p-2 group text-primary hover:text-primary transition-colors"
                     >
                         <span className="material-symbols-outlined group-hover:scale-110 transition-transform">tune</span>
                         <span className="text-[10px] font-medium tracking-wide">Settings</span>

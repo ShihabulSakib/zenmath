@@ -24,7 +24,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                     onClick={onBack}
                     className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors"
                 >
-                    <span className="material-symbols-outlined text-main" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
+                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
                 </button>
                 <h1 className="text-xl font-bold tracking-tight text-center flex-1 pr-10 text-main">
                     Settings
@@ -43,7 +43,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                             <label className="text-sm text-secondary font-semibold tracking-tight">Question Count</label>
                             <div className="flex items-center justify-between mt-auto w-full">
                                 <span className="text-4xl font-bold text-input-val leading-none">{totalQuestions}</span>
-                                <div className="text-primary/30 group-hover:text-primary/50 transition-colors">
+                                <div className="text-primary group-hover:text-primary transition-colors">
                                     <span className="material-symbols-outlined text-3xl">format_list_numbered</span>
                                 </div>
                             </div>
@@ -54,10 +54,10 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                             <div className="flex items-center justify-between mt-auto w-full">
                                 <span className="text-4xl font-bold text-input-val leading-none">{timeLimit}</span>
                                 <div className="flex flex-col items-center justify-end">
-                                    <div className="text-primary/30 group-hover:text-primary/50 transition-colors">
+                                    <div className="text-primary group-hover:text-primary transition-colors">
                                         <span className="material-symbols-outlined text-3xl">timer</span>
                                     </div>
-                                    <span className="text-xs font-bold text-primary/40 -mt-1">sec</span>
+                                    <span className="text-xs font-bold text-primary/60 -mt-1">sec</span>
                                 </div>
                             </div>
                         </div>
@@ -71,9 +71,9 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                     </h3>
                     <div className="bg-card border border-card rounded-2xl p-6">
                         <div className="flex justify-between text-sm text-secondary mb-4">
-                            <span>1</span>
+                            <span className="px-2">1</span>
                             <span className="font-bold text-primary">{totalQuestions}</span>
-                            <span>50</span>
+                            <span className="px-2">50</span>
                         </div>
                         <input
                             type="range"
@@ -81,7 +81,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                             max="50"
                             value={totalQuestions}
                             onChange={(e) => setTotalQuestions(parseInt(e.target.value))}
-                            className="w-full"
+                            className="w-full accent-primary"
                         />
                     </div>
                 </section>
@@ -93,17 +93,17 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                     </h3>
                     <div className="bg-card border border-card rounded-2xl p-6">
                         <div className="flex justify-between text-sm text-secondary mb-4">
-                            <span>5s</span>
+                            <span className="px-2">5s</span>
                             <span className="font-bold text-primary">{timeLimit}s</span>
-                            <span>60s</span>
+                            <span className="px-2">60s</span>
                         </div>
                         <input
                             type="range"
-                            min="5"
+                            min="6"
                             max="60"
                             value={timeLimit}
                             onChange={(e) => setTimeLimit(parseInt(e.target.value))}
-                            className="w-full"
+                            className="w-full accent-primary"
                         />
                     </div>
                 </section>

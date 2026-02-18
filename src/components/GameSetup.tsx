@@ -6,10 +6,16 @@ interface GameSetupProps {
     difficulty: Difficulty;
     allowRemainder: boolean;
     mixedOps: boolean[];
+    allowNegativeResults: boolean;
     onDigitsChange: (d: number) => void;
     onDifficultyChange: (d: Difficulty) => void;
     onAllowRemainderChange: (v: boolean) => void;
     onMixedOpsChange: (ops: boolean[]) => void;
+    onAllowNegativeResultsChange: (v: boolean) => void;
+    squareRangeType: 'fixed' | 'custom';
+    customSquareRange: [number, number];
+    onSquareRangeTypeChange: (type: 'fixed' | 'custom') => void;
+    onCustomSquareRangeChange: (range: [number, number]) => void;
     onStart: () => void;
     onBack: () => void;
 }
@@ -41,10 +47,16 @@ export default function GameSetup({
     difficulty,
     allowRemainder,
     mixedOps,
+    allowNegativeResults,
+    squareRangeType,
+    customSquareRange,
     onDigitsChange,
     onDifficultyChange,
     onAllowRemainderChange,
     onMixedOpsChange,
+    onAllowNegativeResultsChange,
+    onSquareRangeTypeChange,
+    onCustomSquareRangeChange,
     onStart,
     onBack,
 }: GameSetupProps) {
@@ -106,24 +118,87 @@ export default function GameSetup({
                 )}
 
                 {/* Number of digits — only for non-mixed modes */}
-                {mode !== 'mixed' && (
+                {(mode !== 'multiplication-table' && mode !== 'square') && (
                     <section>
                         <h3 className="text-xs font-bold uppercase tracking-widest text-secondary mb-3 px-1 ml-1">
                             Number of Digits
                         </h3>
-                        <div className="flex gap-3">
+                        <div className="flex gap-6">
                             {[1, 2, 3, 4, 5].map(d => (
                                 <button
                                     key={d}
                                     onClick={() => onDigitsChange(d)}
-                                    className={`flex-1 h-12 rounded-xl font-semibold text-lg transition-all ${digits === d
-                                            ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                            : 'bg-card border border-card text-secondary hover:border-primary/30'
+                                    className={`flex-1 h-14 rounded-xl font-semibold text-lg transition-all ${digits === d
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-card border border-card text-secondary hover:border-primary/30'
                                         }`}
                                 >
                                     {d}
                                 </button>
                             ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Square Range Selector */}
+                {mode === 'square' && (
+                    <section>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-secondary mb-3 px-1 ml-1">
+                            Square Range
+                        </h3>
+                        <div className="bg-card border border-card rounded-2xl p-4">
+                            <div className="flex justify-around mb-4">
+                                <button
+                                    onClick={() => onSquareRangeTypeChange('fixed')}
+                                    className={`px-4 py-2 rounded-lg font-semibold ${squareRangeType === 'fixed'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-card border border-card text-secondary hover:border-primary/30'
+                                        }`}
+                                >
+                                    1 to 25
+                                </button>
+                                <button
+                                    onClick={() => onSquareRangeTypeChange('custom')}
+                                    className={`px-4 py-2 rounded-lg font-semibold ${squareRangeType === 'custom'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-card border border-card text-secondary hover:border-primary/30'
+                                        }`}
+                                >
+                                    Custom Range
+                                </button>
+                            </div>
+
+                            {squareRangeType === 'custom' && (
+                                <div className="flex justify-between items-center gap-4 mt-4">
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="999"
+                                        value={customSquareRange[0]}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value, 10);
+                                            if (!isNaN(val) && val >= 1 && val <= customSquareRange[1]) {
+                                                onCustomSquareRangeChange([val, customSquareRange[1]]);
+                                            }
+                                        }}
+                                        className="flex-1 p-3 text-lg font-bold text-center bg-input-card border border-card rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    />
+                                    <span className="text-main font-bold text-xl">-</span>
+                                    <input
+                                        type="number"
+                                        min={customSquareRange[0]}
+                                        max="999"
+                                        value={customSquareRange[1]}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value, 10);
+                                            if (!isNaN(val) && val >= customSquareRange[0] && val <= 999) {
+                                                onCustomSquareRangeChange([customSquareRange[0], val]);
+                                            }
+                                        }}
+                                        className="flex-1 p-3 text-lg font-bold text-center bg-input-card border border-card rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    />
+                                </div>
+                            )}
                         </div>
                     </section>
                 )}
@@ -154,6 +229,38 @@ export default function GameSetup({
                         />
                     </div>
                 </section>
+
+                {/* Subtraction mode toggle */}
+                {mode === 'subtraction' && (
+                    <section>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-secondary mb-3 px-1 ml-1">
+                            Subtraction Mode
+                        </h3>
+                        <div className="bg-card border border-card rounded-2xl overflow-hidden">
+                            <div className="flex items-center justify-between p-4 py-3.5">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
+                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>remove</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-base font-medium text-main">Allow Negative Results</span>
+                                        <span className="text-xs text-secondary">Results can be less than zero</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => onAllowNegativeResultsChange(!allowNegativeResults)}
+                                    className={`w-[52px] h-8 rounded-full relative transition-colors ${allowNegativeResults ? 'bg-primary' : 'bg-toggle-off'
+                                        }`}
+                                >
+                                    <div
+                                        className="absolute top-[2px] left-[2px] w-7 h-7 rounded-full bg-white transition-transform"
+                                        style={{ transform: allowNegativeResults ? 'translateX(20px)' : 'translateX(0)' }}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                )}
 
                 {/* Division mode toggle */}
                 {mode === 'division' && (

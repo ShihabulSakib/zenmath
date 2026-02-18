@@ -1,73 +1,99 @@
-# React + TypeScript + Vite
+# ZenMath
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimalist mental arithmetic practice tool designed to sharpen your math skills through customizable exercises.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Multiple Game Modes:** Practice addition, subtraction, multiplication, division, or mixed operations.
+- **Customizable Difficulty:** Adjust the number of digits and allow remainders for division.
+- **Special Training:** Dedicated mode for multiplication tables practice.
+- **Progress Tracking:** View detailed results, including score, time taken, and accuracy.
+- **PWA Support:** Installable as a progressive web app for offline practice.
+- **Dark/Light Mode:** Automatic theme detection based on system settings.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Framework:** React 19 + TypeScript
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS 4
+- **Icons:** Lucide React
+- **PWA:** Vite Plugin PWA
 
-## Expanding the ESLint configuration
+## 📋 Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Before you begin, ensure you have the following installed:
+- **Node.js** (v18 or higher recommended)
+- **npm** (comes with Node.js)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📦 Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd zenmath
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+## ⚙️ Configuration
+
+This project does not currently require any environment variables to run.
+
+## 🏃 Running Locally
+
+To start the development server:
+
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The application will be available at `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🏗️ Building for Production
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+To build the application for production:
+
+```bash
+npm run build
 ```
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## 📖 Usage
+
+1. **Select a Mode:** Choose from the main menu to practice a specific operation or mix them up.
+2. **Setup Game:** Configure the number of digits and other settings in the setup screen.
+3. **Play:** Answer questions as quickly and accurately as possible. The game ends when you complete the set number of questions.
+4. **Review:** Check your results and identify areas for improvement.
+
+## ❓ FAQ
+
+**Q: Can I use this offline?**
+A: Yes! ZenMath is a Progressive Web App (PWA) and can be installed on your device for offline use.
+
+**Q: How do I change the theme?**
+A: The application automatically adapts to your system's preferred color scheme (light or dark mode).
+
+**Q: Is my data saved?**
+A: Currently, game history is session-based. Persistent statistics are a planned feature.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

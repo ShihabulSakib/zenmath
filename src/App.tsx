@@ -25,11 +25,17 @@ export default function App() {
           digits={game.digits}
           difficulty={game.difficulty}
           allowRemainder={game.allowRemainder}
+          allowNegativeResults={game.allowNegativeResults}
           mixedOps={game.mixedOps}
+          squareRangeType={game.squareRangeType}
+          customSquareRange={game.customSquareRange}
           onDigitsChange={game.setDigits}
           onDifficultyChange={game.setDifficulty}
           onAllowRemainderChange={game.setAllowRemainder}
           onMixedOpsChange={game.setMixedOps}
+          onAllowNegativeResultsChange={game.setAllowNegativeResults}
+          onSquareRangeTypeChange={game.setSquareRangeType}
+          onCustomSquareRangeChange={game.setCustomSquareRange}
           onStart={game.startGame}
           onBack={game.goToMenu}
         />

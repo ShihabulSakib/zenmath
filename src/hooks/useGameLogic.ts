@@ -10,7 +10,8 @@ export type GameMode =
     | 'division'
     | 'mixed'
     | 'multiplication-table'
-    | 'square';
+    | 'square'
+    | 'fraction';
 
 export type ScreenState =
     | 'menu'
@@ -34,6 +35,11 @@ export interface QuestionResult {
 export interface GameSettings {
     totalQuestions: number;
     timeLimit: number;
+    dailyGoal: number;
+}
+
+export interface FractionLogicProps {
+    generateFractionQuestion: () => { question: string; answer: string; type: 'fractionToDecimal' | 'decimalToFraction' };
 }
 
 export interface GameState {
@@ -110,7 +116,8 @@ function generateQuestion(
     operation: Operation,
     digits: number,
     diff: Difficulty,
-    allowRemainder: boolean
+    allowRemainder: boolean,
+    allowNegativeResults: boolean // New parameter
 ): { num1: number; num2: number; answer: number } {
     let num1 = generateNumber(digits, diff, operation, false);
     let num2 = generateNumber(digits, diff, operation, true);
@@ -121,9 +128,11 @@ function generateQuestion(
             answer = num1 + num2;
             break;
         case '-':
-            // Easy: ensure positive result
-            if (diff === 'easy' && num1 < num2) {
-                [num1, num2] = [num2, num1];
+            if (!allowNegativeResults) {
+                // Ensure positive result if negative results are not allowed
+                if (num1 < num2) {
+                    [num1, num2] = [num2, num1];
+                }
             }
             answer = num1 - num2;
             break;
@@ -186,10 +195,11 @@ function loadSettings(): GameSettings {
             return {
                 totalQuestions: Math.min(50, Math.max(1, parsed.totalQuestions || 5)),
                 timeLimit: Math.min(60, Math.max(5, parsed.timeLimit || 20)),
+                dailyGoal: Math.min(100, Math.max(1, parsed.dailyGoal || 20)),
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: 5, timeLimit: 20 };
+    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 20 };
 }
 
 function saveSettings(settings: GameSettings) {
@@ -197,13 +207,16 @@ function saveSettings(settings: GameSettings) {
 }
 
 // ─── Hook ───────────────────────────────────────────────────
-export function useGameLogic() {
+export function useGameLogic(fractionLogic: FractionLogicProps) {
     const [screen, setScreen] = useState<ScreenState>('menu');
     const [mode, setMode] = useState<GameMode>('addition');
     const [difficulty, setDifficulty] = useState<Difficulty>('medium');
     const [digits, setDigits] = useState(1);
     const [allowRemainder, setAllowRemainder] = useState(false);
     const [mixedOps, setMixedOps] = useState([true, true, true, true]);
+    const [allowNegativeResults, setAllowNegativeResults] = useState(false);
+    const [squareRangeType, setSquareRangeType] = useState<'fixed' | 'custom'>('fixed');
+    const [customSquareRange, setCustomSquareRange] = useState<[number, number]>([1, 25]);
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [num1, setNum1] = useState(0);
@@ -266,7 +279,8 @@ export function useGameLogic() {
     // ── Question generation ─────────────────────────────────
     const generateNextQuestion = useCallback((questionIndex: number) => {
         if (mode === 'square') {
-            const n = randomInRange(tableRange[0], tableRange[1]);
+            const range = squareRangeType === 'fixed' ? [1, 25] : customSquareRange;
+            const n = randomInRange(range[0], range[1]);
             setNum1(n);
             setNum2(n);
             setCurrentOperation('²');
@@ -283,14 +297,14 @@ export function useGameLogic() {
             const ops: Operation[] = ['+', '-', '*', '/'];
             const enabled = ops.filter((_, i) => mixedOps[i]);
             const op = enabled[Math.floor(Math.random() * enabled.length)];
-            const q = generateQuestion(op, digits, difficulty, allowRemainder);
+            const q = generateQuestion(op, digits, difficulty, allowRemainder, allowNegativeResults);
             setNum1(q.num1);
             setNum2(q.num2);
             setCurrentOperation(getOperationSymbol(op));
             setCorrectAnswer(q.answer);
         } else {
             const op = modeToOperation(mode);
-            const q = generateQuestion(op, digits, difficulty, allowRemainder);
+            const q = generateQuestion(op, digits, difficulty, allowRemainder, allowNegativeResults);
             setNum1(q.num1);
             setNum2(q.num2);
             setCurrentOperation(getOperationSymbol(op));
@@ -408,6 +422,8 @@ export function useGameLogic() {
         setMode(m);
         if (m === 'multiplication-table' || m === 'square') {
             setScreen('special-menu');
+        } else if (m === 'fraction') {
+            setScreen('setup');
         } else {
             setScreen('setup');
         }
@@ -470,6 +486,7 @@ export function useGameLogic() {
         difficulty,
         digits,
         allowRemainder,
+        allowNegativeResults,
         mixedOps,
         currentQuestion,
         num1,
@@ -486,12 +503,18 @@ export function useGameLogic() {
         percentage,
         settings,
         tableRange,
+        dailyGoal: settings.dailyGoal,
+        squareRangeType,
+        customSquareRange,
         // Actions
         selectMode,
         setDifficulty,
         setDigits,
         setAllowRemainder,
+        setAllowNegativeResults,
         setMixedOps,
+        setSquareRangeType,
+        setCustomSquareRange,
         startGame,
         handleKeyPress,
         goToMenu,
