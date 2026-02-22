@@ -9,9 +9,12 @@ interface GameScreenProps {
     currentQuestion: number;
     totalQuestions: number;
     feedback: 'none' | 'correct' | 'incorrect' | 'timeout';
-    correctAnswer: number;
+    correctAnswer: number | string; // Updated to allow string for fractions
     onKey: (key: string) => void;
     onQuit: () => void;
+    mode: GameMode;
+    fractionQuestionDisplay: string; // New prop
+    fractionCorrectAnswer: string; // New prop
 }
 
 export default function GameScreen({
@@ -26,10 +29,14 @@ export default function GameScreen({
     correctAnswer,
     onKey,
     onQuit,
+    mode, // Destructure mode prop
+    fractionQuestionDisplay, // Destructure new prop
+    fractionCorrectAnswer, // Destructure new prop
 }: GameScreenProps) {
     const progress = ((currentQuestion - 1) / totalQuestions) * 100;
     const isSquareOp = operation === '²';
     const showNegative = operation === '−';
+    const showFraction = mode === 'fraction'; // Determine showFraction based on mode
     const isTimeLow = timeRemaining <= 5 && timeRemaining > 0;
 
     // Format timer as mm:ss
@@ -80,7 +87,9 @@ export default function GameScreen({
                     <div className="relative z-10 flex flex-col items-center gap-8">
                         {/* Question */}
                         <h1 className="font-mono text-5xl sm:text-6xl font-bold text-main tracking-tight text-center leading-tight">
-                            {isSquareOp ? (
+                            {mode === 'fraction' ? (
+                                <>{fractionQuestionDisplay}</>
+                            ) : isSquareOp ? (
                                 <>
                                     {num1}<span className="text-primary text-3xl align-super">²</span>
                                 </>
@@ -110,13 +119,13 @@ export default function GameScreen({
                                 <div className="flex flex-col items-center gap-1">
                                     <span className="material-symbols-outlined text-timeout text-3xl">timer_off</span>
                                     <span className="font-mono text-xl text-timeout">Time's Up</span>
-                                    <span className="font-mono text-lg text-muted">Answer: {correctAnswer}</span>
+                                    <span className="font-mono text-lg text-muted">Answer: {mode === 'fraction' ? fractionCorrectAnswer : correctAnswer}</span>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-1">
                                     <span className="material-symbols-outlined text-incorrect text-3xl">cancel</span>
                                     <span className="font-mono text-xl text-incorrect">{userInput}</span>
-                                    <span className="font-mono text-lg text-muted">Answer: {correctAnswer}</span>
+                                    <span className="font-mono text-lg text-muted">Answer: {mode === 'fraction' ? fractionCorrectAnswer : correctAnswer}</span>
                                 </div>
                             )}
                         </div>
@@ -130,6 +139,7 @@ export default function GameScreen({
                     onKey={onKey}
                     disabled={feedback !== 'none'}
                     showNegative={showNegative}
+                    showFraction={showFraction} // Pass the showFraction prop
                 />
             </div>
         </div>

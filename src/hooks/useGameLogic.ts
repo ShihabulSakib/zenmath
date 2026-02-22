@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useFractionLogic } from './useFractionLogic'; // Import useFractionLogic
 
 // ─── Types ──────────────────────────────────────────────────
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -25,8 +26,8 @@ export interface QuestionResult {
     num1: number;
     num2: number;
     operation: string;
-    correctAnswer: number;
-    userAnswer: number | null;
+    correctAnswer: number | string;
+    userAnswer: number | string | null;
     isCorrect: boolean;
     timeTaken: number;
     timedOut: boolean;
@@ -38,10 +39,6 @@ export interface GameSettings {
     dailyGoal: number;
 }
 
-export interface FractionLogicProps {
-    generateFractionQuestion: () => { question: string; answer: string; type: 'fractionToDecimal' | 'decimalToFraction' };
-}
-
 export interface GameState {
     screen: ScreenState;
     mode: GameMode;
@@ -49,6 +46,7 @@ export interface GameState {
     digits: number;
     allowRemainder: boolean;
     mixedOps: boolean[];
+    allowNegativeResults: boolean;
     // Playing state
     currentQuestion: number;
     num1: number;
@@ -58,11 +56,16 @@ export interface GameState {
     userInput: string;
     timeRemaining: number;
     feedback: 'none' | 'correct' | 'incorrect' | 'timeout';
+    // Fraction specific
+    fractionQuestionDisplay: string;
+    fractionCorrectAnswer: string;
     // Results
     results: QuestionResult[];
     score: number;
     // Special mode params
     tableRange: [number, number];
+    // Fraction settings
+    fractionDenominatorRange: [number, number];
     // Settings
     settings: GameSettings;
 }
@@ -128,8 +131,14 @@ function generateQuestion(
             answer = num1 + num2;
             break;
         case '-':
-            if (!allowNegativeResults) {
-                // Ensure positive result if negative results are not allowed
+            if (allowNegativeResults) {
+                // Force negative result
+                if (num1 >= num2) {
+                    [num1, num2] = [num2, num1];
+                }
+                if (num1 === num2) num2 += 1; // Ensure strictly negative
+            } else {
+                // Force positive result
                 if (num1 < num2) {
                     [num1, num2] = [num2, num1];
                 }
@@ -207,7 +216,7 @@ function saveSettings(settings: GameSettings) {
 }
 
 // ─── Hook ───────────────────────────────────────────────────
-export function useGameLogic(fractionLogic: FractionLogicProps) {
+export function useGameLogic() {
     const [screen, setScreen] = useState<ScreenState>('menu');
     const [mode, setMode] = useState<GameMode>('addition');
     const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -217,6 +226,11 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
     const [allowNegativeResults, setAllowNegativeResults] = useState(false);
     const [squareRangeType, setSquareRangeType] = useState<'fixed' | 'custom'>('fixed');
     const [customSquareRange, setCustomSquareRange] = useState<[number, number]>([1, 25]);
+    const [fractionDenominatorRange, setFractionDenominatorRange] = useState<[number, number]>([2, 10]);
+
+    const [dailyProgress, setDailyProgress] = useState(0);
+
+    const fractionLogic = useFractionLogic(fractionDenominatorRange[0], fractionDenominatorRange[1]);
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [num1, setNum1] = useState(0);
@@ -227,11 +241,37 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
     const [timeRemaining, setTimeRemaining] = useState(20);
     const [feedback, setFeedback] = useState<'none' | 'correct' | 'incorrect' | 'timeout'>('none');
 
+    // Fraction specific states
+    const [fractionQuestionDisplay, setFractionQuestionDisplay] = useState('');
+    const [fractionCorrectAnswer, setFractionCorrectAnswer] = useState('');
+
     const [results, setResults] = useState<QuestionResult[]>([]);
     const [score, setScore] = useState(0);
 
     const [tableRange, setTableRange] = useState<[number, number]>([1, 10]);
     const [settings, setSettings] = useState<GameSettings>(loadSettings);
+
+    // ── Daily Progress Persistence ─────────────────────────
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const stored = localStorage.getItem('zenmath-daily-progress');
+        if (stored) {
+            const { date, count } = JSON.parse(stored);
+            if (date === today) {
+                setDailyProgress(count);
+            } else {
+                setDailyProgress(0);
+                localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: 0 }));
+            }
+        } else {
+            localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: 0 }));
+        }
+    }, []);
+
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: dailyProgress }));
+    }, [dailyProgress]);
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const questionStartRef = useRef<number>(Date.now());
@@ -285,6 +325,8 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
             setNum2(n);
             setCurrentOperation('²');
             setCorrectAnswer(n * n);
+            setFractionQuestionDisplay('');
+            setFractionCorrectAnswer('');
         } else if (mode === 'multiplication-table') {
             let n1 = randomInRange(tableRange[0], tableRange[1]);
             let n2 = randomInRange(tableRange[0], tableRange[1]);
@@ -293,6 +335,8 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
             setNum2(n2);
             setCurrentOperation('×');
             setCorrectAnswer(n1 * n2);
+            setFractionQuestionDisplay('');
+            setFractionCorrectAnswer('');
         } else if (mode === 'mixed') {
             const ops: Operation[] = ['+', '-', '*', '/'];
             const enabled = ops.filter((_, i) => mixedOps[i]);
@@ -302,19 +346,32 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
             setNum2(q.num2);
             setCurrentOperation(getOperationSymbol(op));
             setCorrectAnswer(q.answer);
-        } else {
+            setFractionQuestionDisplay('');
+            setFractionCorrectAnswer('');
+        } else if (mode === 'fraction') {
+            const { question, answer, type } = fractionLogic.generateFractionQuestion();
+            setNum1(0); // Not used for fraction display directly
+            setNum2(0); // Not used for fraction display directly
+            setCurrentOperation(type === 'fractionToDecimal' ? 'Fraction to Decimal' : 'Decimal to Fraction');
+            setCorrectAnswer(0); // Not used for fraction, string answer
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer(answer);
+        }
+        else {
             const op = modeToOperation(mode);
             const q = generateQuestion(op, digits, difficulty, allowRemainder, allowNegativeResults);
             setNum1(q.num1);
             setNum2(q.num2);
             setCurrentOperation(getOperationSymbol(op));
             setCorrectAnswer(q.answer);
+            setFractionQuestionDisplay('');
+            setFractionCorrectAnswer('');
         }
         setUserInput('');
         setFeedback('none');
         setCurrentQuestion(questionIndex);
         isProcessingRef.current = false;
-    }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange]);
+    }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange, fractionLogic, allowNegativeResults, squareRangeType, customSquareRange]);
 
     // ── Game flow ───────────────────────────────────────────
     const startGame = useCallback(() => {
@@ -343,7 +400,7 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
 
     const recordResult = useCallback((
         isCorrect: boolean,
-        userAns: number | null,
+        userAns: number | string | null,
         timedOut: boolean,
     ) => {
         const timeTaken = timedOut
@@ -353,29 +410,59 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
             num1,
             num2,
             operation: currentOperation,
-            correctAnswer,
-            userAnswer: userAns,
+            correctAnswer: mode === 'fraction' ? fractionCorrectAnswer : correctAnswer,
+            userAnswer: mode === 'fraction' ? (userAns !== null ? String(userAns) : null) : userAns,
             isCorrect,
             timeTaken,
             timedOut,
         };
         setResults(prev => [...prev, result]);
-        if (isCorrect) setScore(prev => prev + 1);
+        if (isCorrect) {
+            setScore(prev => prev + 1);
+            setDailyProgress(prev => prev + 1);
+        }
         return result;
-    }, [num1, num2, currentOperation, correctAnswer, settings.timeLimit]);
+    }, [num1, num2, currentOperation, correctAnswer, settings.timeLimit, mode, fractionCorrectAnswer]);
 
     const handleSubmit = useCallback(() => {
         if (isProcessingRef.current || feedback !== 'none' || userInput === '') return;
         isProcessingRef.current = true;
         stopTimer();
-        const userAns = parseInt(userInput, 10);
-        const isCorrect = userAns === correctAnswer;
+
+        let isCorrect: boolean;
+        let userAns: number | string | null = null;
+
+        if (mode === 'fraction') {
+            userAns = userInput;
+            if (!fractionCorrectAnswer.includes('/')) {
+                // Decimal answer: normalize both
+                const u = parseFloat(userInput);
+                const c = parseFloat(fractionCorrectAnswer);
+                isCorrect = !isNaN(u) && Math.abs(u - c) < 0.0001;
+            } else {
+                // Fraction answer: literal string match (expect simplified)
+                isCorrect = userInput === fractionCorrectAnswer;
+                
+                // Optional: handle unsimplified fractions
+                if (!isCorrect && userInput.includes('/')) {
+                    const [uNum, uDen] = userInput.split('/').map(Number);
+                    const [cNum, cDen] = fractionCorrectAnswer.split('/').map(Number);
+                    if (!isNaN(uNum) && !isNaN(uDen) && uDen !== 0) {
+                        isCorrect = (uNum / uDen) === (cNum / cDen);
+                    }
+                }
+            }
+        } else {
+            userAns = parseInt(userInput, 10);
+            isCorrect = userAns === correctAnswer;
+        }
+
         recordResult(isCorrect, userAns, false);
         setFeedback(isCorrect ? 'correct' : 'incorrect');
         feedbackTimeoutRef.current = setTimeout(() => {
             advanceToNext();
         }, 800);
-    }, [userInput, correctAnswer, feedback, stopTimer, recordResult, advanceToNext]);
+    }, [userInput, correctAnswer, feedback, stopTimer, recordResult, advanceToNext, mode, fractionCorrectAnswer]);
 
     const handleTimeout = useCallback(() => {
         if (isProcessingRef.current) return;
@@ -400,13 +487,28 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
                 if (prev.startsWith('-')) return prev.slice(1);
                 return '-' + prev;
             });
-        } else if (/^\d$/.test(key)) {
+        } else if (key === '/') {
             setUserInput(prev => {
-                if (prev.length >= 10) return prev;
+                if (mode === 'fraction' && !prev.includes('/') && prev.length > 0) {
+                    return prev + key;
+                }
+                return prev;
+            });
+        } else if (key === '.') {
+            setUserInput(prev => {
+                if (!prev.includes('.') && !prev.includes('/')) {
+                    return prev + key;
+                }
+                return prev;
+            });
+        }
+        else if (/^\d$/.test(key)) {
+            setUserInput(prev => {
+                if (prev.length >= 12) return prev;
                 return prev + key;
             });
         }
-    }, [feedback, handleSubmit]);
+    }, [feedback, handleSubmit, mode]);
 
     // ── Navigation ──────────────────────────────────────────
     const goToMenu = useCallback(() => {
@@ -420,9 +522,9 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
 
     const selectMode = useCallback((m: GameMode) => {
         setMode(m);
-        if (m === 'multiplication-table' || m === 'square') {
+        if (m === 'multiplication-table') {
             setScreen('special-menu');
-        } else if (m === 'fraction') {
+        } else if (m === 'square' || m === 'fraction') {
             setScreen('setup');
         } else {
             setScreen('setup');
@@ -504,8 +606,12 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
         settings,
         tableRange,
         dailyGoal: settings.dailyGoal,
+        dailyProgress,
         squareRangeType,
         customSquareRange,
+        fractionQuestionDisplay,
+        fractionCorrectAnswer,
+        fractionDenominatorRange,
         // Actions
         selectMode,
         setDifficulty,
@@ -515,6 +621,7 @@ export function useGameLogic(fractionLogic: FractionLogicProps) {
         setMixedOps,
         setSquareRangeType,
         setCustomSquareRange,
+        setFractionDenominatorRange,
         startGame,
         handleKeyPress,
         goToMenu,

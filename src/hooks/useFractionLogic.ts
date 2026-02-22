@@ -1,50 +1,43 @@
-import { useState, useCallback } from 'react';
-import type { GameMode } from './useGameLogic';
+import { useCallback } from 'react';
 
-export interface FractionQuestion {
-    type: 'fractionToDecimal' | 'decimalToFraction';
-    question: string;
-    answer: string;
+export interface FractionLogicProps {
+    generateFractionQuestion: () => { question: string; answer: string; type: 'fractionToDecimal' | 'decimalToFraction' };
 }
 
-export function useFractionLogic() {
-    const [fractionMode, setFractionMode] = useState<'fractionToDecimal' | 'decimalToFraction'>('fractionToDecimal');
-    const [denominatorRange, setDenominatorRange] = useState<[number, number]>([2, 10]);
+export function useFractionLogic(minDenominator: number, maxDenominator: number): FractionLogicProps {
 
-    const generateFractionQuestion = useCallback((): FractionQuestion => {
-        let num: number;
-        let den: number;
+    const generateFractionQuestion = useCallback(() => {
+        const type: 'fractionToDecimal' | 'decimalToFraction' = Math.random() < 0.5 ? 'fractionToDecimal' : 'decimalToFraction';
 
-        // Generate a valid fraction (numerator < denominator)
-        do {
-            num = Math.floor(Math.random() * (denominatorRange[1] - 1)) + 1; // num from 1 to den-1
-            den = Math.floor(Math.random() * (denominatorRange[1] - denominatorRange[0] + 1)) + denominatorRange[0];
-        } while (num >= den);
+        // Helper to find GCD
+        const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
-        const fractionString = `${num}/${den}`;
-        const decimalValue = num / den;
-        const decimalString = decimalValue.toFixed(4).replace(/\.?0+$/, ''); // Remove trailing zeros
+        // Generate a random denominator within the allowed range
+        const denominator = Math.floor(Math.random() * (maxDenominator - minDenominator + 1)) + minDenominator;
 
-        if (fractionMode === 'fractionToDecimal') {
-            return {
-                type: 'fractionToDecimal',
-                question: fractionString,
-                answer: decimalString,
-            };
+        // Generate numerator, ensuring it's less than denominator
+        let numerator = Math.floor(Math.random() * (denominator - 1)) + 1; // 1 to denominator-1
+
+        // Simplify fraction
+        const commonDivisor = gcd(numerator, denominator);
+        const simplifiedNumerator = numerator / commonDivisor;
+        const simplifiedDenominator = denominator / commonDivisor;
+
+        if (type === 'fractionToDecimal') {
+            const question = `${simplifiedNumerator}/${simplifiedDenominator}`;
+            // Convert to decimal and remove trailing zeros, up to 4 decimal places
+            const rawVal = simplifiedNumerator / simplifiedDenominator;
+            const answer = parseFloat(rawVal.toFixed(4)).toString();
+
+            return { question, answer, type };
         } else { // decimalToFraction
-            return {
-                type: 'decimalToFraction',
-                question: decimalString,
-                answer: fractionString,
-            };
-        }
-    }, [fractionMode, denominatorRange]);
+            const rawVal = simplifiedNumerator / simplifiedDenominator;
+            const question = parseFloat(rawVal.toFixed(4)).toString();
+            const answer = `${simplifiedNumerator}/${simplifiedDenominator}`;
 
-    return {
-        fractionMode,
-        setFractionMode,
-        denominatorRange,
-        setDenominatorRange,
-        generateFractionQuestion,
-    };
+            return { question, answer, type };
+        }
+    }, [minDenominator, maxDenominator]);
+
+    return { generateFractionQuestion };
 }

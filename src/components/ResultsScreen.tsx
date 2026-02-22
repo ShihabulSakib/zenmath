@@ -35,67 +35,69 @@ export default function ResultsScreen({
                 <div className="w-10" />
             </header>
 
-            <main className="flex-1 flex flex-col justify-center items-center px-6 pb-12 w-full max-w-md mx-auto">
+            <main className="flex-1 flex flex-col justify-center items-center px-6 pb-12 w-full max-w-sm mx-auto">
                 {/* Big score */}
-                <div className="flex flex-col items-center mb-12">
-                    <span className="text-secondary text-sm font-medium mb-2 uppercase tracking-wide">Accuracy</span>
+                <div className="flex flex-col items-center mb-10">
+                    <span className="text-secondary text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-70">Performance</span>
                     <div className="relative flex items-center justify-center">
-                        <h1 className="text-[80px] leading-none font-black tracking-tighter text-main">
-                            {score}<span className="text-muted mx-2 text-[60px] font-bold">/</span>{totalQuestions}
+                        <h1 className="text-[72px] leading-none font-black tracking-tighter text-main">
+                            {score}<span className="text-primary mx-1 text-[50px] font-bold opacity-30">/</span>{totalQuestions}
                         </h1>
                     </div>
-                    <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold border border-primary/20">
-                        <span className="material-symbols-outlined text-base">
-                            {percentage >= 80 ? 'check_circle' : percentage >= 50 ? 'info' : 'error'}
+                    <div className="mt-4 flex items-center gap-2 px-4 py-1.5 rounded-xl bg-primary/5 text-primary text-[11px] font-black border border-primary/10">
+                        <span className="material-symbols-outlined text-sm">
+                            {percentage >= 80 ? 'stars' : percentage >= 50 ? 'check_circle' : 'bolt'}
                         </span>
-                        <span>{Math.round(percentage)}% Correct</span>
+                        <span className="uppercase tracking-widest">{Math.round(percentage)}% Accuracy</span>
                     </div>
                 </div>
 
                 {/* Stat cards */}
-                <div className="grid grid-cols-2 gap-4 w-full mb-12">
-                    <div className="flex flex-col items-center justify-center p-6 bg-stat-card border border-stat rounded-xl">
-                        <div className="p-2 mb-3 bg-primary/10 rounded-full text-primary">
-                            <span className="material-symbols-outlined">timer</span>
+                <div className="grid grid-cols-2 gap-3 w-full mb-8">
+                    <div className="flex flex-col items-center justify-center p-5 bg-card border border-card rounded-2xl shadow-sm relative group overflow-hidden">
+                        <div className="p-2 mb-2 bg-primary/10 rounded-xl text-primary z-10">
+                            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
                         </div>
-                        <p className="text-secondary text-xs font-semibold uppercase tracking-wider mb-1">Total Time</p>
-                        <p className="text-3xl font-bold text-main tracking-tight">{totalTime}s</p>
+                        <p className="text-secondary text-[9px] font-black uppercase tracking-widest mb-0.5 z-10 opacity-60">Total Time</p>
+                        <p className="text-2xl font-black text-main tracking-tight z-10">{totalTime}s</p>
+                        <div className="absolute -bottom-4 -right-4 size-12 bg-primary/5 rounded-full blur-xl" />
                     </div>
-                    <div className="flex flex-col items-center justify-center p-6 bg-stat-card border border-stat rounded-xl">
-                        <div className="p-2 mb-3 bg-primary/10 rounded-full text-primary">
-                            <span className="material-symbols-outlined">avg_pace</span>
+                    <div className="flex flex-col items-center justify-center p-5 bg-card border border-card rounded-2xl shadow-sm relative group overflow-hidden">
+                        <div className="p-2 mb-2 bg-primary/10 rounded-xl text-primary z-10">
+                            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>avg_pace</span>
                         </div>
-                        <p className="text-secondary text-xs font-semibold uppercase tracking-wider mb-1">Avg. Time</p>
-                        <p className="text-3xl font-bold text-main tracking-tight">{avgTime.toFixed(1)}s</p>
+                        <p className="text-secondary text-[9px] font-black uppercase tracking-widest mb-0.5 z-10 opacity-60">Avg. Time</p>
+                        <p className="text-2xl font-black text-main tracking-tight z-10">{avgTime.toFixed(1)}s</p>
+                        <div className="absolute -bottom-4 -right-4 size-12 bg-primary/5 rounded-full blur-xl" />
                     </div>
                 </div>
 
                 {/* Result bar visualization */}
-                <div className="w-full mb-10 flex gap-1.5 h-1.5 rounded-full overflow-hidden bg-midnight-border">
+                <div className="w-full mb-8 flex gap-1 h-1.5 rounded-full overflow-hidden bg-midnight-border/50">
                     {results.map((r, i) => (
                         <div
                             key={i}
-                            className={`h-full flex-1 ${r.isCorrect ? 'bg-correct opacity-80' : 'bg-incorrect opacity-60'
+                            className={`h-full flex-1 transition-all duration-500 ${r.isCorrect ? 'bg-correct' : 'bg-incorrect opacity-40'
                                 }`}
                         />
                     ))}
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col w-full gap-4">
+                <div className="flex flex-col w-full gap-3">
                     <button
                         onClick={onPlayAgain}
-                        className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:opacity-90 active:scale-[0.98] text-white text-base font-bold rounded-lg transition-all shadow-lg shadow-primary/20"
+                        className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white text-base font-black rounded-xl transition-all shadow-lg shadow-primary/30"
                     >
-                        <span className="material-symbols-outlined">refresh</span>
-                        <span>Retry Session</span>
+                        <span className="material-symbols-outlined text-xl">refresh</span>
+                        <span className="uppercase tracking-widest text-sm">Retry Session</span>
                     </button>
                     <button
                         onClick={onMenu}
-                        className="w-full flex items-center justify-center gap-2 h-14 bg-transparent border border-card text-main hover:bg-primary/5 active:scale-[0.98] text-base font-semibold rounded-lg transition-all"
+                        className="w-full flex items-center justify-center gap-2 h-14 bg-surface border border-card text-main hover:bg-primary/5 active:scale-[0.98] text-base font-bold rounded-xl transition-all"
                     >
-                        <span className="material-symbols-outlined">menu</span>
-                        <span>Menu</span>
+                        <span className="material-symbols-outlined text-xl">home</span>
+                        <span className="uppercase tracking-widest text-sm">Menu</span>
                     </button>
                 </div>
             </main>

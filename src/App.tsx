@@ -6,9 +6,11 @@ import GameScreen from './components/GameScreen';
 import ResultsScreen from './components/ResultsScreen';
 import SettingsScreen from './components/SettingsScreen';
 import SpecialMenu from './components/SpecialMenu';
+// import { useFractionLogic } from './hooks/useFractionLogic'; // Remove import useFractionLogic
 
 export default function App() {
-  const game = useGameLogic();
+  // const fractionLogic = useFractionLogic(); // Remove instantiation of useFractionLogic
+  const game = useGameLogic(); // Pass it to useGameLogic
 
   return (
     <ZenLayout>
@@ -29,6 +31,7 @@ export default function App() {
           mixedOps={game.mixedOps}
           squareRangeType={game.squareRangeType}
           customSquareRange={game.customSquareRange}
+          fractionDenominatorRange={game.fractionDenominatorRange}
           onDigitsChange={game.setDigits}
           onDifficultyChange={game.setDifficulty}
           onAllowRemainderChange={game.setAllowRemainder}
@@ -36,6 +39,7 @@ export default function App() {
           onAllowNegativeResultsChange={game.setAllowNegativeResults}
           onSquareRangeTypeChange={game.setSquareRangeType}
           onCustomSquareRangeChange={game.setCustomSquareRange}
+          onFractionDenominatorRangeChange={game.setFractionDenominatorRange}
           onStart={game.startGame}
           onBack={game.goToMenu}
         />
@@ -62,6 +66,9 @@ export default function App() {
           correctAnswer={game.correctAnswer}
           onKey={game.handleKeyPress}
           onQuit={game.goToMenu}
+          mode={game.mode}
+          fractionQuestionDisplay={game.fractionQuestionDisplay}
+          fractionCorrectAnswer={game.fractionCorrectAnswer}
         />
       )}
 

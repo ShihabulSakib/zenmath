@@ -2,25 +2,38 @@ interface KeypadProps {
     onKey: (key: string) => void;
     disabled?: boolean;
     showNegative?: boolean;
+    showFraction?: boolean;
+    showDecimal?: boolean;
 }
 
-export default function Keypad({ onKey, disabled = false, showNegative = false }: KeypadProps) {
-    const digitKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
+export default function Keypad({ 
+    onKey, 
+    disabled = false, 
+    showNegative = true, 
+    showFraction = true,
+    showDecimal = true 
+}: KeypadProps) {
     const handlePress = (key: string) => {
         if (disabled) return;
         if (navigator.vibrate) navigator.vibrate(10);
         onKey(key);
     };
 
-    const digitButton = (key: string) => (
+    const KeyButton = ({ k, label, isPrimary, isAction }: { k: string, label?: React.ReactNode, isPrimary?: boolean, isAction?: boolean }) => (
         <button
-            key={key}
-            onClick={() => handlePress(key)}
+            onClick={() => handlePress(k)}
             disabled={disabled}
-            className="active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl bg-keypad-btn border border-keypad-border shadow-sm hover:shadow-md text-keypad-text disabled:opacity-40"
+            className={`active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl border shadow-sm disabled:opacity-40 h-14
+                ${isPrimary 
+                    ? 'bg-primary text-white border-primary shadow-primary/25 hover:brightness-110' 
+                    : isAction 
+                        ? 'bg-keypad-btn border-keypad-border text-keypad-text/70'
+                        : 'bg-keypad-btn border-keypad-border text-keypad-text hover:shadow-md'
+                }`}
         >
-            <span className="text-[22px] font-semibold">{key}</span>
+            <span className={isAction ? "material-symbols-outlined" : "text-[22px] font-semibold"}>
+                {label || k}
+            </span>
         </button>
     );
 
@@ -29,39 +42,32 @@ export default function Keypad({ onKey, disabled = false, showNegative = false }
             {/* Separator line */}
             <div className="h-px bg-keypad-border/50" />
 
-            {/* 4-row grid that fills the space */}
-            <div className="flex-1 grid grid-cols-3 grid-rows-4 gap-2.5 p-3 pb-6">
-                {/* Row 1-3: digits 1-9 */}
-                {digitKeys.map(digitButton)}
+            {/* Grid layout */}
+            <div className="flex-1 grid grid-cols-4 gap-2.5 p-3 pb-6">
+                {/* Row 1 */}
+                <KeyButton k="1" />
+                <KeyButton k="2" />
+                <KeyButton k="3" />
+                <KeyButton k="backspace" label="backspace" isAction />
 
-                {/* Row 4: action | 0 | enter */}
-                {showNegative ? (
-                    <button
-                        onClick={() => handlePress('-')}
-                        disabled={disabled}
-                        className="active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl bg-keypad-btn border border-keypad-border shadow-sm text-keypad-text disabled:opacity-40"
-                    >
-                        <span className="text-[22px] font-semibold">±</span>
-                    </button>
-                ) : (
-                    <button
-                        onClick={() => handlePress('backspace')}
-                        disabled={disabled}
-                        className="active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl bg-keypad-btn border border-keypad-border shadow-sm text-keypad-text/60 hover:text-red-500 disabled:opacity-40"
-                    >
-                        <span className="material-symbols-outlined" style={{ fontSize: 26 }}>backspace</span>
-                    </button>
-                )}
+                {/* Row 2 */}
+                <KeyButton k="4" />
+                <KeyButton k="5" />
+                <KeyButton k="6" />
+                {showNegative ? <KeyButton k="-" label="−" /> : <div className="h-14" />}
 
-                {digitButton('0')}
+                {/* Row 3 */}
+                <KeyButton k="7" />
+                <KeyButton k="8" />
+                <KeyButton k="9" />
+                {showFraction ? <KeyButton k="/" label="/" /> : <KeyButton k="/" label="÷" />}
 
-                <button
-                    onClick={() => handlePress('enter')}
-                    disabled={disabled}
-                    className="active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/25 hover:brightness-110 disabled:opacity-40"
-                >
-                    <span className="material-symbols-outlined" style={{ fontSize: 28 }}>check</span>
-                </button>
+                {/* Row 4 */}
+                {showDecimal ? <KeyButton k="." label="." /> : <div className="h-14" />}
+                <KeyButton k="0" />
+                <div className="col-span-2">
+                    <KeyButton k="enter" label="check" isPrimary isAction />
+                </div>
             </div>
         </section>
     );
