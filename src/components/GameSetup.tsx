@@ -76,7 +76,7 @@ export default function GameSetup({
             <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors"
+                    className="flex items-center justify-center p-2 -ml-2 rounded-full"
                 >
                     <span className="material-symbols-outlined text-main" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
                 </button>
@@ -138,7 +138,7 @@ export default function GameSetup({
                                     onClick={() => onDigitsChange(d)}
                                     className={`flex-1 aspect-square max-w-[64px] rounded-2xl font-bold text-xl transition-all duration-200 ${digits === d
                                         ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
-                                        : 'bg-card border border-card text-secondary hover:border-primary/30 active:scale-95'
+                                        : 'bg-card border border-card text-secondary active:scale-95'
                                         }`}
                                 >
                                     {d}
@@ -325,7 +325,7 @@ export default function GameSetup({
                                         onClick={() => onFractionDenominatorRangeChange([2, den])}
                                         className={`py-4 rounded-2xl font-black text-xl transition-all duration-200 ${fractionDenominatorRange[1] === den
                                             ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]'
-                                            : 'bg-surface/50 border border-card text-secondary hover:border-primary/30'
+                                            : 'bg-surface/50 border border-card text-secondary'
                                             }`}
                                     >
                                         {den}
@@ -345,7 +345,7 @@ export default function GameSetup({
                                         onClick={() => onFractionNumeratorRangeChange([1, num])}
                                         className={`py-4 rounded-2xl font-black text-xl transition-all duration-200 ${fractionNumeratorRange[1] === num
                                             ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]'
-                                            : 'bg-surface/50 border border-card text-secondary hover:border-primary/30'
+                                            : 'bg-surface/50 border border-card text-secondary'
                                             }`}
                                     >
                                         {num}
@@ -361,7 +361,7 @@ export default function GameSetup({
             <div className="fixed bottom-0 left-0 w-full bg-header backdrop-blur-xl p-5 pb-10 z-20">
                 <button
                     onClick={onStart}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/30 active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <span>Start Practice</span>
                     <span className="material-symbols-outlined">arrow_forward</span>

@@ -20,11 +20,11 @@ const KeyButton = ({ k, label, isPrimary, isAction, disabled, onClick }: KeyButt
         onClick={() => onClick(k)}
         disabled={disabled}
         className={`active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl border shadow-sm disabled:opacity-40 h-14
-            ${isPrimary 
-                ? 'bg-primary text-white border-primary shadow-primary/25 hover:brightness-110' 
-                : isAction 
+            ${isPrimary
+                ? 'bg-primary text-white border-primary shadow-primary/25'
+                : isAction
                     ? 'bg-keypad-btn border-keypad-border text-keypad-text/70'
-                    : 'bg-keypad-btn border-keypad-border text-keypad-text hover:shadow-md'
+                    : 'bg-keypad-btn border-keypad-border text-keypad-text'
             }`}
     >
         <span className={isAction ? "material-symbols-outlined" : "text-[22px] font-semibold"}>
@@ -33,12 +33,12 @@ const KeyButton = ({ k, label, isPrimary, isAction, disabled, onClick }: KeyButt
     </button>
 );
 
-export default function Keypad({ 
-    onKey, 
-    disabled = false, 
-    showNegative = true, 
+export default function Keypad({
+    onKey,
+    disabled = false,
+    showNegative = true,
     showFraction = true,
-    showDecimal = true 
+    showDecimal = true
 }: KeypadProps) {
     const handlePress = (key: string) => {
         if (disabled) return;

@@ -22,7 +22,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
             <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors"
+                    className="flex items-center justify-center p-2 -ml-2 rounded-full"
                 >
                     <span className="material-symbols-outlined text-primary" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
                 </button>
@@ -43,11 +43,11 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                             <label className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Count</label>
                             <div className="flex items-end justify-between mt-auto w-full relative z-10">
                                 <span className="text-5xl font-black text-main leading-none tracking-tighter">{totalQuestions}</span>
-                                <div className="text-primary/20 group-hover:text-primary transition-colors duration-500">
+                                <div className="text-primary/20">
                                     <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>format_list_numbered</span>
                                 </div>
                             </div>
-                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-2xl" />
                         </div>
                         {/* Time Limit */}
                         <div className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative group overflow-hidden">
@@ -55,13 +55,13 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                             <div className="flex items-end justify-between mt-auto w-full relative z-10">
                                 <span className="text-5xl font-black text-main leading-none tracking-tighter">{timeLimit}</span>
                                 <div className="flex flex-col items-center justify-end">
-                                    <div className="text-primary/20 group-hover:text-primary transition-colors duration-500">
+                                    <div className="text-primary/20">
                                         <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
                                     </div>
                                     <span className="text-[9px] font-black text-primary/40 uppercase tracking-widest -mt-1">sec</span>
                                 </div>
                             </div>
-                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-2xl" />
                         </div>
                     </div>
                 </section>
@@ -119,7 +119,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
             <div className="fixed bottom-0 left-0 w-full bg-header backdrop-blur-xl p-5 pb-10 z-20">
                 <button
                     onClick={handleSave}
-                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/30 active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <span>Save Settings</span>
                 </button>

@@ -27,7 +27,7 @@ export default function ResultsScreen({
             <header className="flex items-center justify-between p-4 pt-6 sticky top-0 z-10 bg-header backdrop-blur-md">
                 <button
                     onClick={onMenu}
-                    className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors text-secondary"
+                    className="flex items-center justify-center p-2 -ml-2 rounded-full text-secondary"
                 >
                     <span className="material-symbols-outlined text-2xl">arrow_back</span>
                 </button>
@@ -87,14 +87,14 @@ export default function ResultsScreen({
                 <div className="flex flex-col w-full gap-3">
                     <button
                         onClick={onPlayAgain}
-                        className="w-full flex items-center justify-center gap-2 h-14 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white text-base font-black rounded-xl transition-all shadow-lg shadow-primary/30"
+                        className="w-full flex items-center justify-center gap-2 h-14 bg-primary text-white text-base font-black rounded-xl shadow-lg shadow-primary/30"
                     >
                         <span className="material-symbols-outlined text-xl">refresh</span>
                         <span className="uppercase tracking-widest text-sm">Retry Session</span>
                     </button>
                     <button
                         onClick={onMenu}
-                        className="w-full flex items-center justify-center gap-2 h-14 bg-surface border border-card text-main hover:bg-primary/5 active:scale-[0.98] text-base font-bold rounded-xl transition-all"
+                        className="w-full flex items-center justify-center gap-2 h-14 bg-surface border border-card text-main text-base font-bold rounded-xl"
                     >
                         <span className="material-symbols-outlined text-xl">home</span>
                         <span className="uppercase tracking-widest text-sm">Menu</span>

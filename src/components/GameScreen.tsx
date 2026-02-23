@@ -72,7 +72,7 @@ export default function GameScreen({
                         <span>Q {currentQuestion}/{totalQuestions}</span>
                         <button
                             onClick={onQuit}
-                            className="flex items-center gap-1 text-muted hover:text-incorrect transition-colors"
+                            className="flex items-center gap-1 text-muted"
                         >
                             <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
                             <span>Quit</span>

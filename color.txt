@@ -1,0 +1,6 @@
+DARK THEME = #1A3636
+	     #40534C
+	     #677D6A
+LIGHT THEME = #b29170
+	      #635c47
+	      #162b28

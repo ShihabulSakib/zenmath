@@ -21,9 +21,9 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
             <header className="flex items-center justify-between p-6 pb-2">
                 <button
                     onClick={onBack}
-                    className="group flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors"
+                    className="group flex size-10 shrink-0 items-center justify-center rounded-full"
                 >
-                    <span className="material-symbols-outlined text-main group-hover:text-primary transition-colors" style={{ fontSize: 28 }}>
+                    <span className="material-symbols-outlined text-main" style={{ fontSize: 28 }}>
                         arrow_back
                     </span>
                 </button>
@@ -47,7 +47,7 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
                     <button
                         key={label}
                         onClick={() => onSelect(range)}
-                        className="group relative flex w-full flex-col justify-between overflow-hidden rounded-xl bg-card border border-card p-6 text-left transition-all active:scale-[0.98] active:bg-primary active:border-primary hover:border-primary/50"
+                        className="group relative flex w-full flex-col justify-between overflow-hidden rounded-xl bg-card border border-card p-6 text-left transition-all active:scale-[0.98] active:bg-primary active:border-primary"
                     >
                         <div className="flex w-full items-start justify-between">
                             <div className="flex flex-col gap-1 z-10">
@@ -58,7 +58,7 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
                                     {subtitle}
                                 </span>
                             </div>
-                            <div className="size-2.5 rounded-full bg-primary opacity-0 transition-opacity group-hover:opacity-100 group-active:bg-white group-active:opacity-100" />
+                            <div className="size-2.5 rounded-full bg-primary opacity-0 group-active:bg-white group-active:opacity-100" />
                         </div>
                     </button>
                 ))}
