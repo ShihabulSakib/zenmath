@@ -111,7 +111,7 @@ export default function MainMenu({ onSelect, onSettings, game }: MainMenuProps) 
                         <div className="flex justify-between items-center mb-5">
                             <div>
                                 <h3 className="text-main font-bold text-lg">Daily Goal</h3>
-                                <p className="text-xs text-secondary font-medium mt-0.5">{game.dailyProgress} / {game.settings.dailyGoal} questions today</p>
+                                <p className="text-xs text-secondary font-medium mt-0.5">{game.dailyProgress} / {game.settings.dailyGoal} exercises today</p>
                             </div>
                             <div className="flex flex-col items-end">
                                 <div className="relative">
@@ -132,7 +132,7 @@ export default function MainMenu({ onSelect, onSettings, game }: MainMenuProps) 
                                             }
                                         }}
                                         className="w-16 bg-primary/5 text-xl font-black text-primary text-center rounded-xl border border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 px-2 py-2 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                        placeholder="20"
+                                        placeholder="5"
                                     />
                                 </div>
                                 <span className="text-[9px] text-secondary mt-1.5 uppercase font-black tracking-widest opacity-60">Target</span>

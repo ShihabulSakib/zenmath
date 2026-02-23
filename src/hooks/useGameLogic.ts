@@ -210,7 +210,7 @@ function loadSettings(): GameSettings {
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 20 };
+    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5 };
 }
 
 function saveSettings(settings: GameSettings) {
@@ -396,6 +396,18 @@ export function useGameLogic() {
 
         if (currentQuestion >= totalQ) {
             stopTimer();
+            setDailyProgress(prev => {
+                const today = new Date().toISOString().split('T')[0];
+                const stored = localStorage.getItem('zenmath-daily-progress');
+                let count = prev;
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed.date !== today) count = 0;
+                    } catch { /* ignore */ }
+                }
+                return count + 1;
+            });
             setScreen('result');
         } else {
             generateNextQuestion(currentQuestion + 1);
@@ -424,18 +436,6 @@ export function useGameLogic() {
         setResults(prev => [...prev, result]);
         if (isCorrect) {
             setScore(prev => prev + 1);
-            setDailyProgress(prev => {
-                const today = new Date().toISOString().split('T')[0];
-                const stored = localStorage.getItem('zenmath-daily-progress');
-                let count = prev;
-                if (stored) {
-                    try {
-                        const parsed = JSON.parse(stored);
-                        if (parsed.date !== today) count = 0;
-                    } catch { /* ignore */ }
-                }
-                return count + 1;
-            });
         }
         return result;
     }, [num1, num2, currentOperation, correctAnswer, settings.timeLimit, mode, fractionCorrectAnswer]);
