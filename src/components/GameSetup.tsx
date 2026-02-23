@@ -16,8 +16,10 @@ interface GameSetupProps {
     customSquareRange: [number, number];
     onSquareRangeTypeChange: (type: 'fixed' | 'custom') => void;
     onCustomSquareRangeChange: (range: [number, number]) => void;
-    fractionDenominatorRange: [number, number]; // New prop
-    onFractionDenominatorRangeChange: (range: [number, number]) => void; // New prop
+    fractionDenominatorRange: [number, number];
+    onFractionDenominatorRangeChange: (range: [number, number]) => void;
+    fractionNumeratorRange: [number, number];
+    onFractionNumeratorRangeChange: (range: [number, number]) => void;
     onStart: () => void;
     onBack: () => void;
 }
@@ -59,8 +61,10 @@ export default function GameSetup({
     onAllowNegativeResultsChange,
     onSquareRangeTypeChange,
     onCustomSquareRangeChange,
-    fractionDenominatorRange, // Destructure new prop
-    onFractionDenominatorRangeChange, // Destructure new prop
+    fractionDenominatorRange,
+    onFractionDenominatorRangeChange,
+    fractionNumeratorRange,
+    onFractionNumeratorRangeChange,
     onStart,
     onBack,
 }: GameSetupProps) {
@@ -69,7 +73,7 @@ export default function GameSetup({
     return (
         <div className="flex flex-col h-full animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-12 pb-2 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-between">
                 <button
                     onClick={onBack}
                     className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors"
@@ -121,8 +125,8 @@ export default function GameSetup({
                     </section>
                 )}
 
-                {/* Number of digits — only for non-mixed modes */}
-                {(mode !== 'multiplication-table' && mode !== 'square') && (
+                {/* Number of digits — only for non-mixed modes and non-fraction modes */}
+                {(mode !== 'multiplication-table' && mode !== 'square' && mode !== 'fraction') && (
                     <section>
                         <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
                             Number of Digits
@@ -236,7 +240,7 @@ export default function GameSetup({
                                 max="2"
                                 value={diffIdx}
                                 onChange={(e) => onDifficultyChange(difficultyLevels[parseInt(e.target.value)].value)}
-                                className="w-full"
+                                style={{ "--range-progress": `${(diffIdx / 2) * 100}%` } as React.CSSProperties}
                             />
                         </div>
                     </div>
@@ -307,34 +311,50 @@ export default function GameSetup({
                     </section>
                 )}
 
-                {/* Fraction Denominator Range */}
+                {/* Fraction Range */}
                 {mode === 'fraction' && (
                     <section>
                         <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                            Fraction Denominators
+                            Maximum Denominator
                         </h3>
                         <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
                             <div className="grid grid-cols-2 gap-4">
-                                {[2, 4, 5, 8, 10].map(den => (
+                                {[2, 4, 6, 8, 10].map(den => (
                                     <button
                                         key={den}
                                         onClick={() => onFractionDenominatorRangeChange([2, den])}
-                                        className={`py-5 rounded-2xl font-black text-xl transition-all duration-200 ${fractionDenominatorRange[1] === den
+                                        className={`py-4 rounded-2xl font-black text-xl transition-all duration-200 ${fractionDenominatorRange[1] === den
                                             ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]'
                                             : 'bg-surface/50 border border-card text-secondary hover:border-primary/30'
                                             }`}
                                     >
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-[9px] uppercase opacity-70 mb-1 tracking-widest font-black">Max Denom</span>
-                                            <span>{den}</span>
-                                        </div>
+                                        {den}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 mt-8 px-1 ml-1 opacity-70">
+                            Maximum Numerator
+                        </h3>
+                        <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
+                            <div className="grid grid-cols-2 gap-4">
+                                {[2, 4, 6, 8, 10].map(num => (
+                                    <button
+                                        key={num}
+                                        onClick={() => onFractionNumeratorRangeChange([1, num])}
+                                        className={`py-4 rounded-2xl font-black text-xl transition-all duration-200 ${fractionNumeratorRange[1] === num
+                                            ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]'
+                                            : 'bg-surface/50 border border-card text-secondary hover:border-primary/30'
+                                            }`}
+                                    >
+                                        {num}
                                     </button>
                                 ))}
                             </div>
                         </div>
                     </section>
                 )}
-
             </main>
 
             {/* Fixed bottom CTA */}

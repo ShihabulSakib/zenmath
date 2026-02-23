@@ -93,13 +93,15 @@ function generateNumber(
         switch (choice) {
             case 0: // Numbers ending in 9
                 num = Math.floor(num / 10) * 10 + 9;
+                if (num > max) num = max; // Clamp to max
                 break;
             case 1: // Numbers ending in 1
                 num = Math.floor(num / 10) * 10 + 1;
+                if (num < min) num = min; // Clamp to min
                 break;
             case 2: // Near powers of 10 (near min or max boundary)
                 if (Math.random() < 0.5) {
-                    num = min - 1 + randomInRange(0, 2); // Close to min
+                    num = min + randomInRange(0, 2); // Close to min
                 } else {
                     num = max - randomInRange(0, 2); // Close to max
                 }
@@ -227,10 +229,11 @@ export function useGameLogic() {
     const [squareRangeType, setSquareRangeType] = useState<'fixed' | 'custom'>('fixed');
     const [customSquareRange, setCustomSquareRange] = useState<[number, number]>([1, 25]);
     const [fractionDenominatorRange, setFractionDenominatorRange] = useState<[number, number]>([2, 10]);
+    const [fractionNumeratorRange, setFractionNumeratorRange] = useState<[number, number]>([1, 9]);
 
     const [dailyProgress, setDailyProgress] = useState(0);
 
-    const fractionLogic = useFractionLogic(fractionDenominatorRange[0], fractionDenominatorRange[1]);
+    const fractionLogic = useFractionLogic(fractionNumeratorRange[0], fractionNumeratorRange[1], fractionDenominatorRange[0], fractionDenominatorRange[1]);
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [num1, setNum1] = useState(0);
@@ -329,8 +332,10 @@ export function useGameLogic() {
             setFractionCorrectAnswer('');
         } else if (mode === 'multiplication-table') {
             let n1 = randomInRange(tableRange[0], tableRange[1]);
-            let n2 = randomInRange(tableRange[0], tableRange[1]);
-            while (n1 === n2) n1 = randomInRange(tableRange[0], tableRange[1]);
+            const n2 = randomInRange(tableRange[0], tableRange[1]);
+            if (tableRange[0] !== tableRange[1]) {
+                while (n1 === n2) n1 = randomInRange(tableRange[0], tableRange[1]);
+            }
             setNum1(n1);
             setNum2(n2);
             setCurrentOperation('×');
@@ -419,7 +424,18 @@ export function useGameLogic() {
         setResults(prev => [...prev, result]);
         if (isCorrect) {
             setScore(prev => prev + 1);
-            setDailyProgress(prev => prev + 1);
+            setDailyProgress(prev => {
+                const today = new Date().toISOString().split('T')[0];
+                const stored = localStorage.getItem('zenmath-daily-progress');
+                let count = prev;
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed.date !== today) count = 0;
+                    } catch { /* ignore */ }
+                }
+                return count + 1;
+            });
         }
         return result;
     }, [num1, num2, currentOperation, correctAnswer, settings.timeLimit, mode, fractionCorrectAnswer]);
@@ -435,20 +451,30 @@ export function useGameLogic() {
         if (mode === 'fraction') {
             userAns = userInput;
             if (!fractionCorrectAnswer.includes('/')) {
-                // Decimal answer: normalize both
+                // Expected answer is decimal (e.g., from fraction to decimal conversion)
                 const u = parseFloat(userInput);
                 const c = parseFloat(fractionCorrectAnswer);
                 isCorrect = !isNaN(u) && Math.abs(u - c) < 0.0001;
             } else {
-                // Fraction answer: literal string match (expect simplified)
+                // Expected answer is fraction (e.g., from decimal to fraction conversion)
+                // Literal string match first
                 isCorrect = userInput === fractionCorrectAnswer;
-                
-                // Optional: handle unsimplified fractions
-                if (!isCorrect && userInput.includes('/')) {
-                    const [uNum, uDen] = userInput.split('/').map(Number);
+
+                if (!isCorrect) {
+                    // Try numeric comparison (handles unsimplified fractions and decimal inputs)
                     const [cNum, cDen] = fractionCorrectAnswer.split('/').map(Number);
-                    if (!isNaN(uNum) && !isNaN(uDen) && uDen !== 0) {
-                        isCorrect = (uNum / uDen) === (cNum / cDen);
+                    const targetVal = cNum / cDen;
+
+                    if (userInput.includes('/')) {
+                        const [uNum, uDen] = userInput.split('/').map(Number);
+                        if (!isNaN(uNum) && !isNaN(uDen) && uDen !== 0) {
+                            isCorrect = Math.abs((uNum / uDen) - targetVal) < 0.0001;
+                        }
+                    } else {
+                        const uVal = parseFloat(userInput);
+                        if (!isNaN(uVal)) {
+                            isCorrect = Math.abs(uVal - targetVal) < 0.0001;
+                        }
                     }
                 }
             }
@@ -546,8 +572,10 @@ export function useGameLogic() {
         // For special modes, generate first question inline
         if (mode === 'multiplication-table') {
             let n1 = randomInRange(range[0], range[1]);
-            let n2 = randomInRange(range[0], range[1]);
-            while (n1 === n2) n1 = randomInRange(range[0], range[1]);
+            const n2 = randomInRange(range[0], range[1]);
+            if (range[0] !== range[1]) {
+                while (n1 === n2) n1 = randomInRange(range[0], range[1]);
+            }
             setNum1(n1);
             setNum2(n2);
             setCurrentOperation('×');
@@ -612,6 +640,7 @@ export function useGameLogic() {
         fractionQuestionDisplay,
         fractionCorrectAnswer,
         fractionDenominatorRange,
+        fractionNumeratorRange,
         // Actions
         selectMode,
         setDifficulty,
@@ -622,6 +651,7 @@ export function useGameLogic() {
         setSquareRangeType,
         setCustomSquareRange,
         setFractionDenominatorRange,
+        setFractionNumeratorRange,
         startGame,
         handleKeyPress,
         goToMenu,

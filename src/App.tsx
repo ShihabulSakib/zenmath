@@ -18,6 +18,7 @@ export default function App() {
         <MainMenu
           onSelect={game.selectMode}
           onSettings={game.goToSettings}
+          game={game}
         />
       )}
 
@@ -32,6 +33,7 @@ export default function App() {
           squareRangeType={game.squareRangeType}
           customSquareRange={game.customSquareRange}
           fractionDenominatorRange={game.fractionDenominatorRange}
+          fractionNumeratorRange={game.fractionNumeratorRange}
           onDigitsChange={game.setDigits}
           onDifficultyChange={game.setDifficulty}
           onAllowRemainderChange={game.setAllowRemainder}
@@ -40,6 +42,7 @@ export default function App() {
           onSquareRangeTypeChange={game.setSquareRangeType}
           onCustomSquareRangeChange={game.setCustomSquareRange}
           onFractionDenominatorRangeChange={game.setFractionDenominatorRange}
+          onFractionNumeratorRangeChange={game.setFractionNumeratorRange}
           onStart={game.startGame}
           onBack={game.goToMenu}
         />

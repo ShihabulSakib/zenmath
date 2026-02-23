@@ -1,15 +1,14 @@
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode } from '../hooks/useGameLogic';
-import { useGameLogic } from '../hooks/useGameLogic';
 
 interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
     onSettings: () => void;
+    game: any;
 }
 
-export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
+export default function MainMenu({ onSelect, onSettings, game }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
-    const game = useGameLogic();
 
     const ops: { mode: GameMode; symbol: string; label: string; color: string; glow: string }[] = [
         { mode: 'addition', symbol: '+', label: 'Addition', color: 'text-blue-500', glow: 'icon-glow-blue' },
@@ -99,8 +98,8 @@ export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
                                 onClick={() => onSelect('fraction')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 group hover:border-primary/50 p-2 text-center"
                             >
-                                <span className="material-symbols-outlined text-xl text-emerald-500 icon-glow-emerald group-hover:scale-110 transition-transform">
-                                    fraction
+                                <span className="text-xl font-bold text-emerald-500 icon-glow-emerald group-hover:scale-110 transition-transform">
+                                    ½
                                 </span>
                                 <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Fractions</span>
                             </button>
@@ -132,7 +131,7 @@ export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
                                                 game.updateSettings({ ...game.settings, dailyGoal: newGoal });
                                             }
                                         }}
-                                        className="w-16 bg-primary/5 text-xl font-black text-primary text-center rounded-xl border border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 px-2 py-2 transition-all"
+                                        className="w-16 bg-primary/5 text-xl font-black text-primary text-center rounded-xl border border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 px-2 py-2 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         placeholder="20"
                                     />
                                 </div>
@@ -140,9 +139,9 @@ export default function MainMenu({ onSelect, onSettings }: MainMenuProps) {
                             </div>
                         </div>
                         <div className="w-full bg-primary/10 rounded-full h-2.5 overflow-hidden">
-                            <div 
-                                className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(13,89,242,0.4)]" 
-                                style={{ width: `${Math.min(100, (game.dailyProgress / (game.settings.dailyGoal || 1)) * 100)}%` }} 
+                            <div
+                                className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(13,89,242,0.4)]"
+                                style={{ width: `${Math.min(100, (game.dailyProgress / (game.settings.dailyGoal || 1)) * 100)}%` }}
                             />
                         </div>
                     </div>

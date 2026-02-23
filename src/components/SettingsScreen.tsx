@@ -19,7 +19,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
     return (
         <div className="flex flex-col h-full animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-12 pb-2 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-between">
                 <button
                     onClick={onBack}
                     className="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors"
@@ -84,7 +84,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                                 max="50"
                                 value={totalQuestions}
                                 onChange={(e) => setTotalQuestions(parseInt(e.target.value))}
-                                className="w-full"
+                                style={{ "--range-progress": `${((totalQuestions - 1) / 49) * 100}%` } as React.CSSProperties}
                             />
                         </div>
                     </div>
@@ -108,7 +108,7 @@ export default function SettingsScreen({ settings, onSave, onBack }: SettingsScr
                                 max="60"
                                 value={timeLimit}
                                 onChange={(e) => setTimeLimit(parseInt(e.target.value))}
-                                className="w-full"
+                                style={{ "--range-progress": `${((timeLimit - 6) / 54) * 100}%` } as React.CSSProperties}
                             />
                         </div>
                     </div>

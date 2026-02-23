@@ -29,10 +29,8 @@ void practiceMath(char operation, int digits, Difficulty diff, bool allowRemaind
 void practiceMixed(int digits, Difficulty diff, bool allowRemainder, bool ops[4]);
 int generateNumber(int digits, Difficulty diff, char operation, bool isSecondNum);
 int generateRandomNumber(int min, int max);
-void clearInputBuffer();
 char* getDifficultyName(Difficulty diff);
 bool getAnswerWithTimeout(int *answer, int timeout);
-void setNonBlockingMode(bool enable);
 void special_mathPractice();
 void specialMultiplication(int min, int max);
 void specialSquare(int min, int max);
@@ -301,13 +299,15 @@ int generateNumber(int digits, Difficulty diff, char operation, bool isSecondNum
         switch(choice) {
             case 0: // Numbers ending in 9
                 num = (num / 10) * 10 + 9;
+                if (num > max) num = max;
                 break;
             case 1: // Numbers ending in 1
                 num = (num / 10) * 10 + 1;
+                if (num < min) num = min;
                 break;
             case 2: // Near powers of 10
                 if(rand() % 2 == 0) {
-                    num = min - 1 + rand() % 3; // Close to min
+                    num = min + rand() % 3; // Close to min
                 } else {
                     num = max - rand() % 3; // Close to max
                 }
@@ -630,8 +630,10 @@ void specialMultiplication(int min, int max){
         // Number Generation
         int num1 = generateRandomNumber(min,max);
         int num2 = generateRandomNumber(min,max);
-        while(num1 == num2){
-            num1 = generateRandomNumber(min,max);
+        if (min != max) {
+            while(num1 == num2){
+                num1 = generateRandomNumber(min,max);
+            }
         }
         int result = num1 * num2;
         //Question Display

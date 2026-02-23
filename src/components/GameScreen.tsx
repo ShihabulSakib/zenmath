@@ -1,4 +1,5 @@
 import Keypad from './Keypad';
+import type { GameMode } from '../hooks/useGameLogic';
 
 interface GameScreenProps {
     num1: number;
