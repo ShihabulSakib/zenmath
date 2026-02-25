@@ -20,7 +20,8 @@ export type ScreenState =
     | 'special-menu'
     | 'playing'
     | 'result'
-    | 'settings';
+    | 'settings'
+    | 'revision';
 
 export interface QuestionResult {
     num1: number;
@@ -219,7 +220,38 @@ function saveSettings(settings: GameSettings) {
 
 // ─── Hook ───────────────────────────────────────────────────
 export function useGameLogic() {
-    const [screen, setScreen] = useState<ScreenState>('menu');
+    const [screen, setScreenInternal] = useState<ScreenState>(() => {
+        const hash = window.location.hash.replace('#', '') as ScreenState;
+        const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision'];
+        return validScreens.includes(hash) ? hash : 'menu';
+    });
+
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash.replace('#', '') as ScreenState;
+            const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision'];
+            if (validScreens.includes(hash)) {
+                setScreenInternal(hash);
+            } else if (!window.location.hash) {
+                setScreenInternal('menu');
+            }
+        };
+
+        handleHashChange();
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
+
+    const setScreen = useCallback((newScreen: ScreenState) => {
+        if (newScreen === 'menu') {
+            history.pushState(null, '', window.location.pathname);
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+        } else {
+            window.location.hash = newScreen;
+        }
+        setScreenInternal(newScreen);
+    }, []);
     const [mode, setMode] = useState<GameMode>('addition');
     const [difficulty, setDifficulty] = useState<Difficulty>('medium');
     const [digits, setDigits] = useState(1);
@@ -385,14 +417,10 @@ export function useGameLogic() {
         setScreen('playing');
         generateNextQuestion(1);
         startTimer();
-    }, [generateNextQuestion, startTimer]);
+    }, [generateNextQuestion, startTimer, setScreen]);
 
     const advanceToNext = useCallback(() => {
-        const totalQ = (mode === 'multiplication-table')
-            ? 10
-            : (mode === 'square')
-                ? 5
-                : settings.totalQuestions;
+        const totalQ = settings.totalQuestions;
 
         if (currentQuestion >= totalQ) {
             stopTimer();
@@ -413,7 +441,7 @@ export function useGameLogic() {
             generateNextQuestion(currentQuestion + 1);
             startTimer();
         }
-    }, [currentQuestion, mode, settings.totalQuestions, generateNextQuestion, startTimer, stopTimer]);
+    }, [currentQuestion, settings.totalQuestions, generateNextQuestion, startTimer, stopTimer, setScreen]);
 
     const recordResult = useCallback((
         isCorrect: boolean,
@@ -544,7 +572,7 @@ export function useGameLogic() {
         setFeedback('none');
         setUserInput('');
         isProcessingRef.current = false;
-    }, [stopTimer]);
+    }, [stopTimer, setScreen]);
 
     const selectMode = useCallback((m: GameMode) => {
         setMode(m);
@@ -555,9 +583,10 @@ export function useGameLogic() {
         } else {
             setScreen('setup');
         }
-    }, []);
+    }, [setScreen]);
 
-    const goToSettings = useCallback(() => setScreen('settings'), []);
+    const goToSettings = useCallback(() => setScreen('settings'), [setScreen]);
+    const goToRevision = useCallback(() => setScreen('revision'), [setScreen]);
 
     const updateSettings = useCallback((newSettings: GameSettings) => {
         setSettings(newSettings);
@@ -592,14 +621,10 @@ export function useGameLogic() {
         setCurrentQuestion(1);
         isProcessingRef.current = false;
         startTimer();
-    }, [mode, startTimer]);
+    }, [mode, startTimer, setScreen]);
 
     // ── Computed values ─────────────────────────────────────
-    const totalQuestions = (mode === 'multiplication-table')
-        ? 10
-        : (mode === 'square')
-            ? 5
-            : settings.totalQuestions;
+    const totalQuestions = settings.totalQuestions;
 
     const avgTime = results.length > 0
         ? results.reduce((sum, r) => sum + r.timeTaken, 0) / results.length
@@ -656,6 +681,7 @@ export function useGameLogic() {
         handleKeyPress,
         goToMenu,
         goToSettings,
+        goToRevision,
         updateSettings,
         selectTableRange,
     };

@@ -1,13 +1,15 @@
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode } from '../hooks/useGameLogic';
+import { BookOpen } from 'lucide-react';
 
 interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
     onSettings: () => void;
+    onRevision: () => void;
     game: any;
 }
 
-export default function MainMenu({ onSelect, onSettings, game }: MainMenuProps) {
+export default function MainMenu({ onSelect, onSettings, onRevision, game }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
 
     const ops: { mode: GameMode; symbol: string; label: string; color: string; glow: string }[] = [
@@ -157,6 +159,14 @@ export default function MainMenu({ onSelect, onSettings, game }: MainMenuProps) 
                             <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
                         </div>
                         <span className="text-[10px] font-medium text-primary tracking-wide">Practice</span>
+                    </button>
+
+                    <button
+                        onClick={onRevision}
+                        className="flex flex-col items-center gap-1 p-2 text-primary"
+                    >
+                        <BookOpen size={24} />
+                        <span className="text-[10px] font-medium tracking-wide">Revision</span>
                     </button>
 
                     <button

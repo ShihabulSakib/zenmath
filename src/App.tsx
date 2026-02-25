@@ -6,6 +6,7 @@ import GameScreen from './components/GameScreen';
 import ResultsScreen from './components/ResultsScreen';
 import SettingsScreen from './components/SettingsScreen';
 import SpecialMenu from './components/SpecialMenu';
+import RevisionScreen from './components/RevisionScreen';
 // import { useFractionLogic } from './hooks/useFractionLogic'; // Remove import useFractionLogic
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
         <MainMenu
           onSelect={game.selectMode}
           onSettings={game.goToSettings}
+          onRevision={game.goToRevision}
           game={game}
         />
       )}
@@ -85,6 +87,10 @@ export default function App() {
           onPlayAgain={game.startGame}
           onMenu={game.goToMenu}
         />
+      )}
+
+      {game.screen === 'revision' && (
+        <RevisionScreen onBack={game.goToMenu} />
       )}
 
       {game.screen === 'settings' && (
