@@ -74,6 +74,9 @@ export default function App() {
           mode={game.mode}
           fractionQuestionDisplay={game.fractionQuestionDisplay}
           fractionCorrectAnswer={game.fractionCorrectAnswer}
+          ttsEnabled={game.settings.ttsEnabled}
+          listenOnlyMode={game.settings.ttsEnabled && game.settings.listenOnlyMode}
+          onSpeak={game.speakCurrentQuestion}
         />
       )}
 
@@ -98,6 +101,7 @@ export default function App() {
           settings={game.settings}
           onSave={game.updateSettings}
           onBack={game.goToMenu}
+          audioSpriteLoaded={game.audioSpriteLoaded}
         />
       )}
     </ZenLayout>

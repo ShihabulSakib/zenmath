@@ -1,0 +1,217 @@
+{
+  "resources": [
+    "game_audio_sprite.mp3"
+  ],
+  "spritemap": {
+    "0": {
+      "start": 0,
+      "end": 600,
+      "loop": false
+    },
+    "10": {
+      "start": 6610,
+      "end": 7180,
+      "loop": false
+    },
+    "11": {
+      "start": 7280,
+      "end": 7880,
+      "loop": false
+    },
+    "12": {
+      "start": 7980,
+      "end": 8610,
+      "loop": false
+    },
+    "13": {
+      "start": 8710,
+      "end": 9460,
+      "loop": false
+    },
+    "14": {
+      "start": 9560,
+      "end": 10310,
+      "loop": false
+    },
+    "15": {
+      "start": 10410,
+      "end": 11190,
+      "loop": false
+    },
+    "16": {
+      "start": 11290,
+      "end": 12130,
+      "loop": false
+    },
+    "17": {
+      "start": 12230,
+      "end": 13160,
+      "loop": false
+    },
+    "18": {
+      "start": 13260,
+      "end": 13980,
+      "loop": false
+    },
+    "19": {
+      "start": 14080,
+      "end": 14891,
+      "loop": false
+    },
+    "20": {
+      "start": 14991,
+      "end": 15591,
+      "loop": false
+    },
+    "30": {
+      "start": 15691,
+      "end": 16291,
+      "loop": false
+    },
+    "40": {
+      "start": 16391,
+      "end": 17051,
+      "loop": false
+    },
+    "50": {
+      "start": 17151,
+      "end": 17871,
+      "loop": false
+    },
+    "60": {
+      "start": 17971,
+      "end": 18721,
+      "loop": false
+    },
+    "70": {
+      "start": 18821,
+      "end": 19632,
+      "loop": false
+    },
+    "80": {
+      "start": 19732,
+      "end": 20272,
+      "loop": false
+    },
+    "90": {
+      "start": 20372,
+      "end": 21122,
+      "loop": false
+    },
+    "01": {
+      "start": 700,
+      "end": 1180,
+      "loop": false
+    },
+    "02": {
+      "start": 1280,
+      "end": 1760,
+      "loop": false
+    },
+    "03": {
+      "start": 1860,
+      "end": 2370,
+      "loop": false
+    },
+    "04": {
+      "start": 2470,
+      "end": 3040,
+      "loop": false
+    },
+    "05": {
+      "start": 3140,
+      "end": 3740,
+      "loop": false
+    },
+    "06": {
+      "start": 3840,
+      "end": 4470,
+      "loop": false
+    },
+    "07": {
+      "start": 4570,
+      "end": 5200,
+      "loop": false
+    },
+    "08": {
+      "start": 5300,
+      "end": 5750,
+      "loop": false
+    },
+    "09": {
+      "start": 5850,
+      "end": 6510,
+      "loop": false
+    },
+    "correct": {
+      "start": 21222,
+      "end": 21882,
+      "loop": false
+    },
+    "dividedby": {
+      "start": 21982,
+      "end": 23002,
+      "loop": false
+    },
+    "fraction": {
+      "start": 23102,
+      "end": 23942,
+      "loop": false
+    },
+    "hundred": {
+      "start": 24042,
+      "end": 24732,
+      "loop": false
+    },
+    "incorrect": {
+      "start": 24832,
+      "end": 25612,
+      "loop": false
+    },
+    "million": {
+      "start": 25712,
+      "end": 26582,
+      "loop": false
+    },
+    "minus": {
+      "start": 26682,
+      "end": 27432,
+      "loop": false
+    },
+    "over": {
+      "start": 27532,
+      "end": 28102,
+      "loop": false
+    },
+    "plus": {
+      "start": 28202,
+      "end": 28802,
+      "loop": false
+    },
+    "point": {
+      "start": 28902,
+      "end": 29412,
+      "loop": false
+    },
+    "squared": {
+      "start": 29512,
+      "end": 30262,
+      "loop": false
+    },
+    "thousand": {
+      "start": 30362,
+      "end": 31232,
+      "loop": false
+    },
+    "times": {
+      "start": 31332,
+      "end": 32112,
+      "loop": false
+    },
+    "tryagain": {
+      "start": 32212,
+      "end": 32992,
+      "loop": false
+    }
+  }
+}

@@ -10,12 +10,15 @@ interface GameScreenProps {
     currentQuestion: number;
     totalQuestions: number;
     feedback: 'none' | 'correct' | 'incorrect' | 'timeout';
-    correctAnswer: number | string; // Updated to allow string for fractions
+    correctAnswer: number | string;
     onKey: (key: string) => void;
     onQuit: () => void;
     mode: GameMode;
-    fractionQuestionDisplay: string; // New prop
-    fractionCorrectAnswer: string; // New prop
+    fractionQuestionDisplay: string;
+    fractionCorrectAnswer: string;
+    ttsEnabled: boolean;
+    listenOnlyMode: boolean;
+    onSpeak: () => void;
 }
 
 export default function GameScreen({
@@ -31,8 +34,11 @@ export default function GameScreen({
     onKey,
     onQuit,
     mode, // Destructure mode prop
-    fractionQuestionDisplay, // Destructure new prop
-    fractionCorrectAnswer, // Destructure new prop
+    fractionQuestionDisplay,
+    fractionCorrectAnswer,
+    ttsEnabled,
+    listenOnlyMode,
+    onSpeak,
 }: GameScreenProps) {
     const progress = ((currentQuestion - 1) / totalQuestions) * 100;
     const isSquareOp = operation === '²';
@@ -70,13 +76,24 @@ export default function GameScreen({
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono tracking-wider text-muted uppercase">
                         <span>Q {currentQuestion}/{totalQuestions}</span>
-                        <button
-                            onClick={onQuit}
-                            className="flex items-center gap-1 text-muted"
-                        >
-                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
-                            <span>Quit</span>
-                        </button>
+                        <div className="flex items-center gap-3">
+                            {ttsEnabled && (
+                                <button
+                                    onClick={onSpeak}
+                                    className="flex items-center justify-center p-1 rounded-full active:scale-90 transition-transform"
+                                    aria-label="Replay question audio"
+                                >
+                                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>volume_up</span>
+                                </button>
+                            )}
+                            <button
+                                onClick={onQuit}
+                                className="flex items-center gap-1 text-muted"
+                            >
+                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+                                <span>Quit</span>
+                            </button>
+                        </div>
                     </div>
                 </header>
 
@@ -88,7 +105,12 @@ export default function GameScreen({
                     <div className="relative z-10 flex flex-col items-center gap-8">
                         {/* Question */}
                         <h1 className="font-mono text-5xl sm:text-6xl font-bold text-main tracking-tight text-center leading-tight">
-                            {mode === 'fraction' ? (
+                            {listenOnlyMode && feedback === 'none' ? (
+                                <div className="flex flex-col items-center gap-3">
+                                    <span className="material-symbols-outlined text-primary/30" style={{ fontSize: 48, fontVariationSettings: "'FILL' 1" }}>headphones</span>
+                                    <span className="text-lg font-medium text-secondary/50 tracking-wide">Listen...</span>
+                                </div>
+                            ) : mode === 'fraction' ? (
                                 <>{fractionQuestionDisplay}</>
                             ) : isSquareOp ? (
                                 <>

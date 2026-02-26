@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFractionLogic } from './useFractionLogic'; // Import useFractionLogic
+import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
+import { audioSpritePlayer } from '../services/audio';
+import { problemToSpriteKeys } from '../utils/mathSpeech';
 
 // ─── Types ──────────────────────────────────────────────────
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -38,6 +41,12 @@ export interface GameSettings {
     totalQuestions: number;
     timeLimit: number;
     dailyGoal: number;
+    ttsEnabled: boolean;
+    audioSpriteEnabled: boolean;
+    spriteSpeed: number;
+    listenOnlyMode: boolean;
+    speechRate: number;
+    preferredVoiceURI: string;
 }
 
 export interface GameState {
@@ -208,10 +217,16 @@ function loadSettings(): GameSettings {
                 totalQuestions: Math.min(50, Math.max(1, parsed.totalQuestions || 5)),
                 timeLimit: Math.min(60, Math.max(5, parsed.timeLimit || 20)),
                 dailyGoal: Math.min(100, Math.max(1, parsed.dailyGoal || 20)),
+                ttsEnabled: typeof parsed.ttsEnabled === 'boolean' ? parsed.ttsEnabled : false,
+                audioSpriteEnabled: typeof parsed.audioSpriteEnabled === 'boolean' ? parsed.audioSpriteEnabled : false,
+                spriteSpeed: Math.min(2.0, Math.max(0.5, parsed.spriteSpeed || 1.0)),
+                listenOnlyMode: typeof parsed.listenOnlyMode === 'boolean' ? parsed.listenOnlyMode : false,
+                speechRate: Math.min(2.0, Math.max(0.5, parsed.speechRate || 1.0)),
+                preferredVoiceURI: parsed.preferredVoiceURI || '',
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5 };
+    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: 1.0, listenOnlyMode: false, speechRate: 1.0, preferredVoiceURI: '' };
 }
 
 function saveSettings(settings: GameSettings) {
@@ -285,6 +300,15 @@ export function useGameLogic() {
 
     const [tableRange, setTableRange] = useState<[number, number]>([1, 10]);
     const [settings, setSettings] = useState<GameSettings>(loadSettings);
+    const [audioSpriteLoaded, setAudioSpriteLoaded] = useState(false);
+
+    // ── Audio Sprite Initialization ─────────────────────────
+    useEffect(() => {
+        audioSpritePlayer.load('/audio/game_audio_sprite.wav', '/audio/game_audio_sprite_wav.json')
+            .then(() => {
+                setAudioSpriteLoaded(audioSpritePlayer.isLoaded);
+            });
+    }, []);
 
     // ── Daily Progress Persistence ─────────────────────────
     useEffect(() => {
@@ -347,6 +371,8 @@ export function useGameLogic() {
     useEffect(() => {
         return () => {
             stopTimer();
+            cancelSpeech();
+            audioSpritePlayer.stop();
             if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
         };
     }, [stopTimer]);
@@ -410,6 +436,32 @@ export function useGameLogic() {
         isProcessingRef.current = false;
     }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange, fractionLogic, allowNegativeResults, squareRangeType, customSquareRange]);
 
+    // ── TTS: Auto-speak on new question ─────────────────────
+    const speakCurrentQuestion = useCallback(() => {
+        if (!settings.ttsEnabled) return;
+
+        // Prefer Audio Sprite if enabled and loaded
+        if (settings.audioSpriteEnabled && audioSpriteLoaded) {
+            const keys = problemToSpriteKeys(num1, currentOperation, num2, mode, fractionQuestionDisplay);
+            if (keys.length > 0) {
+                audioSpritePlayer.playbackRate = settings.spriteSpeed;
+                audioSpritePlayer.playSequence(keys);
+                return;
+            }
+            // Fallback to Web Speech if sprite keys couldn't be generated
+        }
+
+        // Web Speech API fallback
+        const text = translateMathToText(num1, num2, currentOperation, mode, fractionQuestionDisplay);
+        speakQuestion(text, settings.speechRate, settings.preferredVoiceURI);
+    }, [num1, num2, currentOperation, mode, fractionQuestionDisplay, settings.ttsEnabled, settings.audioSpriteEnabled, settings.spriteSpeed, settings.speechRate, settings.preferredVoiceURI, audioSpriteLoaded]);
+
+    useEffect(() => {
+        if (screen === 'playing' && feedback === 'none' && currentQuestion > 0) {
+            speakCurrentQuestion();
+        }
+    }, [currentQuestion, screen]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // ── Game flow ───────────────────────────────────────────
     const startGame = useCallback(() => {
         setResults([]);
@@ -472,6 +524,8 @@ export function useGameLogic() {
         if (isProcessingRef.current || feedback !== 'none' || userInput === '') return;
         isProcessingRef.current = true;
         stopTimer();
+        audioSpritePlayer.stop();
+        cancelSpeech();
 
         let isCorrect: boolean;
         let userAns: number | string | null = null;
@@ -522,6 +576,8 @@ export function useGameLogic() {
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
         stopTimer();
+        audioSpritePlayer.stop();
+        cancelSpeech();
         recordResult(false, null, true);
         setFeedback('timeout');
         feedbackTimeoutRef.current = setTimeout(() => {
@@ -567,6 +623,8 @@ export function useGameLogic() {
     // ── Navigation ──────────────────────────────────────────
     const goToMenu = useCallback(() => {
         stopTimer();
+        cancelSpeech();
+        audioSpritePlayer.stop();
         if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
         setScreen('menu');
         setFeedback('none');
@@ -684,5 +742,7 @@ export function useGameLogic() {
         goToRevision,
         updateSettings,
         selectTableRange,
+        speakCurrentQuestion,
+        audioSpriteLoaded,
     };
 }
