@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { GameSettings } from '../hooks/useGameLogic';
-import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
+import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../Utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 
 interface SettingsScreenProps {

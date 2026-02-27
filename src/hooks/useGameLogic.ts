@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFractionLogic } from './useFractionLogic'; // Import useFractionLogic
-import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
+import { speakQuestion, translateMathToText, cancelSpeech } from '../Utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { problemToSpriteKeys } from '../utils/mathSpeech';
 
