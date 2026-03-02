@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useFractionLogic } from './useFractionLogic'; // Import useFractionLogic
-import { speakQuestion, translateMathToText, cancelSpeech } from '../Utils/speech';
+import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { problemToSpriteKeys } from '../utils/mathSpeech';
 
@@ -220,7 +220,7 @@ function loadSettings(): GameSettings {
                 ttsEnabled: typeof parsed.ttsEnabled === 'boolean' ? parsed.ttsEnabled : false,
                 audioSpriteEnabled: typeof parsed.audioSpriteEnabled === 'boolean' ? parsed.audioSpriteEnabled : false,
                 spriteSpeed: Math.min(2.0, Math.max(0.5, parsed.spriteSpeed || 1.0)),
-                listenOnlyMode: typeof parsed.listenOnlyMode === 'boolean' ? parsed.listenOnlyMode : false,
+                listenOnlyMode: (typeof parsed.ttsEnabled === 'boolean' ? parsed.ttsEnabled : false) ? (typeof parsed.listenOnlyMode === 'boolean' ? parsed.listenOnlyMode : true) : false,
                 speechRate: Math.min(2.0, Math.max(0.5, parsed.speechRate || 1.0)),
                 preferredVoiceURI: parsed.preferredVoiceURI || '',
             };
