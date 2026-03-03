@@ -54,7 +54,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                     onClick={() => { cancelSpeech(); onBack(); }}
                     className="flex items-center justify-center p-2 -ml-2 rounded-full"
                 >
-                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
+                    <span className="material-symbols-outlined text-main" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
                 </button>
                 <h1 className="text-xl font-bold tracking-tight text-center flex-1 pr-10 text-main">
                     Settings
@@ -102,10 +102,9 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         Questions per Session
                     </h3>
                     <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
-                        <div className="flex justify-between text-[10px] font-black text-secondary mb-8 px-2 uppercase tracking-widest opacity-60">
-                            <span>1</span>
-                            <span className="text-sm text-primary font-black scale-125">{totalQuestions}</span>
-                            <span>50</span>
+                        <div className="flex justify-between items-center mb-8 px-1">
+                            <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-60">Selection</span>
+                            <span className="bg-primary text-black px-3 py-1 rounded-lg text-xs font-bold">{totalQuestions} Questions</span>
                         </div>
                         <div className="px-2">
                             <input
@@ -117,6 +116,10 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                 style={{ "--range-progress": `${((totalQuestions - 1) / 49) * 100}%` } as React.CSSProperties}
                             />
                         </div>
+                        <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
+                            <span>1</span>
+                            <span>50</span>
+                        </div>
                     </div>
                 </section>
 
@@ -126,10 +129,9 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         Time per Question
                     </h3>
                     <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
-                        <div className="flex justify-between text-[10px] font-black text-secondary mb-8 px-2 uppercase tracking-widest opacity-60">
-                            <span>5s</span>
-                            <span className="text-sm text-primary font-black scale-125">{timeLimit}s</span>
-                            <span>60s</span>
+                        <div className="flex justify-between items-center mb-8 px-1">
+                            <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-60">Time Limit</span>
+                            <span className="bg-primary text-black px-3 py-1 rounded-lg text-xs font-bold">{timeLimit} Seconds</span>
                         </div>
                         <div className="px-2">
                             <input
@@ -140,6 +142,10 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                 onChange={(e) => setTimeLimit(parseInt(e.target.value))}
                                 style={{ "--range-progress": `${((timeLimit - 6) / 54) * 100}%` } as React.CSSProperties}
                             />
+                        </div>
+                        <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
+                            <span>6s</span>
+                            <span>60s</span>
                         </div>
                     </div>
                 </section>
@@ -162,7 +168,13 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => setTtsEnabled(!ttsEnabled)}
+                                    onClick={() => {
+                                        const newTtsState = !ttsEnabled;
+                                        setTtsEnabled(newTtsState);
+                                        // When enabling TTS, default Listen Only to ON.
+                                        // When disabling TTS, Listen Only must also be OFF.
+                                        setListenOnlyMode(newTtsState);
+                                    }}
                                     className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${ttsEnabled ? 'bg-primary' : 'bg-toggle-off'}`}
                                     role="switch"
                                     aria-checked={ttsEnabled}
@@ -323,7 +335,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
             <div className="fixed bottom-0 left-0 w-full bg-header backdrop-blur-xl p-5 pb-10 z-20">
                 <button
                     onClick={handleSave}
-                    className="w-full bg-primary text-white font-bold text-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/30 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-black font-bold text-lg py-4 px-6 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <span>Save Settings</span>
                 </button>

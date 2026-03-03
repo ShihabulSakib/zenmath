@@ -1,6 +1,20 @@
-DARK THEME = #1A3636
-	     #40534C
-	     #677D6A
-LIGHT THEME = #b29170
-	      #635c47
-	      #162b28
+PROFESSIONAL SLATE ZEN PALETTE
+
+DARK THEME (Default):
+- Surface (BG): #0F172A (Slate 950)
+- Card:        #1E293B (Slate 800)
+- Accent:      #2DD4BF (Teal 400)
+- Text Main:   #F8FAFC (Slate 50)
+- Text Sec:    #94A3B8 (Slate 400)
+
+LIGHT THEME:
+- Surface (BG): #F8FAFC (Slate 50)
+- Card:        #FFFFFF
+- Accent:      #0F172A (Slate 950)
+- Text Main:   #0F172A
+- Text Sec:    #475569 (Slate 600)
+
+FEEDBACK:
+- Correct:     #10B981 (Emerald 500)
+- Incorrect:   #F43F5E (Rose 500)
+- Timeout:     #F59E0B (Amber 500)

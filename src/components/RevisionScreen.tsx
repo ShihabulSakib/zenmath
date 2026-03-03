@@ -181,11 +181,11 @@ export default function RevisionScreen({ onBack }: RevisionScreenProps) {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold transition-all duration-200 ${isActive
-                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                    ? 'bg-primary text-black'
                                     : 'text-secondary'
                                     }`}
                             >
-                                <Icon size={14} />
+                                <Icon size={14} className={isActive ? "text-black" : ""} />
                                 <span>{tab.label}</span>
                             </button>
                         );

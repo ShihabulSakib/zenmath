@@ -87,9 +87,9 @@ export default function ResultsScreen({
                 <div className="flex flex-col w-full gap-3">
                     <button
                         onClick={onPlayAgain}
-                        className="w-full flex items-center justify-center gap-2 h-14 bg-primary text-white text-base font-black rounded-xl shadow-lg shadow-primary/30"
+                        className="w-full flex items-center justify-center gap-2 h-14 bg-primary text-black text-base font-black rounded-xl active:scale-[0.98]"
                     >
-                        <span className="material-symbols-outlined text-xl">refresh</span>
+                        <span className="material-symbols-outlined text-xl text-black">refresh</span>
                         <span className="uppercase tracking-widest text-sm">Retry Session</span>
                     </button>
                     <button
