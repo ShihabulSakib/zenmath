@@ -6,6 +6,11 @@ export function isTTSSupported(): boolean {
     return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
+// Pre-warm the voices list
+if (isTTSSupported()) {
+    window.speechSynthesis.getVoices();
+}
+
 /** Cancel any ongoing speech */
 export function cancelSpeech(): void {
     if (isTTSSupported()) {
@@ -62,27 +67,43 @@ export function speakQuestion(
     // Cancel pending speech to prevent overlap
     window.speechSynthesis.cancel();
 
+    // Create utterance
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = rate;
-    utterance.pitch = 1.0;
+    
+    // Set basic properties
     utterance.volume = 1.0;
+    utterance.pitch = 1.0;
+    utterance.rate = Math.max(0.1, Math.min(10, rate));
 
     // Try to find the preferred voice
     if (voiceURI) {
         const voices = window.speechSynthesis.getVoices();
-        const preferred = voices.find(v => v.voiceURI === voiceURI);
-        if (preferred) {
-            utterance.voice = preferred;
+        
+        // Match by URI first
+        let voice = voices.find(v => v.voiceURI === voiceURI);
+        
+        // If not found by URI, try to find a similar one by name (sometimes URIs change slightly)
+        if (!voice) {
+            const voiceName = voiceURI.split(' - ')[0]; // Heuristic for some browsers
+            voice = voices.find(v => v.name === voiceName || v.name.includes(voiceName));
         }
-        // If preferred not found, fall back to first local voice or default
-        if (!preferred) {
-            const fallback = voices.find(v => v.localService && v.lang.startsWith(navigator.language.split('-')[0]));
+
+        if (voice) {
+            utterance.voice = voice;
+            utterance.lang = voice.lang; // Match language to the voice explicitly
+        } else {
+            // Fallback: match by language if preferred is missing
+            const userLang = navigator.language.split('-')[0];
+            const fallback = voices.find(v => v.lang.startsWith(userLang) && v.localService) 
+                          || voices.find(v => v.lang.startsWith(userLang));
             if (fallback) {
                 utterance.voice = fallback;
+                utterance.lang = fallback.lang;
             }
         }
     }
 
+    // Speak!
     window.speechSynthesis.speak(utterance);
 }
 

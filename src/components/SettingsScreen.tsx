@@ -203,22 +203,25 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                         <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>speed</span>
                                         <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Voice Speed</span>
                                     </div>
-                                    <span className="text-sm text-primary font-black">{spriteSpeed.toFixed(1)}×</span>
+                                    <span className="text-sm text-primary font-black">{spriteSpeed.toFixed(2)}×</span>
                                 </div>
                                 <div className="px-2">
                                     <input
                                         type="range"
-                                        min="0.5"
-                                        max="2.0"
-                                        step="0.1"
+                                        min="1"
+                                        max="2"
+                                        step="0.25"
                                         value={spriteSpeed}
                                         onChange={(e) => setSpriteSpeed(parseFloat(e.target.value))}
-                                        style={{ "--range-progress": `${((spriteSpeed - 0.5) / 1.5) * 100}%` } as React.CSSProperties}
+                                        style={{ "--range-progress": `${((spriteSpeed - 1) / 1) * 100}%` } as React.CSSProperties}
                                     />
                                 </div>
                                 <div className="flex justify-between text-[10px] font-black text-secondary mt-2 px-2 uppercase tracking-widest opacity-40">
-                                    <span>Slow</span>
-                                    <span>Fast</span>
+                                    <span>1.0x</span>
+                                    <span>1.25x</span>
+                                    <span>1.5x</span>
+                                    <span>1.75x</span>
+                                    <span>2.0x</span>
                                 </div>
                             </div>
                         )}
@@ -255,22 +258,23 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                             <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>speed</span>
                                             <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Speed</span>
                                         </div>
-                                        <span className="text-sm text-primary font-black">{speechRate.toFixed(1)}×</span>
+                                        <span className="text-sm text-primary font-black">{speechRate.toFixed(2)}×</span>
                                     </div>
                                     <div className="px-2">
                                         <input
                                             type="range"
-                                            min="0.5"
+                                            min="0.25"
                                             max="2.0"
-                                            step="0.1"
+                                            step="0.25"
                                             value={speechRate}
                                             onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                                            style={{ "--range-progress": `${((speechRate - 0.5) / 1.5) * 100}%` } as React.CSSProperties}
+                                            style={{ "--range-progress": `${((speechRate - 0.25) / 1.75) * 100}%` } as React.CSSProperties}
                                         />
                                     </div>
                                     <div className="flex justify-between text-[10px] font-black text-secondary mt-2 px-2 uppercase tracking-widest opacity-40">
-                                        <span>Slow</span>
-                                        <span>Fast</span>
+                                        <span>0.25x</span>
+                                        <span>1.0x</span>
+                                        <span>2.0x</span>
                                     </div>
                                 </div>
 

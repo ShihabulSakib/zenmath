@@ -304,7 +304,7 @@ export function useGameLogic() {
 
     // ── Audio Sprite Initialization ─────────────────────────
     useEffect(() => {
-        audioSpritePlayer.load('/audio/game_audio_sprite.wav', '/audio/game_audio_sprite_wav.json')
+        audioSpritePlayer.load()
             .then(() => {
                 setAudioSpriteLoaded(audioSpritePlayer.isLoaded);
             });
