@@ -104,7 +104,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                     <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
                         <div className="flex justify-between items-center mb-8 px-1">
                             <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-60">Selection</span>
-                            <span className="bg-primary text-black px-3 py-1 rounded-lg text-xs font-bold">{totalQuestions} Questions</span>
+                            <span className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-bold">{totalQuestions} Questions</span>
                         </div>
                         <div className="px-2">
                             <input
@@ -131,7 +131,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                     <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
                         <div className="flex justify-between items-center mb-8 px-1">
                             <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-60">Time Limit</span>
-                            <span className="bg-primary text-black px-3 py-1 rounded-lg text-xs font-bold">{timeLimit} Seconds</span>
+                            <span className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-bold">{timeLimit} Seconds</span>
                         </div>
                         <div className="px-2">
                             <input
@@ -335,7 +335,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
             <div className="fixed bottom-0 left-0 w-full bg-header backdrop-blur-xl p-5 pb-10 z-20">
                 <button
                     onClick={handleSave}
-                    className="w-full bg-primary text-black font-bold text-lg py-4 px-6 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-on-primary font-bold text-lg py-4 px-6 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <span>Save Settings</span>
                 </button>

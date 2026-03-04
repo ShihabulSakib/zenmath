@@ -2,8 +2,10 @@
 
 @theme {
   /* Zen Obsidian — Minimalist Dark Palette */
-  --color-midnight-bg: #000000; /* OLED Black */
-  --color-midnight-card: #121214; /* Deep Zinc */
+  --color-midnight-bg: #000000;
+  /* OLED Black */
+  --color-midnight-card: #121214;
+  /* Deep Zinc */
   --color-midnight-card-hover: #1C1C1F;
   --color-midnight-border: rgba(255, 255, 255, 0.05);
 
@@ -14,16 +16,20 @@
   --color-light-border: rgba(0, 0, 0, 0.05);
 
   /* Primary — Soft Silver Accent */
-  --color-primary: #E4E4E7; /* Zinc 200 */
+  --color-primary: #E4E4E7;
+  /* Zinc 200 */
   --color-primary-soft: rgba(228, 228, 231, 0.08);
   --color-primary-glow: rgba(255, 255, 255, 0.12);
 
   /* Feedback — Muted Semantic Tones */
-  --color-correct: #4ADE80; /* Muted Green */
+  --color-correct: #4ADE80;
+  /* Muted Green */
   --color-correct-soft: rgba(74, 222, 128, 0.08);
-  --color-incorrect: #F87171; /* Muted Red */
+  --color-incorrect: #F87171;
+  /* Muted Red */
   --color-incorrect-soft: rgba(248, 113, 113, 0.08);
-  --color-timeout: #FB923C; /* Muted Orange */
+  --color-timeout: #FB923C;
+  /* Muted Orange */
   --color-timeout-soft: rgba(251, 146, 60, 0.08);
 
   /* Fonts */
@@ -80,11 +86,13 @@ html.dark .text-main {
 }
 
 html.dark .text-secondary {
-  color: #71717A; /* Zinc 400 */
+  color: #71717A;
+  /* Zinc 400 */
 }
 
 html.dark .text-muted {
-  color: #3F3F46; /* Zinc 700 */
+  color: #3F3F46;
+  /* Zinc 700 */
 }
 
 html.dark .bg-header {
@@ -121,6 +129,15 @@ html.dark .bg-stat-card {
 
 html.dark .border-stat {
   border-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Text/bg on primary background — ensures contrast */
+html.dark .text-on-primary {
+  color: #09090B;
+}
+
+html.dark .bg-on-primary {
+  background-color: #09090B;
 }
 
 /* Make Material Symbols icons more colorful in dark mode */
@@ -204,6 +221,14 @@ html.light .bg-stat-card {
 
 html.light .border-stat {
   border-color: rgba(0, 0, 0, 0.03);
+}
+
+html.light .text-on-primary {
+  color: #FAFAFA;
+}
+
+html.light .bg-on-primary {
+  background-color: #FAFAFA;
 }
 
 /* ── Scrollbar ─────────────────────────────────── */

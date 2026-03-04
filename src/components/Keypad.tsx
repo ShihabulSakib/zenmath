@@ -22,13 +22,13 @@ const KeyButton = ({ k, label, isPrimary, isAction, disabled, onClick, className
         disabled={disabled}
         className={`active:scale-[0.92] transition-all duration-100 flex items-center justify-center rounded-xl border shadow-sm disabled:opacity-40 h-full w-full
             ${isPrimary
-                ? 'bg-primary text-black border-primary'
+                ? 'bg-primary text-on-primary border-primary'
                 : isAction
                     ? 'bg-keypad-btn border-keypad-border text-keypad-text/70'
                     : 'bg-keypad-btn border-keypad-border text-keypad-text'
             } ${className || ''}`}
     >
-        <span className={`${isAction ? "material-symbols-outlined" : "text-[22px] font-semibold"} ${isPrimary ? "!text-black" : ""}`}>
+        <span className={`${isAction ? "material-symbols-outlined" : "text-[22px] font-semibold"} ${isPrimary ? "!text-on-primary" : ""}`}>
             {label || k}
         </span>
     </button>

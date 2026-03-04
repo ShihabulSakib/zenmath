@@ -137,7 +137,7 @@ export default function GameSetup({
                                     key={d}
                                     onClick={() => onDigitsChange(d)}
                                     className={`flex-1 aspect-square max-w-[64px] rounded-2xl font-bold text-xl transition-all duration-200 ${digits === d
-                                        ? 'bg-primary text-black scale-105'
+                                        ? 'bg-primary text-on-primary scale-105'
                                         : 'bg-card border border-card text-secondary active:scale-95'
                                         }`}
                                 >
@@ -159,7 +159,7 @@ export default function GameSetup({
                                 <button
                                     onClick={() => onSquareRangeTypeChange('fixed')}
                                     className={`flex-1 py-4 rounded-2xl font-bold transition-all duration-200 ${squareRangeType === 'fixed'
-                                        ? 'bg-primary text-black'
+                                        ? 'bg-primary text-on-primary'
                                         : 'bg-surface/50 border border-card text-secondary'
                                         }`}
                                 >
@@ -168,7 +168,7 @@ export default function GameSetup({
                                 <button
                                     onClick={() => onSquareRangeTypeChange('custom')}
                                     className={`flex-1 py-4 rounded-2xl font-bold transition-all duration-200 ${squareRangeType === 'custom'
-                                        ? 'bg-primary text-black'
+                                        ? 'bg-primary text-on-primary'
                                         : 'bg-surface/50 border border-card text-secondary'
                                         }`}
                                 >
@@ -324,7 +324,7 @@ export default function GameSetup({
                                         key={den}
                                         onClick={() => onFractionDenominatorRangeChange([2, den])}
                                         className={`py-4 rounded-2xl font-black text-xl transition-all duration-200 ${fractionDenominatorRange[1] === den
-                                            ? 'bg-primary text-black scale-[1.02]'
+                                            ? 'bg-primary text-on-primary scale-[1.02]'
                                             : 'bg-surface/50 border border-card text-secondary'
                                             }`}
                                     >
@@ -344,7 +344,7 @@ export default function GameSetup({
                                         key={num}
                                         onClick={() => onFractionNumeratorRangeChange([1, num])}
                                         className={`py-4 rounded-2xl font-black text-xl transition-all duration-200 ${fractionNumeratorRange[1] === num
-                                            ? 'bg-primary text-black scale-[1.02]'
+                                            ? 'bg-primary text-on-primary scale-[1.02]'
                                             : 'bg-surface/50 border border-card text-secondary'
                                             }`}
                                     >
@@ -361,10 +361,10 @@ export default function GameSetup({
             <div className="fixed bottom-0 left-0 w-full bg-header backdrop-blur-xl p-5 pb-10 z-20">
                 <button
                     onClick={onStart}
-                    className="w-full bg-primary text-black font-bold text-lg py-4 px-6 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-on-primary font-bold text-lg py-4 px-6 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <span>Start Practice</span>
-                    <span className="material-symbols-outlined text-black">arrow_forward</span>
+                    <span className="material-symbols-outlined text-on-primary">arrow_forward</span>
                 </button>
             </div>
         </div>

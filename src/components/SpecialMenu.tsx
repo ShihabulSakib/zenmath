@@ -51,14 +51,14 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
                     >
                         <div className="flex w-full items-start justify-between">
                             <div className="flex flex-col gap-1 z-10">
-                                <span className="text-main text-5xl font-bold tracking-tighter leading-none group-active:text-black">
+                                <span className="text-main text-5xl font-bold tracking-tighter leading-none group-active:text-on-primary">
                                     {label}
                                 </span>
-                                <span className="text-secondary text-base font-semibold tracking-widest uppercase group-active:text-black/90">
+                                <span className="text-secondary text-base font-semibold tracking-widest uppercase group-active:text-on-primary/90">
                                     {subtitle}
                                 </span>
                             </div>
-                            <div className="size-2.5 rounded-full bg-primary opacity-0 group-active:bg-black group-active:opacity-100" />
+                            <div className="size-2.5 rounded-full bg-primary opacity-0 group-active:bg-on-primary group-active:opacity-100" />
                         </div>
                     </button>
                 ))}
