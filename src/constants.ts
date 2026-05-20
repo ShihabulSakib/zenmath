@@ -38,9 +38,6 @@ export const DEFAULT_FRACTION_NUM_RANGE: [number, number] = [1, 9];
 export const BASE_SEQUENCE_GAP = 0.08;
 export const FADE_TIME = 0.005;
 
-// ─── Haptic ──────────────────────────────────────────────
-export const HAPTIC_DURATION_MS = 10;
-
 // ─── Maths ────────────────────────────────────────────────
 export const EASY_SQUARE_ROOT_MAX = 15;
 export const MEDIUM_SQUARE_ROOT_MAX = 25;

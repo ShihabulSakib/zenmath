@@ -136,6 +136,14 @@ html.dark .text-on-primary {
   color: #09090B;
 }
 
+/* Primary action icon (check) — visible in both themes */
+html.light .text-on-primary.material-symbols-outlined {
+  color: #09090B;
+}
+html.dark .text-on-primary.material-symbols-outlined {
+  color: #09090B;
+}
+
 html.dark .bg-on-primary {
   background-color: #09090B;
 }

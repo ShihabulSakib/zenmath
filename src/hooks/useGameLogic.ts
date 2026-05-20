@@ -79,7 +79,6 @@ export interface GameSettings {
     preferredVoiceURI: string;
     adaptiveDifficulty: boolean;
     showStreak: boolean;
-    hapticFeedback: boolean;
 }
 
 export interface GameState {
@@ -130,11 +129,10 @@ function loadSettings(): GameSettings {
                 preferredVoiceURI: parsed.preferredVoiceURI || '',
                 adaptiveDifficulty: typeof parsed.adaptiveDifficulty === 'boolean' ? parsed.adaptiveDifficulty : false,
                 showStreak: typeof parsed.showStreak === 'boolean' ? parsed.showStreak : true,
-                hapticFeedback: typeof parsed.hapticFeedback === 'boolean' ? parsed.hapticFeedback : true,
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, hapticFeedback: true };
+    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true };
 }
 
 function saveSettings(settings: GameSettings): GameSettings {
@@ -146,7 +144,6 @@ function saveSettings(settings: GameSettings): GameSettings {
         spriteSpeed: Math.min(MAX_SPRITE_SPEED, Math.max(MIN_SPRITE_SPEED, settings.spriteSpeed)),
         speechRate: Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, settings.speechRate)),
         listenOnlyMode: settings.ttsEnabled ? settings.listenOnlyMode : false,
-        hapticFeedback: typeof settings.hapticFeedback === 'boolean' ? settings.hapticFeedback : true,
     };
     localStorage.setItem('zenmath-settings', JSON.stringify(validated));
     return validated;

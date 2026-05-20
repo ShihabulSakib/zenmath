@@ -1,12 +1,9 @@
-import { HAPTIC_DURATION_MS } from '../constants';
-
 interface KeypadProps {
     onKey: (key: string) => void;
     disabled?: boolean;
     showNegative?: boolean;
     showFraction?: boolean;
     showDecimal?: boolean;
-    hapticFeedback?: boolean;
 }
 
 interface KeyButtonProps {
@@ -31,7 +28,10 @@ const KeyButton = ({ k, label, isPrimary, isAction, disabled, onClick, className
                     : 'bg-keypad-btn border-keypad-border text-keypad-text'
             } ${className || ''}`}
     >
-        <span className={`${isAction ? "material-symbols-outlined" : "text-[22px] font-semibold"} ${isPrimary ? "!text-on-primary" : ""}`}>
+        <span
+            className={`${isAction ? "material-symbols-outlined" : "text-[22px] font-semibold"} ${isPrimary ? "text-on-primary" : ""}`}
+            style={isPrimary && isAction ? { fontVariationSettings: "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" } : undefined}
+        >
             {label || k}
         </span>
     </button>
@@ -43,11 +43,9 @@ export default function Keypad({
     showNegative = true,
     showFraction = true,
     showDecimal = true,
-    hapticFeedback = true
 }: KeypadProps) {
     const handlePress = (key: string) => {
         if (disabled) return;
-        if (hapticFeedback && navigator.vibrate) navigator.vibrate(HAPTIC_DURATION_MS);
         onKey(key);
     };
 
@@ -59,46 +57,46 @@ export default function Keypad({
             {/* Grid layout */}
             <div className="flex-1 grid grid-cols-4 grid-rows-4 gap-2.5 p-3 pb-6">
                 {/* Row 1 */}
-                <KeyButton k="1" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="2" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="3" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="backspace" label="backspace" isAction disabled={disabled} onClick={handlePress} />
+                <KeyButton k="1" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="2" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="3" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="backspace" label="backspace" isAction disabled={disabled} onClick={handlePress}  />
 
                 {/* Row 2 */}
-                <KeyButton k="4" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="5" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="6" disabled={disabled} onClick={handlePress} />
+                <KeyButton k="4" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="5" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="6" disabled={disabled} onClick={handlePress}  />
                 {showNegative ? (
-                    <KeyButton k="-" label="−" disabled={disabled} onClick={handlePress} />
+                    <KeyButton k="-" label="−" disabled={disabled} onClick={handlePress}  />
                 ) : (
                     <div className="h-full" />
                 )}
 
                 {/* Row 3 */}
-                <KeyButton k="7" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="8" disabled={disabled} onClick={handlePress} />
-                <KeyButton k="9" disabled={disabled} onClick={handlePress} />
+                <KeyButton k="7" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="8" disabled={disabled} onClick={handlePress}  />
+                <KeyButton k="9" disabled={disabled} onClick={handlePress}  />
                 <KeyButton
                     k="enter"
                     label="check"
                     isPrimary
                     isAction
                     disabled={disabled}
-                    onClick={handlePress}
+                    onClick={handlePress} 
                     className="row-span-2"
                 />
 
                 {/* Row 4 */}
                 {showDecimal ? (
-                    <KeyButton k="." label="." disabled={disabled} onClick={handlePress} />
+                    <KeyButton k="." label="." disabled={disabled} onClick={handlePress}  />
                 ) : (
                     <div className="h-full" />
                 )}
-                <KeyButton k="0" disabled={disabled} onClick={handlePress} />
+                <KeyButton k="0" disabled={disabled} onClick={handlePress}  />
                 {showFraction ? (
-                    <KeyButton k="/" label="/" disabled={disabled} onClick={handlePress} />
+                    <KeyButton k="/" label="/" disabled={disabled} onClick={handlePress}  />
                 ) : (
-                    <KeyButton k="/" label="÷" disabled={disabled} onClick={handlePress} />
+                    <KeyButton k="/" label="÷" disabled={disabled} onClick={handlePress}  />
                 )}
             </div>
         </section>

@@ -113,7 +113,6 @@ export default function App() {
           streak={game.streak}
           showStreak={game.settings.showStreak}
           currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
-          hapticFeedback={game.settings.hapticFeedback}
             />
           </ErrorBoundary>
         )}

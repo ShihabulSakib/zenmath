@@ -11,7 +11,7 @@ Live PWA — installable on desktop and mobile.
 - **Audio feedback** — Web Speech API TTS and pre-recorded HD audio sprites (5 speed tiers)
 - **Persistent history** — every session and question result stored in IndexedDB
 - **Statistics dashboard** — aggregate accuracy, streak days, per-mode breakdown, 7-day chart
-- **Custom numeric keypad** — haptic feedback, native-feel input with fraction/decimal support
+- **Custom numeric keypad** — native-feel input with fraction/decimal support
 - **Dark / Light theme** — toggle manually, saved to localStorage
 - **Full PWA** — installable, works offline, SPA navigation fallback, runtime font/audio caching
 - **Comprehensive revision** — multiplication tables (1–20), square numbers (1–25), fraction↔decimal reference
