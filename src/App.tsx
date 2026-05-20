@@ -1,5 +1,6 @@
 import { useGameLogic, type QuestionResult } from './hooks/useGameLogic';
 import { useStats } from './hooks/useStats';
+import { checkAndShowNotification } from './services/notifications';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenLayout from './components/ZenLayout';
 import MainMenu from './components/MainMenu';
@@ -11,9 +12,15 @@ import SpecialMenu from './components/SpecialMenu';
 import RevisionScreen from './components/RevisionScreen';
 import StatsScreen from './components/StatsScreen';
 import HistoryScreen from './components/HistoryScreen';
+import { useEffect } from 'react';
 
 export default function App() {
   const stats = useStats();
+
+  useEffect(() => {
+    // Check and show notification on app load
+    checkAndShowNotification();
+  }, []);
 
   const handleSessionComplete = (
     mode: string,

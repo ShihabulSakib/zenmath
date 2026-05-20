@@ -257,6 +257,25 @@ class ZenMathDB {
             tx.onerror = () => reject(tx.error);
         });
     }
+
+    async getTodayTotalQuestions(): Promise<number> {
+        await this.init();
+        const today = new Date().toISOString().split('T')[0];
+        return new Promise((resolve, reject) => {
+            const tx = this.db!.transaction(['sessions'], 'readonly');
+            const store = tx.objectStore('sessions');
+            const index = store.index('date');
+            const range = IDBKeyRange.bound(today + 'T00:00:00', today + 'T23:59:59');
+            const request = index.getAll(range);
+
+            request.onsuccess = () => {
+                const sessions = request.result as Session[];
+                const total = sessions.reduce((sum, s) => sum + s.totalQuestions, 0);
+                resolve(total);
+            };
+            request.onerror = () => reject(request.error);
+        });
+    }
 }
 
 export const db = new ZenMathDB();

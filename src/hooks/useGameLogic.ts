@@ -79,6 +79,8 @@ export interface GameSettings {
     preferredVoiceURI: string;
     adaptiveDifficulty: boolean;
     showStreak: boolean;
+    notificationsEnabled: boolean;
+    notificationTimes: string[];
 }
 
 export interface GameState {
@@ -129,10 +131,12 @@ function loadSettings(): GameSettings {
                 preferredVoiceURI: parsed.preferredVoiceURI || '',
                 adaptiveDifficulty: typeof parsed.adaptiveDifficulty === 'boolean' ? parsed.adaptiveDifficulty : false,
                 showStreak: typeof parsed.showStreak === 'boolean' ? parsed.showStreak : true,
+                notificationsEnabled: typeof parsed.notificationsEnabled === 'boolean' ? parsed.notificationsEnabled : false,
+                notificationTimes: Array.isArray(parsed.notificationTimes) ? parsed.notificationTimes : ['21:00'],
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true };
+    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, notificationsEnabled: false, notificationTimes: ['21:00'] };
 }
 
 function saveSettings(settings: GameSettings): GameSettings {

@@ -1,6 +1,7 @@
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode, GameSettings } from '../hooks/useGameLogic';
 import { BookOpen } from 'lucide-react';
+import { canDecreaseGoal } from '../services/notifications';
 import ProgressBar from './ProgressBar';
 
 interface MainMenuProps {
@@ -176,15 +177,27 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                         <div className="flex justify-between items-center mb-5">
                             <div>
                                 <h3 className="text-main font-bold text-lg">Daily Goal</h3>
-                                <p className="text-xs text-secondary font-medium mt-0.5">{game.dailyProgress} / {game.settings.dailyGoal} exercises today</p>
+                                <p className="text-xs text-secondary font-medium mt-0.5">
+                                    {game.dailyProgress} / {game.settings.dailyGoal} exercises today
+                                    {game.dailyProgress >= game.settings.dailyGoal && (
+                                        <span className="ml-2 text-emerald-500">✓</span>
+                                    )}
+                                </p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <div className="relative">
+                                <div className="relative flex items-center gap-1">
+                                    {!canDecreaseGoal() && (
+                                        <span className="material-symbols-outlined text-amber-500" 
+                                              style={{ fontSize: 16 }}
+                                              title="Complete today's goal to lower it"
+                                        >lock</span>
+                                    )}
                                     <input
                                         type="number"
                                         min="1"
                                         max="100"
                                         value={game.settings.dailyGoal || ''}
+                                        disabled={!canDecreaseGoal()}
                                         onChange={(e) => {
                                             const val = e.target.value;
                                             if (val === '') {
@@ -196,11 +209,13 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                                                 game.updateSettings({ ...game.settings, dailyGoal: newGoal });
                                             }
                                         }}
-                                        className="w-16 bg-primary/5 text-xl font-black text-primary text-center rounded-xl border border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 px-2 py-2 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        className={`w-16 bg-primary/5 text-xl font-black text-primary text-center rounded-xl border border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 px-2 py-2 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${!canDecreaseGoal() ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         placeholder="5"
                                     />
                                 </div>
-                                <span className="text-[9px] text-secondary mt-1.5 uppercase font-black tracking-widest opacity-60">Target</span>
+                                <span className="text-[9px] text-secondary mt-1.5 uppercase font-black tracking-widest opacity-60">
+                                    {canDecreaseGoal() ? 'Target' : 'Complete goal to change'}
+                                </span>
                             </div>
                         </div>
                         <ProgressBar value={game.dailyProgress} max={game.settings.dailyGoal || 1} />

@@ -1,12 +1,26 @@
 import { useState, useEffect } from 'react';
-import type { GameSettings } from '../hooks/useGameLogic';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
+import { requestNotificationPermission, getTodayProgress, showLocalNotification, type NotificationTime } from '../services/notifications';
 import ToggleSwitch, { ToggleCard } from './ToggleSwitch';
 
 interface SettingsScreenProps {
-    settings: GameSettings;
-    onSave: (settings: GameSettings) => void;
+    settings: {
+        totalQuestions: number;
+        timeLimit: number;
+        dailyGoal: number;
+        ttsEnabled: boolean;
+        audioSpriteEnabled: boolean;
+        spriteSpeed: number;
+        listenOnlyMode: boolean;
+        speechRate: number;
+        preferredVoiceURI: string;
+        adaptiveDifficulty: boolean;
+        showStreak: boolean;
+        notificationsEnabled: boolean;
+        notificationTimes: string[];
+    };
+    onSave: (settings: any) => void;
     onBack: () => void;
     audioSpriteLoaded: boolean;
 }
@@ -22,6 +36,8 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const [preferredVoiceURI, setPreferredVoiceURI] = useState(settings.preferredVoiceURI);
     const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.adaptiveDifficulty);
     const [showStreak, setShowStreak] = useState(settings.showStreak);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
+    const [notificationTimes, setNotificationTimes] = useState<string[]>(settings.notificationTimes || ['21:00']);
     const [voices, setVoices] = useState<VoiceOption[]>([]);
 
     // Load available voices
@@ -31,10 +47,33 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
         }
     }, []);
 
-    const handleSave = () => {
+const handleSave = async () => {
         cancelSpeech();
         audioSpritePlayer.stop();
-        onSave({ ...settings, totalQuestions, timeLimit, ttsEnabled, audioSpriteEnabled, spriteSpeed, listenOnlyMode, speechRate, preferredVoiceURI, adaptiveDifficulty, showStreak });
+        
+        // Request permission when saving if notifications are enabled
+        if (notificationsEnabled && Notification.permission !== 'granted') {
+            const perm = await requestNotificationPermission();
+            if (perm !== 'granted') {
+                setNotificationsEnabled(false);
+            }
+        }
+        
+        onSave({
+            ...settings, 
+            totalQuestions, 
+            timeLimit, 
+            ttsEnabled, 
+            audioSpriteEnabled, 
+            spriteSpeed, 
+            listenOnlyMode, 
+            speechRate, 
+            preferredVoiceURI, 
+            adaptiveDifficulty, 
+            showStreak,
+            notificationsEnabled,
+            notificationTimes
+        });
         onBack();
     };
 
@@ -174,7 +213,108 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         description="Show consecutive correct answer streak"
                         icon="local_fire_department"
                     />
+                </section>
 
+                {/* Notifications Section */}
+                <section>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
+                        Notifications
+                    </h3>
+                    
+                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>notifications</span>
+                                <div>
+                                    <span className="text-sm font-bold text-main">Daily Reminder</span>
+                                    <p className="text-[10px] text-secondary opacity-60 mt-0.5">
+                                        {getTodayProgress().goalAchieved 
+                                            ? 'Goal achieved! Great job!' 
+                                            : `${getTodayProgress().goal - getTodayProgress().count} exercises to go`}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    console.log('Toggle clicked, current:', notificationsEnabled);
+                                    
+                                    if (!notificationsEnabled) {
+                                        // Trying to enable - request permission first
+                                        if ('Notification' in window) {
+                                            const perm = await Notification.requestPermission();
+                                            console.log('Permission result:', perm);
+                                            if (perm === 'granted') {
+                                                setNotificationsEnabled(true);
+                                            } else {
+                                                alert('Please allow notifications in browser settings');
+                                            }
+                                        } else {
+                                            alert('Notifications not supported in this browser');
+                                        }
+                                    } else {
+                                        setNotificationsEnabled(false);
+                                    }
+                                }}
+                                className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${notificationsEnabled ? 'bg-primary' : 'bg-toggle-off'}`}
+                                role="switch"
+                                aria-checked={notificationsEnabled}
+                            >
+                                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${notificationsEnabled ? 'translate-x-5' : ''}`} />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {notificationsEnabled && (
+                        <div className="bg-card border border-card rounded-3xl p-5 shadow-sm animate-fade-in">
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>schedule</span>
+                                <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Reminder Times</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {(['20:00', '21:00', '22:00', '23:00'] as NotificationTime[]).map((time) => (
+                                    <button
+                                        key={time}
+                                        onClick={() => {
+                                            if (notificationTimes.includes(time)) {
+                                                setNotificationTimes(notificationTimes.filter(t => t !== time));
+                                            } else {
+                                                setNotificationTimes([...notificationTimes, time]);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                                            notificationTimes.includes(time)
+                                                ? 'bg-primary text-on-primary'
+                                                : 'bg-primary/10 text-secondary border border-primary/20'
+                                        }`}
+                                    >
+                                        {time}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-secondary opacity-40 mt-3 ml-1">
+                                Send up to 3 reminders at these times if goal not met
+                            </p>
+                            
+                            {('Notification' in window) && (
+                                <button
+                                    onClick={() => {
+                                        const { goal, count } = getTodayProgress();
+                                        const remaining = Math.max(0, goal - count);
+                                        showLocalNotification(
+                                            'ZenMath - Test Notification',
+                                            remaining > 0 
+                                                ? `You have ${remaining} exercises left to reach your goal!`
+                                                : 'Great job! You\'ve met your daily goal!'
+                                        );
+                                    }}
+                                    className="mt-4 w-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold py-3 px-4 rounded-2xl active:scale-[0.98] transition-transform"
+                                >
+                                    Test Notification
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </section>
 
                 {/* Voice Settings — only shown when TTS is supported */}
