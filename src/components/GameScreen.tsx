@@ -1,5 +1,6 @@
 import Keypad from './Keypad';
 import type { GameMode } from '../hooks/useGameLogic';
+import ProgressBar from './ProgressBar';
 
 interface GameScreenProps {
     num1: number;
@@ -46,7 +47,6 @@ export default function GameScreen({
     showStreak,
     currentQuestionTimeElapsed,
 }: GameScreenProps) {
-    const progress = ((currentQuestion - 1) / totalQuestions) * 100;
     const isSquareOp = operation === '²';
     const showNegative = operation === '−';
     const showFraction = mode === 'fraction';
@@ -74,12 +74,7 @@ export default function GameScreen({
                         <span className={`text-xs font-mono text-secondary font-medium whitespace-nowrap ${isTimeLow ? 'timer-warning text-incorrect' : ''}`}>
                             {timerStr}
                         </span>
-                        <div className="h-1.5 w-full bg-midnight-border rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-primary rounded-full transition-all duration-300 ease-linear"
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
+                        <ProgressBar value={currentQuestion - 1} max={totalQuestions} glow={false} />
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono tracking-wider text-muted uppercase">
                         <span>Q {currentQuestion}/{totalQuestions}</span>

@@ -1,6 +1,7 @@
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode } from '../hooks/useGameLogic';
 import { BookOpen } from 'lucide-react';
+import ProgressBar from './ProgressBar';
 
 interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
@@ -198,12 +199,7 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                                 <span className="text-[9px] text-secondary mt-1.5 uppercase font-black tracking-widest opacity-60">Target</span>
                             </div>
                         </div>
-                        <div className="w-full bg-primary/10 rounded-full h-2.5 overflow-hidden">
-                            <div
-                                className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(13,89,242,0.4)]"
-                                style={{ width: `${Math.min(100, (game.dailyProgress / (game.settings.dailyGoal || 1)) * 100)}%` }}
-                            />
-                        </div>
+                        <ProgressBar value={game.dailyProgress} max={game.settings.dailyGoal || 1} />
                     </div>
                 </div>
             </main>

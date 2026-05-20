@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { GameSettings } from '../hooks/useGameLogic';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
+import ToggleSwitch, { ToggleCard } from './ToggleSwitch';
 
 interface SettingsScreenProps {
     settings: GameSettings;
@@ -158,45 +159,21 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         Training
                     </h3>
 
-                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>trending_up</span>
-                                <div>
-                                    <span className="text-sm font-bold text-main">Adaptive Difficulty</span>
-                                    <p className="text-[10px] text-secondary opacity-60 mt-0.5">Auto-increase difficulty when accuracy {">"}85%</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setAdaptiveDifficulty(!adaptiveDifficulty)}
-                                className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${adaptiveDifficulty ? 'bg-primary' : 'bg-toggle-off'}`}
-                                role="switch"
-                                aria-checked={adaptiveDifficulty}
-                            >
-                                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${adaptiveDifficulty ? 'translate-x-5' : ''}`} />
-                            </button>
-                        </div>
-                    </div>
+                    <ToggleCard
+                        enabled={adaptiveDifficulty}
+                        onChange={setAdaptiveDifficulty}
+                        label="Adaptive Difficulty"
+                        description='Auto-increase difficulty when accuracy {">"}85%'
+                        icon="trending_up"
+                    />
 
-                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
-                                <div>
-                                    <span className="text-sm font-bold text-main">Streak Counter</span>
-                                    <p className="text-[10px] text-secondary opacity-60 mt-0.5">Show consecutive correct answer streak</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowStreak(!showStreak)}
-                                className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${showStreak ? 'bg-primary' : 'bg-toggle-off'}`}
-                                role="switch"
-                                aria-checked={showStreak}
-                            >
-                                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${showStreak ? 'translate-x-5' : ''}`} />
-                            </button>
-                        </div>
-                    </div>
+                    <ToggleCard
+                        enabled={showStreak}
+                        onChange={setShowStreak}
+                        label="Streak Counter"
+                        description="Show consecutive correct answer streak"
+                        icon="local_fire_department"
+                    />
                 </section>
 
                 {/* Voice Settings — only shown when TTS is supported */}
@@ -236,23 +213,13 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         {/* Audio Sprite Toggle — only when TTS is enabled and sprites are loaded */}
                         {ttsEnabled && audioSpriteLoaded && (
                             <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4 animate-fade-in">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>graphic_eq</span>
-                                        <div>
-                                            <span className="text-sm font-bold text-main">HD Voice</span>
-                                            <p className="text-[10px] text-secondary opacity-60 mt-0.5">Pre-recorded audio sprites (works offline)</p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setAudioSpriteEnabled(!audioSpriteEnabled)}
-                                        className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${audioSpriteEnabled ? 'bg-primary' : 'bg-toggle-off'}`}
-                                        role="switch"
-                                        aria-checked={audioSpriteEnabled}
-                                    >
-                                        <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${audioSpriteEnabled ? 'translate-x-5' : ''}`} />
-                                    </button>
-                                </div>
+                                <ToggleSwitch
+                                    enabled={audioSpriteEnabled}
+                                    onChange={setAudioSpriteEnabled}
+                                    label="HD Voice"
+                                    description="Pre-recorded audio sprites (works offline)"
+                                    icon="graphic_eq"
+                                />
                             </div>
                         )}
 
@@ -290,23 +257,13 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         {/* Listen Only Mode — only when TTS is enabled */}
                         {ttsEnabled && (
                             <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4 animate-fade-in">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>visibility_off</span>
-                                        <div>
-                                            <span className="text-sm font-bold text-main">Listen Only</span>
-                                            <p className="text-[10px] text-secondary opacity-60 mt-0.5">Hide questions — practice by ear</p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setListenOnlyMode(!listenOnlyMode)}
-                                        className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${listenOnlyMode ? 'bg-primary' : 'bg-toggle-off'}`}
-                                        role="switch"
-                                        aria-checked={listenOnlyMode}
-                                    >
-                                        <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${listenOnlyMode ? 'translate-x-5' : ''}`} />
-                                    </button>
-                                </div>
+                                <ToggleSwitch
+                                    enabled={listenOnlyMode}
+                                    onChange={setListenOnlyMode}
+                                    label="Listen Only"
+                                    description="Hide questions — practice by ear"
+                                    icon="visibility_off"
+                                />
                             </div>
                         )}
 
