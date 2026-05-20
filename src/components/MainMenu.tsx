@@ -105,6 +105,62 @@ export default function MainMenu({ onSelect, onSettings, onRevision, game }: Mai
                                 </span>
                                 <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Fractions</span>
                             </button>
+                            <button
+                                onClick={() => onSelect('percentage')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="text-xl font-bold text-primary/90 icon-glow-purple">
+                                    %
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Percent</span>
+                            </button>
+                            <button
+                                onClick={() => onSelect('square-root')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="text-xl font-bold text-primary/80 icon-glow-cyan">
+                                    √
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Roots</span>
+                            </button>
+                            <button
+                                onClick={() => onSelect('approximation')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="material-symbols-outlined text-xl text-primary/70 icon-glow-amber">
+                                    calculate
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Estimate</span>
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            <button
+                                onClick={() => onSelect('number-series')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="material-symbols-outlined text-xl text-primary/75 icon-glow-blue">
+                                    linear_scale
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Series</span>
+                            </button>
+                            <button
+                                onClick={() => onSelect('ratio')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="text-xl font-bold text-primary/65 icon-glow-emerald">
+                                    ::
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Ratio</span>
+                            </button>
+                            <button
+                                onClick={() => onSelect('chain-calculation')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="material-symbols-outlined text-xl text-primary/85 icon-glow-red">
+                                    multiple_stop
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Chain</span>
+                            </button>
                         </div>
                     </div>
 

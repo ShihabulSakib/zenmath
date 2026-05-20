@@ -15,7 +15,13 @@ export type GameMode =
     | 'mixed'
     | 'multiplication-table'
     | 'square'
-    | 'fraction';
+    | 'fraction'
+    | 'percentage'
+    | 'square-root'
+    | 'approximation'
+    | 'number-series'
+    | 'ratio'
+    | 'chain-calculation';
 
 export type ScreenState =
     | 'menu'
@@ -196,6 +202,172 @@ function getOperationSymbol(op: Operation): string {
         case '*': return '×';
         case '/': return '÷';
     }
+}
+
+function generatePercentageQuestion(diff: Difficulty): { question: string; display: string; answer: number; type: string } {
+    const type = Math.random() < 0.5 ? 'percentOf' : 'whatPercent';
+    let num1: number, num2: number, answer: number, display: string;
+
+    if (type === 'percentOf') {
+        num1 = randomInRange(1, 20) * 5;
+        num2 = randomInRange(10, 50);
+        answer = Math.round((num1 * num2) / 100);
+        display = `${num1}% of ${num2}`;
+    } else {
+        num1 = randomInRange(1, 20) * 5;
+        num2 = (num1 * randomInRange(2, 20)) / 100;
+        num2 = Math.round(num2);
+        answer = num1;
+        display = `${num2} is what % of ${num2 * (100 / num1)}`;
+        if (diff === 'easy') {
+            const easyAnswers = [5, 10, 15, 20, 25, 50, 75];
+            num1 = easyAnswers[randomInRange(0, easyAnswers.length - 1)];
+            num2 = randomInRange(1, 10);
+            let baseValue = num2 * 100;
+            answer = num1;
+            display = `${num1}% of ${num2}`;
+            if (num1 === 50) { num2 = randomInRange(2, 20); baseValue = num2 * 2; answer = 50; display = `${answer}% of ${baseValue}`; }
+            else if (num1 === 25) { num2 = randomInRange(4, 20); baseValue = num2 * 4; answer = 25; display = `${answer}% of ${baseValue}`; }
+            else if (num1 === 75) { num2 = randomInRange(2, 12); baseValue = num2 * 4/3; answer = 75; display = `${answer}% of ${Math.round(baseValue)}`; }
+            else if (num1 === 10) { num2 = randomInRange(5, 50); baseValue = num2 * 10; answer = 10; display = `${answer}% of ${baseValue}`; }
+        }
+    }
+
+    return { question: display, display, answer, type };
+}
+
+function generateSquareRootQuestion(diff: Difficulty): { question: string; answer: number } {
+    let maxRoot = diff === 'easy' ? 15 : diff === 'medium' ? 25 : 40;
+    const root = randomInRange(2, maxRoot);
+    const perfect = diff === 'hard' ? Math.random() > 0.7 : Math.random() > 0.5;
+    let num: number;
+
+    if (perfect || diff === 'easy') {
+        num = root * root;
+    } else {
+        const offset = randomInRange(-3, 3);
+        num = (root + offset) * (root + offset);
+        if (num < 1) num = root * root;
+    }
+
+    return { question: `√${num}`, answer: root };
+}
+
+function generateApproximationQuestion(diff: Difficulty): { question: string; options: number[]; answer: number } {
+    const ops: Operation[] = ['+', '-', '*'];
+    const op = ops[Math.floor(Math.random() * (diff === 'easy' ? 2 : 3))];
+    let num1: number, num2: number, exactAnswer: number;
+
+    const digits1 = diff === 'easy' ? 2 : diff === 'medium' ? 3 : 4;
+    const digits2 = diff === 'easy' ? 2 : diff === 'medium' ? 3 : 4;
+
+    num1 = randomInRange(Math.pow(10, digits1 - 1), Math.pow(10, digits1) - 1);
+    num2 = randomInRange(Math.pow(10, digits2 - 1), Math.pow(10, digits2) - 1);
+
+    switch (op) {
+        case '+': exactAnswer = num1 + num2; break;
+        case '-': if (num1 < num2) [num1, num2] = [num2, num1]; exactAnswer = num1 - num2; break;
+        default: exactAnswer = num1 * num2;
+    }
+
+    const base = Math.round(exactAnswer / 10) * 10;
+
+    const options = [base - 20 + randomInRange(0, 10), base + randomInRange(0, 10), base + 20 + randomInRange(0, 10), base + 40 + randomInRange(0, 10)];
+    const shuffled = options.sort(() => Math.random() - 0.5);
+    const correctIndex = shuffled.findIndex(o => Math.abs(o - exactAnswer) < 15);
+    if (correctIndex === -1) shuffled[0] = base + randomInRange(-10, 10);
+    else shuffled[correctIndex] = exactAnswer;
+
+    return { question: `${num1} ${getOperationSymbol(op)} ${num2} ≈ ?`, options: shuffled.slice(0, 4), answer: exactAnswer };
+}
+
+function generateNumberSeriesQuestion(diff: Difficulty): { question: string; answer: number } {
+    const length = diff === 'easy' ? 5 : 6;
+    let start: number, diff2: number;
+
+    const patterns = ['arithmetic', 'geometric', 'square', 'fibonacci'];
+    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+    let series: number[] = [];
+
+    switch (pattern) {
+        case 'arithmetic':
+            start = randomInRange(1, 20);
+            diff2 = randomInRange(2, 10);
+            for (let i = 0; i < length; i++) series.push(start + i * diff2);
+            break;
+        case 'geometric':
+            start = randomInRange(1, 5);
+            diff2 = randomInRange(2, 3);
+            for (let i = 0; i < length; i++) {
+                const val = start * Math.pow(diff2, i);
+                if (val > 1000) { series.push(1); series.push(2); series.push(4); series.push(8); series.push(16); series.push(32); break; }
+                series.push(val);
+            }
+            if (series.length < length) { series = [1, 2, 4, 8, 16, 32].slice(0, length); }
+            break;
+        case 'square':
+            start = randomInRange(1, 5);
+            for (let i = 0; i < length; i++) series.push((start + i) * (start + i));
+            break;
+        case 'fibonacci':
+            series = [1, 1, 2, 3, 5, 8, 13, 21];
+            series = series.slice(0, length);
+            break;
+    }
+
+    if (series.length < length) {
+        start = randomInRange(1, 10);
+        diff2 = randomInRange(2, 5);
+        series = Array.from({ length }, (_, i) => start + i * diff2);
+    }
+
+    const missingIndex = Math.floor(length / 2);
+    const answer = series[missingIndex];
+    series[missingIndex] = -1;
+
+    return { question: series.map(n => n === -1 ? '?' : n).join(', '), answer };
+}
+
+function generateRatioQuestion(diff: Difficulty): { question: string; answer: number } {
+    const type = Math.random() < 0.5 ? 'findRatio' : 'findValue';
+
+    if (type === 'findRatio') {
+        const a = randomInRange(2, diff === 'hard' ? 20 : 10);
+        const b = randomInRange(2, diff === 'hard' ? 20 : 10);
+        const mult = randomInRange(2, 5);
+        return { question: `If A:B = ${a}:${b}, then A:${b * mult} = ?`, answer: a * mult };
+    } else {
+        const ratio = randomInRange(2, diff === 'hard' ? 10 : 5);
+        const a = randomInRange(2, 10) * ratio;
+        return { question: `In ratio ${ratio}:1, if first number is ${a}, second = ?`, answer: a / ratio };
+    }
+}
+
+function generateChainCalculationQuestion(diff: Difficulty): { question: string; answer: number } {
+    const operations = ['+', '-', '*'];
+    const numOps = diff === 'easy' ? 2 : 3;
+    const numbers = [randomInRange(2, diff === 'easy' ? 9 : 20)];
+
+    for (let i = 0; i < numOps; i++) {
+        numbers.push(randomInRange(2, diff === 'easy' ? 9 : 15));
+    }
+
+    let answer = numbers[0];
+    let q = `${numbers[0]}`;
+
+    for (let i = 0; i < numOps; i++) {
+        const op = operations[randomInRange(0, operations.length - 1)];
+        const n = numbers[i + 1];
+        q += ` ${getOperationSymbol(op as Operation)} ${n}`;
+        switch (op) {
+            case '+': answer += n; break;
+            case '-': answer -= n; break;
+            case '*': answer *= n; break;
+        }
+    }
+
+    return { question: q, answer: Math.round(answer) };
 }
 
 function modeToOperation(mode: GameMode): Operation {
@@ -413,12 +585,60 @@ export function useGameLogic() {
             setFractionCorrectAnswer('');
         } else if (mode === 'fraction') {
             const { question, answer, type } = fractionLogic.generateFractionQuestion();
-            setNum1(0); // Not used for fraction display directly
-            setNum2(0); // Not used for fraction display directly
+            setNum1(0);
+            setNum2(0);
             setCurrentOperation(type === 'fractionToDecimal' ? 'Fraction to Decimal' : 'Decimal to Fraction');
-            setCorrectAnswer(0); // Not used for fraction, string answer
+            setCorrectAnswer(0);
             setFractionQuestionDisplay(question);
             setFractionCorrectAnswer(answer);
+        } else if (mode === 'percentage') {
+            const { question, answer } = generatePercentageQuestion(difficulty);
+            setNum1(0);
+            setNum2(0);
+            setCurrentOperation('%');
+            setCorrectAnswer(answer);
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer('');
+        } else if (mode === 'square-root') {
+            const { question, answer } = generateSquareRootQuestion(difficulty);
+            setNum1(0);
+            setNum2(0);
+            setCurrentOperation('√');
+            setCorrectAnswer(answer);
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer('');
+        } else if (mode === 'approximation') {
+            const { question, answer } = generateApproximationQuestion(difficulty);
+            setNum1(0);
+            setNum2(0);
+            setCurrentOperation('≈');
+            setCorrectAnswer(answer);
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer('');
+        } else if (mode === 'number-series') {
+            const { question, answer } = generateNumberSeriesQuestion(difficulty);
+            setNum1(0);
+            setNum2(0);
+            setCurrentOperation('Series');
+            setCorrectAnswer(answer);
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer('');
+        } else if (mode === 'ratio') {
+            const { question, answer } = generateRatioQuestion(difficulty);
+            setNum1(0);
+            setNum2(0);
+            setCurrentOperation('Ratio');
+            setCorrectAnswer(answer);
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer('');
+        } else if (mode === 'chain-calculation') {
+            const { question, answer } = generateChainCalculationQuestion(difficulty);
+            setNum1(0);
+            setNum2(0);
+            setCurrentOperation('Chain');
+            setCorrectAnswer(answer);
+            setFractionQuestionDisplay(question);
+            setFractionCorrectAnswer('');
         }
         else {
             const op = modeToOperation(mode);

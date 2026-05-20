@@ -43,7 +43,8 @@ export default function GameScreen({
     const progress = ((currentQuestion - 1) / totalQuestions) * 100;
     const isSquareOp = operation === '²';
     const showNegative = operation === '−';
-    const showFraction = mode === 'fraction'; // Determine showFraction based on mode
+    const showFraction = mode === 'fraction';
+    const showNewModes = ['percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation'].includes(mode);
     const isTimeLow = timeRemaining <= 5 && timeRemaining > 0;
 
     // Format timer as mm:ss
@@ -110,7 +111,7 @@ export default function GameScreen({
                                     <span className="material-symbols-outlined text-primary/30" style={{ fontSize: 48, fontVariationSettings: "'FILL' 1" }}>headphones</span>
                                     <span className="text-lg font-medium text-secondary/50 tracking-wide">Listen...</span>
                                 </div>
-                            ) : mode === 'fraction' ? (
+                            ) : showNewModes || mode === 'fraction' ? (
                                 <>{fractionQuestionDisplay}</>
                             ) : isSquareOp ? (
                                 <>
