@@ -7,10 +7,11 @@ interface MainMenuProps {
     onSettings: () => void;
     onRevision: () => void;
     onStats: () => void;
+    onHistory: () => void;
     game: any;
 }
 
-export default function MainMenu({ onSelect, onSettings, onRevision, onStats, game }: MainMenuProps) {
+export default function MainMenu({ onSelect, onSettings, onRevision, onStats, onHistory, game }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
 
     const ops: { mode: GameMode; symbol: string; label: string; color: string; glow: string }[] = [
@@ -224,6 +225,14 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, ga
                     >
                         <BookOpen size={24} />
                         <span className="text-[10px] font-medium tracking-wide">Revision</span>
+                    </button>
+
+                    <button
+                        onClick={onHistory}
+                        className="flex flex-col items-center gap-1 p-2 text-primary"
+                    >
+                        <span className="material-symbols-outlined">history</span>
+                        <span className="text-[10px] font-medium tracking-wide">History</span>
                     </button>
 
                     <button

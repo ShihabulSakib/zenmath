@@ -31,7 +31,8 @@ export type ScreenState =
     | 'result'
     | 'settings'
     | 'revision'
-    | 'stats';
+    | 'stats'
+    | 'history';
 
 export interface QuestionResult {
     num1: number;
@@ -417,14 +418,14 @@ export function useGameLogic(onSessionComplete?: (
     ) => void) {
     const [screen, setScreenInternal] = useState<ScreenState>(() => {
         const hash = window.location.hash.replace('#', '') as ScreenState;
-        const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats'];
+        const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats', 'history'];
         return validScreens.includes(hash) ? hash : 'menu';
     });
 
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.replace('#', '') as ScreenState;
-            const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats'];
+            const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats', 'history'];
             if (validScreens.includes(hash)) {
                 setScreenInternal(hash);
             } else if (!window.location.hash) {
@@ -892,6 +893,7 @@ export function useGameLogic(onSessionComplete?: (
     const goToSettings = useCallback(() => setScreen('settings'), [setScreen]);
     const goToRevision = useCallback(() => setScreen('revision'), [setScreen]);
     const goToStats = useCallback(() => setScreen('stats'), [setScreen]);
+    const goToHistory = useCallback(() => setScreen('history'), [setScreen]);
 
     const updateSettings = useCallback((newSettings: GameSettings) => {
         setSettings(newSettings);
@@ -988,6 +990,7 @@ export function useGameLogic(onSessionComplete?: (
         goToSettings,
         goToRevision,
         goToStats,
+        goToHistory,
         updateSettings,
         selectTableRange,
         speakCurrentQuestion,

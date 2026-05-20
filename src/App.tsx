@@ -9,6 +9,7 @@ import SettingsScreen from './components/SettingsScreen';
 import SpecialMenu from './components/SpecialMenu';
 import RevisionScreen from './components/RevisionScreen';
 import StatsScreen from './components/StatsScreen';
+import HistoryScreen from './components/HistoryScreen';
 
 export default function App() {
   const stats = useStats();
@@ -46,6 +47,7 @@ export default function App() {
           onSettings={game.goToSettings}
           onRevision={game.goToRevision}
           onStats={game.goToStats}
+          onHistory={game.goToHistory}
           game={game}
         />
       )}
@@ -123,6 +125,10 @@ export default function App() {
           onBack={game.goToMenu}
           stats={stats}
         />
+      )}
+
+      {game.screen === 'history' && (
+        <HistoryScreen onBack={game.goToMenu} />
       )}
 
       {game.screen === 'revision' && (
