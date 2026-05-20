@@ -19,6 +19,8 @@ interface GameScreenProps {
     ttsEnabled: boolean;
     listenOnlyMode: boolean;
     onSpeak: () => void;
+    streak: number;
+    currentQuestionTimeElapsed: number; // ms
 }
 
 export default function GameScreen({
@@ -33,12 +35,14 @@ export default function GameScreen({
     correctAnswer,
     onKey,
     onQuit,
-    mode, // Destructure mode prop
+    mode,
     fractionQuestionDisplay,
     fractionCorrectAnswer,
     ttsEnabled,
     listenOnlyMode,
     onSpeak,
+    streak,
+    currentQuestionTimeElapsed,
 }: GameScreenProps) {
     const progress = ((currentQuestion - 1) / totalQuestions) * 100;
     const isSquareOp = operation === '²';
@@ -77,6 +81,19 @@ export default function GameScreen({
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono tracking-wider text-muted uppercase">
                         <span>Q {currentQuestion}/{totalQuestions}</span>
+                        <div className="flex items-center gap-4">
+                            {streak > 1 && (
+                                <span className="flex items-center gap-1 text-primary font-black">
+                                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                                    <span className="text-sm">{streak}</span>
+                                </span>
+                            )}
+                            {currentQuestionTimeElapsed > 0 && (
+                                <span className="text-[10px] text-secondary font-mono">
+                                    {(currentQuestionTimeElapsed / 1000).toFixed(1)}s
+                                </span>
+                            )}
+                            </div>
                         <div className="flex items-center gap-3">
                             {ttsEnabled && (
                                 <button

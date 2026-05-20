@@ -55,6 +55,8 @@ export interface GameSettings {
     listenOnlyMode: boolean;
     speechRate: number;
     preferredVoiceURI: string;
+    adaptiveDifficulty: boolean;
+    showStreak: boolean;
 }
 
 export interface GameState {
@@ -397,10 +399,12 @@ function loadSettings(): GameSettings {
                 listenOnlyMode: (typeof parsed.ttsEnabled === 'boolean' ? parsed.ttsEnabled : false) ? (typeof parsed.listenOnlyMode === 'boolean' ? parsed.listenOnlyMode : true) : false,
                 speechRate: Math.min(2.0, Math.max(0.5, parsed.speechRate || 1.0)),
                 preferredVoiceURI: parsed.preferredVoiceURI || '',
+                adaptiveDifficulty: typeof parsed.adaptiveDifficulty === 'boolean' ? parsed.adaptiveDifficulty : false,
+                showStreak: typeof parsed.showStreak === 'boolean' ? parsed.showStreak : true,
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: 1.0, listenOnlyMode: false, speechRate: 1.0, preferredVoiceURI: '' };
+    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: 1.0, listenOnlyMode: false, speechRate: 1.0, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true };
 }
 
 function saveSettings(settings: GameSettings) {
@@ -478,6 +482,9 @@ export function useGameLogic(onSessionComplete?: (
 
     const [results, setResults] = useState<QuestionResult[]>([]);
     const [score, setScore] = useState(0);
+    const [streak, setStreak] = useState(0);
+    const [bestStreak, setBestStreak] = useState(0);
+    const [currentQuestionTimeElapsed, setCurrentQuestionTimeElapsed] = useState(0);
 
     const [tableRange, setTableRange] = useState<[number, number]>([1, 10]);
     const [settings, setSettings] = useState<GameSettings>(loadSettings);
@@ -529,8 +536,10 @@ export function useGameLogic(onSessionComplete?: (
     const startTimer = useCallback(() => {
         stopTimer();
         setTimeRemaining(settings.timeLimit);
+        setCurrentQuestionTimeElapsed(0);
         questionStartRef.current = Date.now();
         timerRef.current = setInterval(() => {
+            setCurrentQuestionTimeElapsed(Date.now() - questionStartRef.current);
             setTimeRemaining(prev => {
                 if (prev <= 1) {
                     return 0;
@@ -695,6 +704,9 @@ export function useGameLogic(onSessionComplete?: (
     const startGame = useCallback(() => {
         setResults([]);
         setScore(0);
+        setStreak(0);
+        setBestStreak(0);
+        setCurrentQuestionTimeElapsed(0);
         setScreen('playing');
         generateNextQuestion(1);
         startTimer();
@@ -721,6 +733,20 @@ export function useGameLogic(onSessionComplete?: (
                     difficulty,
                     finalResults
                 );
+            }
+
+            // Adaptive difficulty
+            if (settings.adaptiveDifficulty && finalResults.length > 0) {
+                const accuracy = correctCount / finalResults.length;
+                if (accuracy >= 0.85) {
+                    const diffOrder: Difficulty[] = ['easy', 'medium', 'hard'];
+                    const currentIdx = diffOrder.indexOf(difficulty);
+                    if (currentIdx < 2) {
+                        setDifficulty(diffOrder[currentIdx + 1]);
+                    } else if (digits < 4) {
+                        setDigits(prev => prev + 1);
+                    }
+                }
             }
 
             setDailyProgress(prev => {
@@ -814,6 +840,18 @@ export function useGameLogic(onSessionComplete?: (
 
         recordResult(isCorrect, userAns, false);
         setFeedback(isCorrect ? 'correct' : 'incorrect');
+
+        // Streak tracking
+        if (isCorrect) {
+            setStreak(prev => {
+                const newStreak = prev + 1;
+                if (newStreak > bestStreak) setBestStreak(newStreak);
+                return newStreak;
+            });
+        } else {
+            setStreak(0);
+        }
+
         feedbackTimeoutRef.current = setTimeout(() => {
             advanceToNext();
         }, 800);
@@ -963,6 +1001,9 @@ export function useGameLogic(onSessionComplete?: (
         totalQuestions,
         avgTime,
         percentage,
+        streak,
+        bestStreak,
+        currentQuestionTimeElapsed,
         settings,
         tableRange,
         dailyGoal: settings.dailyGoal,
