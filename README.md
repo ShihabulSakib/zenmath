@@ -1,99 +1,159 @@
 # ZenMath
 
-A minimalist mental arithmetic practice tool designed to sharpen your math skills through customizable exercises.
+A minimalist, offline-capable mental arithmetic trainer with 14 game modes, adaptive difficulty, voice support, and persistent performance tracking.
 
-## 🚀 Features
+Live PWA — installable on desktop and mobile.
 
-- **Multiple Game Modes:** Practice addition, subtraction, multiplication, division, or mixed operations.
-- **Customizable Difficulty:** Adjust the number of digits and allow remainders for division.
-- **Special Training:** Dedicated mode for multiplication tables practice.
-- **Progress Tracking:** View detailed results, including score, time taken, and accuracy.
-- **PWA Support:** Installable as a progressive web app for offline practice.
-- **Dark/Light Mode:** Automatic theme detection based on system settings.
+## Features
 
-## 🛠️ Tech Stack
+- **14 game modes** — basic operations, mixed, squares, fractions, percentages, square roots, estimation, number series, ratios, chain calculations
+- **Adaptive difficulty** — auto-escalates digits and question complexity when accuracy exceeds 85%
+- **Audio feedback** — Web Speech API TTS and pre-recorded HD audio sprites (5 speed tiers)
+- **Persistent history** — every session and question result stored in IndexedDB
+- **Statistics dashboard** — aggregate accuracy, streak days, per-mode breakdown, 7-day chart
+- **Custom numeric keypad** — haptic feedback, native-feel input with fraction/decimal support
+- **Dark / Light theme** — toggle manually, saved to localStorage
+- **Full PWA** — installable, works offline, SPA navigation fallback, runtime font/audio caching
+- **Comprehensive revision** — multiplication tables (1–20), square numbers (1–25), fraction↔decimal reference
 
-- **Framework:** React 19 + TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS 4
-- **Icons:** Lucide React
-- **PWA:** Vite Plugin PWA
+## Tech Stack
 
-## 📋 Prerequisites
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 + TypeScript |
+| Build | Vite 7 |
+| Styling | Tailwind CSS 4 |
+| Icons | Material Symbols Outlined + Lucide React |
+| Audio | Web Audio API (audio sprites with signal smoothing) |
+| Speech | Web Speech API |
+| Storage | IndexedDB (sessions + questions) + localStorage (settings + daily progress) |
+| PWA | vite-plugin-pwa / Workbox |
+| Formatting | ESLint + TypeScript strict |
 
-Before you begin, ensure you have the following installed:
-- **Node.js** (v18 or higher recommended)
-- **npm** (comes with Node.js)
-
-## 📦 Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd zenmath
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-## ⚙️ Configuration
-
-This project does not currently require any environment variables to run.
-
-## 🏃 Running Locally
-
-To start the development server:
+## Getting Started
 
 ```bash
-npm run dev
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-The application will be available at `http://localhost:5173`.
-
-## 🏗️ Building for Production
-
-To build the application for production:
+Production build:
 
 ```bash
-npm run build
+npm run build      # tsc -b && vite build → dist/
+npm run preview    # serve the build locally
 ```
 
-To preview the production build locally:
+## Usage
 
-```bash
-npm run preview
+1. **Main Menu** — pick a mode (basic operations grid, mixed, or specialized practice)
+2. **Setup** — configure digits, difficulty, mode-specific options (remainders, negative results, ranges)
+3. **Play** — answer questions against a per-question timer; streak counter and elapsed time shown
+4. **Results** — score, accuracy, time breakdown, answer visualization, retry or return to menu
+5. **Stats / History / Revision / Settings** — accessible from the bottom navigation bar
+
+## Game Modes
+
+### Basic
+
+| Mode | Description |
+|------|-------------|
+| Addition | Sum of two numbers |
+| Subtraction | Positive-only or forced-negative results |
+| Multiplication | Product of two numbers |
+| Division | Exact or with remainders |
+| Mixed | Randomized combination of enabled operations |
+
+### Specialized
+
+| Mode | Description |
+|------|-------------|
+| Multiplication Tables | Range-based table practice (1–10, 11–20, or 1–20) |
+| Squares | Square numbers (fixed 1–25 or custom range) |
+| Fractions | Fraction↔decimal conversions (configurable numerator/denominator ranges) |
+
+### Advanced
+
+| Mode | Description |
+|------|-------------|
+| Percentage | "X% of Y" and "X is what % of Y" problems |
+| Square Root | Perfect-square and near-perfect root estimation |
+| Approximation | Round-estimate large-number arithmetic |
+| Number Series | Find the missing term (arithmetic, geometric, square, Fibonacci) |
+| Ratio | Find the missing value in a proportion |
+| Chain Calculation | Multi-step arithmetic chains (2–3 operations) |
+
+## Architecture
+
+```
+src/
+├── main.tsx                 # Entry point, ThemeProvider + App
+├── App.tsx                  # Root orchestrator, all screen routing
+├── constants.ts             # Single source of truth for limits/defaults
+├── index.css                # Tailwind @theme, CSS variables, animations
+├── hooks/
+│   ├── useGameLogic.ts      # Central game state machine (782 lines)
+│   ├── useStats.ts          # IndexedDB stats aggregation
+│   ├── useTheme.tsx         # Dark/light context + toggle
+│   └── useFractionLogic.ts  # Irreducible fraction question generator
+├── utils/
+│   ├── questions.ts         # Question generation for all modes
+│   ├── speech.ts            # Web Speech API TTS
+│   └── mathSpeech.ts        # Audio sprite key mapping
+├── services/
+│   ├── database.ts          # IndexedDB wrapper (sessions + questions stores)
+│   └── audio.ts             # Audio sprite player (Web Audio API)
+└── components/
+    ├── MainMenu.tsx         # Home screen with mode grid + bottom nav
+    ├── GameSetup.tsx        # Pre-game configuration
+    ├── GameScreen.tsx       # Active gameplay (question, timer, keypad)
+    ├── ResultsScreen.tsx    # Post-session summary
+    ├── SettingsScreen.tsx   # App settings
+    ├── StatsScreen.tsx      # Statistics dashboard
+    ├── HistoryScreen.tsx    # Session history with mode filters
+    ├── RevisionScreen.tsx   # Tables, squares, fraction reference
+    ├── Keypad.tsx           # Custom numeric keypad
+    ├── ProgressBar.tsx      # Reusable progress bar
+    ├── ToggleSwitch.tsx     # Reusable toggle with card wrapper
+    ├── ErrorBoundary.tsx    # Class-based error boundary
+    ├── ZenLayout.tsx        # Root layout wrapper
+    └── OfflineIndicator.tsx # Connectivity banner
 ```
 
-## 📖 Usage
+## Theming
 
-1. **Select a Mode:** Choose from the main menu to practice a specific operation or mix them up.
-2. **Setup Game:** Configure the number of digits and other settings in the setup screen.
-3. **Play:** Answer questions as quickly and accurately as possible. The game ends when you complete the set number of questions.
-4. **Review:** Check your results and identify areas for improvement.
+Two themes, toggled via a sun/moon button in the header:
 
-## ❓ FAQ
+| Token | Dark (Zen Obsidian) | Light (Paper Zen) |
+|-------|---------------------|-------------------|
+| Surface | `#000000` | `#F4F4F5` |
+| Card | `#121214` | `#FFFFFF` |
+| Primary | `#E4E4E7` | `#18181B` |
+| Text main | `#FFFFFF` | `#18181B` |
 
-**Q: Can I use this offline?**
-A: Yes! ZenMath is a Progressive Web App (PWA) and can be installed on your device for offline use.
+Feedback colors (correct `#4ADE80`, incorrect `#F87171`, timeout `#FB923C`) are identical in both modes. Theme preference is persisted in `localStorage` key `zenmath-theme`.
 
-**Q: How do I change the theme?**
-A: The application automatically adapts to your system's preferred color scheme (light or dark mode).
+## PWA
 
-**Q: Is my data saved?**
-A: Currently, game history is session-based. Persistent statistics are a planned feature.
+- **Installable** — meets all PWA criteria; standalone display with window controls overlay
+- **Offline** — all static assets precached by Workbox; fonts and audio runtime-cached
+- **Auto-update** — service worker registers with `autoUpdate`, no manual update prompt
+- **Manifest** — `theme_color: #0A1C2A`, portrait orientation, maskable icons
+- **Connectivity indicator** — banner displayed when `navigator.onLine === false`
 
-## 🤝 Contributing
+## Data Storage
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+| What | Where | Key |
+|------|-------|-----|
+| Sessions + Questions | IndexedDB (`zenmath-db`) | `sessions` and `questions` stores |
+| Settings | localStorage | `zenmath-settings` |
+| Daily progress | localStorage | `zenmath-daily-progress` |
+| Theme preference | localStorage | `zenmath-theme` |
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## Deployment
 
-## 📄 License
+The project includes a `vercel.json` for Vercel deployment with SPA rewrites and proper Service-Worker-Allowed headers.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## License
+
+MIT
