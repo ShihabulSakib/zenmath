@@ -10,10 +10,10 @@
   --color-midnight-border: rgba(255, 255, 255, 0.05);
 
   /* Light palette — Paper Zen */
-  --color-light-bg: #FAFAFA;
+  --color-light-bg: #F4F4F5;
   --color-light-card: #FFFFFF;
-  --color-light-card-hover: #F4F4F5;
-  --color-light-border: rgba(0, 0, 0, 0.05);
+  --color-light-card-hover: #EEEEF0;
+  --color-light-border: rgba(0, 0, 0, 0.08);
 
   /* Primary — Soft Silver Accent */
   --color-primary: #E4E4E7;
@@ -149,16 +149,16 @@ html.dark .material-symbols-outlined {
 html.light body {
   font-family: var(--font-display);
   background-color: var(--color-light-bg);
-  color: #09090B;
+  color: #18181B;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
 }
 
 html.light {
-  --color-keypad-bg: #F4F4F5;
-  --color-keypad-btn: #FFFFFF;
-  --color-keypad-border: #E4E4E7;
-  --color-keypad-text: #09090B;
+  --color-keypad-bg: #E4E4E7;
+  --color-keypad-btn: #FAFAFA;
+  --color-keypad-border: #D4D4D8;
+  --color-keypad-text: #18181B;
   --color-icon-dynamic: #18181B;
   --color-primary: #18181B;
 }
@@ -172,11 +172,11 @@ html.light .bg-card {
 }
 
 html.light .border-card {
-  border-color: var(--color-light-border);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 html.light .text-main {
-  color: #09090B;
+  color: #18181B;
 }
 
 html.light .text-secondary {
@@ -184,35 +184,35 @@ html.light .text-secondary {
 }
 
 html.light .text-muted {
-  color: #A1A1AA;
+  color: #71717A;
 }
 
 html.light .bg-header {
-  background-color: rgba(250, 250, 250, 0.95);
+  background-color: rgba(244, 244, 245, 0.9);
 }
 
 html.light .bg-nav {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 html.light .border-nav {
-  border-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 html.light .bg-toggle-off {
-  background-color: #E4E4E7;
+  background-color: #D4D4D8;
 }
 
 html.light .bg-input-card {
-  background-color: #FFFFFF;
+  background-color: #F4F4F5;
 }
 
 html.light .slider-track {
-  background-color: #E4E4E7;
+  background-color: #D4D4D8;
 }
 
 html.light .text-input-val {
-  color: #09090B;
+  color: #18181B;
 }
 
 html.light .bg-stat-card {
@@ -220,7 +220,7 @@ html.light .bg-stat-card {
 }
 
 html.light .border-stat {
-  border-color: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 html.light .text-on-primary {
