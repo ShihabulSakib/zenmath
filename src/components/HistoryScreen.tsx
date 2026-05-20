@@ -16,9 +16,15 @@ export default function HistoryScreen({ onBack }: HistoryScreenProps) {
     useEffect(() => {
         async function load() {
             setLoading(true);
-            const s = await db.getSessions(100);
-            setSessions(s);
-            setLoading(false);
+            try {
+                const s = await db.getSessions(100);
+                setSessions(s);
+            } catch (err) {
+                console.error('Failed to load sessions:', err);
+                setSessions([]);
+            } finally {
+                setLoading(false);
+            }
         }
         load();
     }, []);

@@ -110,9 +110,10 @@ export default function App() {
               ttsEnabled={game.settings.ttsEnabled}
               listenOnlyMode={game.settings.ttsEnabled && game.settings.listenOnlyMode}
               onSpeak={game.speakCurrentQuestion}
-              streak={game.streak}
-              showStreak={game.settings.showStreak}
-              currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
+          streak={game.streak}
+          showStreak={game.settings.showStreak}
+          currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
+          hapticFeedback={game.settings.hapticFeedback}
             />
           </ErrorBoundary>
         )}

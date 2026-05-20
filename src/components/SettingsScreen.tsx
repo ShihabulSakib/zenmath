@@ -22,6 +22,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const [preferredVoiceURI, setPreferredVoiceURI] = useState(settings.preferredVoiceURI);
     const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.adaptiveDifficulty);
     const [showStreak, setShowStreak] = useState(settings.showStreak);
+    const [hapticFeedback, setHapticFeedback] = useState(settings.hapticFeedback);
     const [voices, setVoices] = useState<VoiceOption[]>([]);
 
     // Load available voices
@@ -34,7 +35,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const handleSave = () => {
         cancelSpeech();
         audioSpritePlayer.stop();
-        onSave({ ...settings, totalQuestions, timeLimit, ttsEnabled, audioSpriteEnabled, spriteSpeed, listenOnlyMode, speechRate, preferredVoiceURI, adaptiveDifficulty, showStreak });
+        onSave({ ...settings, totalQuestions, timeLimit, ttsEnabled, audioSpriteEnabled, spriteSpeed, listenOnlyMode, speechRate, preferredVoiceURI, adaptiveDifficulty, showStreak, hapticFeedback });
         onBack();
     };
 
@@ -173,6 +174,14 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         label="Streak Counter"
                         description="Show consecutive correct answer streak"
                         icon="local_fire_department"
+                    />
+
+                    <ToggleCard
+                        enabled={hapticFeedback}
+                        onChange={setHapticFeedback}
+                        label="Haptic Feedback"
+                        description="Vibration on keypress (mobile devices)"
+                        icon="vibration"
                     />
                 </section>
 

@@ -57,6 +57,7 @@ export interface GameSettings {
     preferredVoiceURI: string;
     adaptiveDifficulty: boolean;
     showStreak: boolean;
+    hapticFeedback: boolean;
 }
 
 export interface GameState {
@@ -401,14 +402,26 @@ function loadSettings(): GameSettings {
                 preferredVoiceURI: parsed.preferredVoiceURI || '',
                 adaptiveDifficulty: typeof parsed.adaptiveDifficulty === 'boolean' ? parsed.adaptiveDifficulty : false,
                 showStreak: typeof parsed.showStreak === 'boolean' ? parsed.showStreak : true,
+                hapticFeedback: typeof parsed.hapticFeedback === 'boolean' ? parsed.hapticFeedback : true,
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: 1.0, listenOnlyMode: false, speechRate: 1.0, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true };
+    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: 1.0, listenOnlyMode: false, speechRate: 1.0, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, hapticFeedback: true };
 }
 
-function saveSettings(settings: GameSettings) {
-    localStorage.setItem('zenmath-settings', JSON.stringify(settings));
+function saveSettings(settings: GameSettings): GameSettings {
+    const validated = {
+        ...settings,
+        totalQuestions: Math.min(50, Math.max(1, settings.totalQuestions)),
+        timeLimit: Math.min(60, Math.max(5, settings.timeLimit)),
+        dailyGoal: Math.min(100, Math.max(1, settings.dailyGoal)),
+        spriteSpeed: Math.min(2.0, Math.max(0.5, settings.spriteSpeed)),
+        speechRate: Math.min(2.0, Math.max(0.5, settings.speechRate)),
+        listenOnlyMode: settings.ttsEnabled ? settings.listenOnlyMode : false,
+        hapticFeedback: typeof settings.hapticFeedback === 'boolean' ? settings.hapticFeedback : true,
+    };
+    localStorage.setItem('zenmath-settings', JSON.stringify(validated));
+    return validated;
 }
 
 // ─── Hook ───────────────────────────────────────────────────
@@ -934,8 +947,8 @@ export function useGameLogic(onSessionComplete?: (
     const goToHistory = useCallback(() => setScreen('history'), [setScreen]);
 
     const updateSettings = useCallback((newSettings: GameSettings) => {
-        setSettings(newSettings);
-        saveSettings(newSettings);
+        const validated = saveSettings(newSettings);
+        setSettings(validated);
     }, []);
 
     const selectTableRange = useCallback((range: [number, number]) => {

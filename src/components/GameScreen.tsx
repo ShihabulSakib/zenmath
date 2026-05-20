@@ -23,6 +23,7 @@ interface GameScreenProps {
     streak: number;
     showStreak: boolean;
     currentQuestionTimeElapsed: number; // ms
+    hapticFeedback: boolean;
 }
 
 export default function GameScreen({
@@ -46,6 +47,7 @@ export default function GameScreen({
     streak,
     showStreak,
     currentQuestionTimeElapsed,
+    hapticFeedback,
 }: GameScreenProps) {
     const isSquareOp = operation === '²';
     const showNegative = operation === '−';
@@ -177,7 +179,8 @@ export default function GameScreen({
                     onKey={onKey}
                     disabled={feedback !== 'none'}
                     showNegative={showNegative}
-                    showFraction={showFraction} // Pass the showFraction prop
+                    showFraction={showFraction}
+                    hapticFeedback={hapticFeedback}
                 />
             </div>
         </div>

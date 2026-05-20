@@ -4,6 +4,7 @@ interface KeypadProps {
     showNegative?: boolean;
     showFraction?: boolean;
     showDecimal?: boolean;
+    hapticFeedback?: boolean;
 }
 
 interface KeyButtonProps {
@@ -39,11 +40,12 @@ export default function Keypad({
     disabled = false,
     showNegative = true,
     showFraction = true,
-    showDecimal = true
+    showDecimal = true,
+    hapticFeedback = true
 }: KeypadProps) {
     const handlePress = (key: string) => {
         if (disabled) return;
-        if (navigator.vibrate) navigator.vibrate(10);
+        if (hapticFeedback && navigator.vibrate) navigator.vibrate(10);
         onKey(key);
     };
 

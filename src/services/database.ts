@@ -65,10 +65,6 @@ class ZenMathDB {
                     const questionsStore = db.createObjectStore('questions', { keyPath: 'id', autoIncrement: true });
                     questionsStore.createIndex('sessionId', 'sessionId', { unique: false });
                 }
-
-                if (!db.objectStoreNames.contains('dailyStats')) {
-                    db.createObjectStore('dailyStats', { keyPath: 'date' });
-                }
             };
         });
 
@@ -78,7 +74,7 @@ class ZenMathDB {
     async addSession(session: Session): Promise<void> {
         await this.init();
         return new Promise((resolve, reject) => {
-            const tx = this.db!.transaction(['sessions', 'dailyStats'], 'readwrite');
+            const tx = this.db!.transaction(['sessions'], 'readwrite');
             const sessionStore = tx.objectStore('sessions');
             sessionStore.put(session);
 
@@ -254,10 +250,9 @@ class ZenMathDB {
     async clearAllData(): Promise<void> {
         await this.init();
         return new Promise((resolve, reject) => {
-            const tx = this.db!.transaction(['sessions', 'questions', 'dailyStats'], 'readwrite');
+            const tx = this.db!.transaction(['sessions', 'questions'], 'readwrite');
             tx.objectStore('sessions').clear();
             tx.objectStore('questions').clear();
-            tx.objectStore('dailyStats').clear();
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
         });

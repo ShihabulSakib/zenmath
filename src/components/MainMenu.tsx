@@ -1,5 +1,5 @@
 import { useTheme } from '../hooks/useTheme';
-import type { GameMode } from '../hooks/useGameLogic';
+import type { GameMode, GameSettings } from '../hooks/useGameLogic';
 import { BookOpen } from 'lucide-react';
 import ProgressBar from './ProgressBar';
 
@@ -9,7 +9,11 @@ interface MainMenuProps {
     onRevision: () => void;
     onStats: () => void;
     onHistory: () => void;
-    game: any;
+    game: {
+        dailyProgress: number;
+        settings: GameSettings;
+        updateSettings: (s: GameSettings) => void;
+    };
 }
 
 export default function MainMenu({ onSelect, onSettings, onRevision, onStats, onHistory, game }: MainMenuProps) {
