@@ -3,6 +3,21 @@ import { useFractionLogic } from './useFractionLogic'; // Import useFractionLogi
 import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { problemToSpriteKeys } from '../utils/mathSpeech';
+import {
+    MIN_TOTAL_QUESTIONS, MAX_TOTAL_QUESTIONS,
+    MIN_TIME_LIMIT, MAX_TIME_LIMIT,
+    MIN_DAILY_GOAL, MAX_DAILY_GOAL,
+    MIN_SPRITE_SPEED, MAX_SPRITE_SPEED,
+    MIN_SPEECH_RATE, MAX_SPEECH_RATE,
+    DEFAULT_TOTAL_QUESTIONS, DEFAULT_TIME_LIMIT, DEFAULT_DAILY_GOAL,
+    DEFAULT_SPRITE_SPEED, DEFAULT_SPEECH_RATE,
+    USER_INPUT_MAX_LENGTH, FEEDBACK_DELAY_MS, TIMEOUT_DELAY_MS,
+    ADAPTIVE_ACCURACY_THRESHOLD,
+    DIFFICULTY_ORDER, MAX_DIGITS,
+    DEFAULT_TABLE_RANGE, DEFAULT_SQUARE_RANGE,
+    DEFAULT_FRACTION_DENOM_RANGE, DEFAULT_FRACTION_NUM_RANGE,
+    EASY_SQUARE_ROOT_MAX, MEDIUM_SQUARE_ROOT_MAX, HARD_SQUARE_ROOT_MAX,
+} from '../constants';
 
 // ─── Types ──────────────────────────────────────────────────
 export type Difficulty = 'easy' | 'medium' | 'hard';
@@ -242,7 +257,7 @@ function generatePercentageQuestion(diff: Difficulty): { question: string; displ
 }
 
 function generateSquareRootQuestion(diff: Difficulty): { question: string; answer: number } {
-    let maxRoot = diff === 'easy' ? 15 : diff === 'medium' ? 25 : 40;
+    let maxRoot = diff === 'easy' ? EASY_SQUARE_ROOT_MAX : diff === 'medium' ? MEDIUM_SQUARE_ROOT_MAX : HARD_SQUARE_ROOT_MAX;
     const root = randomInRange(2, maxRoot);
     const perfect = diff === 'hard' ? Math.random() > 0.7 : Math.random() > 0.5;
     let num: number;
@@ -391,14 +406,14 @@ function loadSettings(): GameSettings {
         if (stored) {
             const parsed = JSON.parse(stored);
             return {
-                totalQuestions: Math.min(50, Math.max(1, parsed.totalQuestions || 5)),
-                timeLimit: Math.min(60, Math.max(5, parsed.timeLimit || 20)),
-                dailyGoal: Math.min(100, Math.max(1, parsed.dailyGoal || 20)),
+                totalQuestions: Math.min(MAX_TOTAL_QUESTIONS, Math.max(MIN_TOTAL_QUESTIONS, parsed.totalQuestions || DEFAULT_TOTAL_QUESTIONS)),
+                timeLimit: Math.min(MAX_TIME_LIMIT, Math.max(MIN_TIME_LIMIT, parsed.timeLimit || DEFAULT_TIME_LIMIT)),
+                dailyGoal: Math.min(MAX_DAILY_GOAL, Math.max(MIN_DAILY_GOAL, parsed.dailyGoal || DEFAULT_DAILY_GOAL)),
                 ttsEnabled: typeof parsed.ttsEnabled === 'boolean' ? parsed.ttsEnabled : false,
                 audioSpriteEnabled: typeof parsed.audioSpriteEnabled === 'boolean' ? parsed.audioSpriteEnabled : false,
-                spriteSpeed: Math.min(2.0, Math.max(0.5, parsed.spriteSpeed || 1.0)),
+                spriteSpeed: Math.min(MAX_SPRITE_SPEED, Math.max(MIN_SPRITE_SPEED, parsed.spriteSpeed || DEFAULT_SPRITE_SPEED)),
                 listenOnlyMode: (typeof parsed.ttsEnabled === 'boolean' ? parsed.ttsEnabled : false) ? (typeof parsed.listenOnlyMode === 'boolean' ? parsed.listenOnlyMode : true) : false,
-                speechRate: Math.min(2.0, Math.max(0.5, parsed.speechRate || 1.0)),
+                speechRate: Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, parsed.speechRate || DEFAULT_SPEECH_RATE)),
                 preferredVoiceURI: parsed.preferredVoiceURI || '',
                 adaptiveDifficulty: typeof parsed.adaptiveDifficulty === 'boolean' ? parsed.adaptiveDifficulty : false,
                 showStreak: typeof parsed.showStreak === 'boolean' ? parsed.showStreak : true,
@@ -406,17 +421,17 @@ function loadSettings(): GameSettings {
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: 5, timeLimit: 20, dailyGoal: 5, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: 1.0, listenOnlyMode: false, speechRate: 1.0, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, hapticFeedback: true };
+    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, hapticFeedback: true };
 }
 
 function saveSettings(settings: GameSettings): GameSettings {
     const validated = {
         ...settings,
-        totalQuestions: Math.min(50, Math.max(1, settings.totalQuestions)),
-        timeLimit: Math.min(60, Math.max(5, settings.timeLimit)),
-        dailyGoal: Math.min(100, Math.max(1, settings.dailyGoal)),
-        spriteSpeed: Math.min(2.0, Math.max(0.5, settings.spriteSpeed)),
-        speechRate: Math.min(2.0, Math.max(0.5, settings.speechRate)),
+        totalQuestions: Math.min(MAX_TOTAL_QUESTIONS, Math.max(MIN_TOTAL_QUESTIONS, settings.totalQuestions)),
+        timeLimit: Math.min(MAX_TIME_LIMIT, Math.max(MIN_TIME_LIMIT, settings.timeLimit)),
+        dailyGoal: Math.min(MAX_DAILY_GOAL, Math.max(MIN_DAILY_GOAL, settings.dailyGoal)),
+        spriteSpeed: Math.min(MAX_SPRITE_SPEED, Math.max(MIN_SPRITE_SPEED, settings.spriteSpeed)),
+        speechRate: Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, settings.speechRate)),
         listenOnlyMode: settings.ttsEnabled ? settings.listenOnlyMode : false,
         hapticFeedback: typeof settings.hapticFeedback === 'boolean' ? settings.hapticFeedback : true,
     };
@@ -472,9 +487,10 @@ export function useGameLogic(onSessionComplete?: (
     const [mixedOps, setMixedOps] = useState([true, true, true, true]);
     const [allowNegativeResults, setAllowNegativeResults] = useState(false);
     const [squareRangeType, setSquareRangeType] = useState<'fixed' | 'custom'>('fixed');
-    const [customSquareRange, setCustomSquareRange] = useState<[number, number]>([1, 25]);
-    const [fractionDenominatorRange, setFractionDenominatorRange] = useState<[number, number]>([2, 10]);
-    const [fractionNumeratorRange, setFractionNumeratorRange] = useState<[number, number]>([1, 9]);
+    const [customSquareRange, setCustomSquareRange] = useState<[number, number]>(DEFAULT_SQUARE_RANGE);
+
+    const [fractionDenominatorRange, setFractionDenominatorRange] = useState<[number, number]>(DEFAULT_FRACTION_DENOM_RANGE);
+    const [fractionNumeratorRange, setFractionNumeratorRange] = useState<[number, number]>(DEFAULT_FRACTION_NUM_RANGE);
 
     const [dailyProgress, setDailyProgress] = useState(0);
 
@@ -499,7 +515,7 @@ export function useGameLogic(onSessionComplete?: (
     const [bestStreak, setBestStreak] = useState(0);
     const [currentQuestionTimeElapsed, setCurrentQuestionTimeElapsed] = useState(0);
 
-    const [tableRange, setTableRange] = useState<[number, number]>([1, 10]);
+    const [tableRange, setTableRange] = useState<[number, number]>(DEFAULT_TABLE_RANGE);
     const [settings, setSettings] = useState<GameSettings>(loadSettings);
     const [audioSpriteLoaded, setAudioSpriteLoaded] = useState(false);
 
@@ -583,7 +599,7 @@ export function useGameLogic(onSessionComplete?: (
     // ── Question generation ─────────────────────────────────
     const generateNextQuestion = useCallback((questionIndex: number) => {
         if (mode === 'square') {
-            const range = squareRangeType === 'fixed' ? [1, 25] : customSquareRange;
+            const range = squareRangeType === 'fixed' ? DEFAULT_SQUARE_RANGE : customSquareRange;
             const n = randomInRange(range[0], range[1]);
             setNum1(n);
             setNum2(n);
@@ -751,12 +767,12 @@ export function useGameLogic(onSessionComplete?: (
             // Adaptive difficulty
             if (settings.adaptiveDifficulty && finalResults.length > 0) {
                 const accuracy = correctCount / finalResults.length;
-                if (accuracy >= 0.85) {
-                    const diffOrder: Difficulty[] = ['easy', 'medium', 'hard'];
+                if (accuracy >= ADAPTIVE_ACCURACY_THRESHOLD) {
+                    const diffOrder: Difficulty[] = [...DIFFICULTY_ORDER];
                     const currentIdx = diffOrder.indexOf(difficulty);
                     if (currentIdx < 2) {
                         setDifficulty(diffOrder[currentIdx + 1]);
-                    } else if (digits < 4) {
+                    } else if (digits < MAX_DIGITS) {
                         setDigits(prev => prev + 1);
                     }
                 }
@@ -867,7 +883,7 @@ export function useGameLogic(onSessionComplete?: (
 
         feedbackTimeoutRef.current = setTimeout(() => {
             advanceToNext();
-        }, 800);
+        }, FEEDBACK_DELAY_MS);
     }, [userInput, correctAnswer, feedback, stopTimer, recordResult, advanceToNext, mode, fractionCorrectAnswer]);
 
     const handleTimeout = useCallback(() => {
@@ -880,7 +896,7 @@ export function useGameLogic(onSessionComplete?: (
         setFeedback('timeout');
         feedbackTimeoutRef.current = setTimeout(() => {
             advanceToNext();
-        }, 1200);
+        }, TIMEOUT_DELAY_MS);
     }, [stopTimer, recordResult, advanceToNext]);
 
     // ── Input handling ──────────────────────────────────────
@@ -912,7 +928,7 @@ export function useGameLogic(onSessionComplete?: (
         }
         else if (/^\d$/.test(key)) {
             setUserInput(prev => {
-                if (prev.length >= 12) return prev;
+                if (prev.length >= USER_INPUT_MAX_LENGTH) return prev;
                 return prev + key;
             });
         }

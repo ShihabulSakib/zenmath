@@ -1,3 +1,5 @@
+import { HAPTIC_DURATION_MS } from '../constants';
+
 interface KeypadProps {
     onKey: (key: string) => void;
     disabled?: boolean;
@@ -45,7 +47,7 @@ export default function Keypad({
 }: KeypadProps) {
     const handlePress = (key: string) => {
         if (disabled) return;
-        if (hapticFeedback && navigator.vibrate) navigator.vibrate(10);
+        if (hapticFeedback && navigator.vibrate) navigator.vibrate(HAPTIC_DURATION_MS);
         onKey(key);
     };
 

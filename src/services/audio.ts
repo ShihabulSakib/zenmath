@@ -1,3 +1,5 @@
+import { BASE_SEQUENCE_GAP, FADE_TIME } from '../constants';
+
 // ─── Audio Sprite Player — Web Audio API ─────────────────────
 // Low-latency, offline-capable audio sprite playback using a single
 // pre-decoded AudioBuffer and a JSON sprite map.
@@ -15,12 +17,9 @@ interface SpriteManifest {
     spritemap: Record<string, SpriteEntry>;
 }
 
-/** Gap (in seconds) between sequenced sprites at 1.0x speed */
-const BASE_SEQUENCE_GAP = 0.08;
-/** Micro-fade duration (in seconds) to prevent digital clicks */
-const FADE_TIME = 0.005;
-
 type AudioTier = '10' | '125' | '15' | '175' | '20';
+
+/** Shape of the JSON manifest file */
 
 interface TierData {
     buffer: AudioBuffer;
