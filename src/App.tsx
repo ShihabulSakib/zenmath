@@ -106,6 +106,7 @@ export default function App() {
           listenOnlyMode={game.settings.ttsEnabled && game.settings.listenOnlyMode}
           onSpeak={game.speakCurrentQuestion}
           streak={game.streak}
+          showStreak={game.settings.showStreak}
           currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
         />
       )}

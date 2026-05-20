@@ -19,6 +19,8 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const [listenOnlyMode, setListenOnlyMode] = useState(settings.listenOnlyMode);
     const [speechRate, setSpeechRate] = useState(settings.speechRate);
     const [preferredVoiceURI, setPreferredVoiceURI] = useState(settings.preferredVoiceURI);
+    const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.adaptiveDifficulty);
+    const [showStreak, setShowStreak] = useState(settings.showStreak);
     const [voices, setVoices] = useState<VoiceOption[]>([]);
 
     // Load available voices
@@ -31,7 +33,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const handleSave = () => {
         cancelSpeech();
         audioSpritePlayer.stop();
-        onSave({ ...settings, totalQuestions, timeLimit, ttsEnabled, audioSpriteEnabled, spriteSpeed, listenOnlyMode, speechRate, preferredVoiceURI });
+        onSave({ ...settings, totalQuestions, timeLimit, ttsEnabled, audioSpriteEnabled, spriteSpeed, listenOnlyMode, speechRate, preferredVoiceURI, adaptiveDifficulty, showStreak });
         onBack();
     };
 
@@ -146,6 +148,53 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
                             <span>6s</span>
                             <span>60s</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Training Settings */}
+                <section>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
+                        Training
+                    </h3>
+
+                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+                                <div>
+                                    <span className="text-sm font-bold text-main">Adaptive Difficulty</span>
+                                    <p className="text-[10px] text-secondary opacity-60 mt-0.5">Auto-increase difficulty when accuracy {">"}85%</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setAdaptiveDifficulty(!adaptiveDifficulty)}
+                                className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${adaptiveDifficulty ? 'bg-primary' : 'bg-toggle-off'}`}
+                                role="switch"
+                                aria-checked={adaptiveDifficulty}
+                            >
+                                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${adaptiveDifficulty ? 'translate-x-5' : ''}`} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                                <div>
+                                    <span className="text-sm font-bold text-main">Streak Counter</span>
+                                    <p className="text-[10px] text-secondary opacity-60 mt-0.5">Show consecutive correct answer streak</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowStreak(!showStreak)}
+                                className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${showStreak ? 'bg-primary' : 'bg-toggle-off'}`}
+                                role="switch"
+                                aria-checked={showStreak}
+                            >
+                                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${showStreak ? 'translate-x-5' : ''}`} />
+                            </button>
                         </div>
                     </div>
                 </section>

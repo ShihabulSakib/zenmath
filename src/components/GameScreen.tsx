@@ -20,6 +20,7 @@ interface GameScreenProps {
     listenOnlyMode: boolean;
     onSpeak: () => void;
     streak: number;
+    showStreak: boolean;
     currentQuestionTimeElapsed: number; // ms
 }
 
@@ -42,6 +43,7 @@ export default function GameScreen({
     listenOnlyMode,
     onSpeak,
     streak,
+    showStreak,
     currentQuestionTimeElapsed,
 }: GameScreenProps) {
     const progress = ((currentQuestion - 1) / totalQuestions) * 100;
@@ -82,7 +84,7 @@ export default function GameScreen({
                     <div className="flex justify-between items-center text-xs font-mono tracking-wider text-muted uppercase">
                         <span>Q {currentQuestion}/{totalQuestions}</span>
                         <div className="flex items-center gap-4">
-                            {streak > 1 && (
+                            {showStreak && streak > 1 && (
                                 <span className="flex items-center gap-1 text-primary font-black">
                                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
                                     <span className="text-sm">{streak}</span>
