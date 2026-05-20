@@ -1,4 +1,5 @@
-import { useGameLogic } from './hooks/useGameLogic';
+import { useGameLogic, type QuestionResult } from './hooks/useGameLogic';
+import { useStats } from './hooks/useStats';
 import ZenLayout from './components/ZenLayout';
 import MainMenu from './components/MainMenu';
 import GameSetup from './components/GameSetup';
@@ -7,11 +8,35 @@ import ResultsScreen from './components/ResultsScreen';
 import SettingsScreen from './components/SettingsScreen';
 import SpecialMenu from './components/SpecialMenu';
 import RevisionScreen from './components/RevisionScreen';
-// import { useFractionLogic } from './hooks/useFractionLogic'; // Remove import useFractionLogic
+import StatsScreen from './components/StatsScreen';
 
 export default function App() {
-  // const fractionLogic = useFractionLogic(); // Remove instantiation of useFractionLogic
-  const game = useGameLogic(); // Pass it to useGameLogic
+  const stats = useStats();
+
+  const handleSessionComplete = (
+    mode: string,
+    totalQuestions: number,
+    correct: number,
+    avgTimeMs: number,
+    difficulty: string,
+    results: QuestionResult[]
+  ) => {
+    const questions = results.map(r => ({
+      num1: typeof r.num1 === 'number' ? r.num1 : 0,
+      num2: typeof r.num2 === 'number' ? r.num2 : 0,
+      operation: r.operation,
+      correctAnswer: typeof r.correctAnswer === 'number' ? r.correctAnswer : 0,
+      userAnswer: typeof r.userAnswer === 'number' ? r.userAnswer : null,
+      timeMs: r.timeTaken * 1000,
+      isCorrect: r.isCorrect,
+      mode,
+      difficulty,
+    }));
+
+    stats.saveSession(mode, totalQuestions, correct, avgTimeMs, difficulty, questions);
+  };
+
+  const game = useGameLogic(handleSessionComplete);
 
   return (
     <ZenLayout>
@@ -20,6 +45,7 @@ export default function App() {
           onSelect={game.selectMode}
           onSettings={game.goToSettings}
           onRevision={game.goToRevision}
+          onStats={game.goToStats}
           game={game}
         />
       )}
@@ -89,6 +115,13 @@ export default function App() {
           results={game.results}
           onPlayAgain={game.startGame}
           onMenu={game.goToMenu}
+        />
+      )}
+
+      {game.screen === 'stats' && (
+        <StatsScreen
+          onBack={game.goToMenu}
+          stats={stats}
         />
       )}
 

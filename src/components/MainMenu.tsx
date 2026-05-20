@@ -6,10 +6,11 @@ interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
     onSettings: () => void;
     onRevision: () => void;
+    onStats: () => void;
     game: any;
 }
 
-export default function MainMenu({ onSelect, onSettings, onRevision, game }: MainMenuProps) {
+export default function MainMenu({ onSelect, onSettings, onRevision, onStats, game }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
 
     const ops: { mode: GameMode; symbol: string; label: string; color: string; glow: string }[] = [
@@ -223,6 +224,14 @@ export default function MainMenu({ onSelect, onSettings, onRevision, game }: Mai
                     >
                         <BookOpen size={24} />
                         <span className="text-[10px] font-medium tracking-wide">Revision</span>
+                    </button>
+
+                    <button
+                        onClick={onStats}
+                        className="flex flex-col items-center gap-1 p-2 text-primary"
+                    >
+                        <span className="material-symbols-outlined">bar_chart</span>
+                        <span className="text-[10px] font-medium tracking-wide">Stats</span>
                     </button>
 
                     <button

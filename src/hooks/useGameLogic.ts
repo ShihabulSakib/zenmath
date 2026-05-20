@@ -30,7 +30,8 @@ export type ScreenState =
     | 'playing'
     | 'result'
     | 'settings'
-    | 'revision';
+    | 'revision'
+    | 'stats';
 
 export interface QuestionResult {
     num1: number;
@@ -406,17 +407,24 @@ function saveSettings(settings: GameSettings) {
 }
 
 // ─── Hook ───────────────────────────────────────────────────
-export function useGameLogic() {
+export function useGameLogic(onSessionComplete?: (
+        mode: string,
+        totalQuestions: number,
+        correct: number,
+        avgTimeMs: number,
+        difficulty: string,
+        results: QuestionResult[]
+    ) => void) {
     const [screen, setScreenInternal] = useState<ScreenState>(() => {
         const hash = window.location.hash.replace('#', '') as ScreenState;
-        const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision'];
+        const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats'];
         return validScreens.includes(hash) ? hash : 'menu';
     });
 
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.replace('#', '') as ScreenState;
-            const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision'];
+            const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats'];
             if (validScreens.includes(hash)) {
                 setScreenInternal(hash);
             } else if (!window.location.hash) {
@@ -696,6 +704,24 @@ export function useGameLogic() {
 
         if (currentQuestion >= totalQ) {
             stopTimer();
+
+            const finalResults = results;
+            const correctCount = finalResults.filter(r => r.isCorrect).length;
+            const avgTimeMs = finalResults.length > 0
+                ? finalResults.reduce((sum, r) => sum + r.timeTaken * 1000, 0) / finalResults.length
+                : 0;
+
+            if (onSessionComplete) {
+                onSessionComplete(
+                    mode,
+                    finalResults.length,
+                    correctCount,
+                    avgTimeMs,
+                    difficulty,
+                    finalResults
+                );
+            }
+
             setDailyProgress(prev => {
                 const today = new Date().toISOString().split('T')[0];
                 const stored = localStorage.getItem('zenmath-daily-progress');
@@ -713,7 +739,7 @@ export function useGameLogic() {
             generateNextQuestion(currentQuestion + 1);
             startTimer();
         }
-    }, [currentQuestion, settings.totalQuestions, generateNextQuestion, startTimer, stopTimer, setScreen]);
+    }, [currentQuestion, settings.totalQuestions, generateNextQuestion, startTimer, stopTimer, setScreen, onSessionComplete, results, mode, difficulty]);
 
     const recordResult = useCallback((
         isCorrect: boolean,
@@ -865,6 +891,7 @@ export function useGameLogic() {
 
     const goToSettings = useCallback(() => setScreen('settings'), [setScreen]);
     const goToRevision = useCallback(() => setScreen('revision'), [setScreen]);
+    const goToStats = useCallback(() => setScreen('stats'), [setScreen]);
 
     const updateSettings = useCallback((newSettings: GameSettings) => {
         setSettings(newSettings);
@@ -960,6 +987,7 @@ export function useGameLogic() {
         goToMenu,
         goToSettings,
         goToRevision,
+        goToStats,
         updateSettings,
         selectTableRange,
         speakCurrentQuestion,
