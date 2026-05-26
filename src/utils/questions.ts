@@ -139,20 +139,24 @@ export function generatePercentageQuestion(diff: Difficulty): { question: string
 }
 
 export function generateSquareRootQuestion(diff: Difficulty): { question: string; answer: number } {
-    let maxRoot = diff === 'easy' ? 15 : diff === 'medium' ? 25 : 40;
+    const maxRoot = diff === 'easy' ? 15 : diff === 'medium' ? 25 : 40;
     const root = randomInRange(2, maxRoot);
-    const perfect = diff === 'hard' ? Math.random() > 0.7 : Math.random() > 0.5;
-    let num: number;
 
-    if (perfect || diff === 'easy') {
-        num = root * root;
-    } else {
-        const offset = randomInRange(-3, 3);
-        num = (root + offset) * (root + offset);
-        if (num < 1) num = root * root;
+    if (diff === 'easy') {
+        return { question: `√${root * root}`, answer: root };
     }
 
-    return { question: `√${num}`, answer: root };
+    const perfect = diff === 'hard' ? Math.random() > 0.7 : Math.random() > 0.5;
+    if (perfect) {
+        return { question: `√${root * root}`, answer: root };
+    }
+
+    const offset = randomInRange(-3, 3);
+    const actualRoot = root + offset;
+    if (actualRoot <= 0) {
+        return { question: `√${root * root}`, answer: root };
+    }
+    return { question: `√${actualRoot * actualRoot}`, answer: actualRoot };
 }
 
 const POW10 = [1, 10, 100, 1000, 10000];
