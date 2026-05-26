@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useFractionLogic } from './useFractionLogic'; // Import useFractionLogic
+import { generateFractionQuestion } from '../utils/fractions';
 import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { problemToSpriteKeys } from '../utils/mathSpeech';
@@ -208,8 +208,6 @@ export function useGameLogic(onSessionComplete?: (
 
     const [dailyProgress, setDailyProgress] = useState(0);
 
-    const fractionLogic = useFractionLogic(fractionNumeratorRange[0], fractionNumeratorRange[1], fractionDenominatorRange[0], fractionDenominatorRange[1]);
-
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [num1, setNum1] = useState(0);
     const [num2, setNum2] = useState(0);
@@ -345,7 +343,10 @@ export function useGameLogic(onSessionComplete?: (
             setFractionQuestionDisplay('');
             setFractionCorrectAnswer('');
         } else if (mode === 'fraction') {
-            const { question, answer, type } = fractionLogic.generateFractionQuestion();
+            const { question, answer, type } = generateFractionQuestion(
+                fractionNumeratorRange[0], fractionNumeratorRange[1],
+                fractionDenominatorRange[0], fractionDenominatorRange[1],
+            );
             setNum1(0);
             setNum2(0);
             setCurrentOperation(type === 'fractionToDecimal' ? 'Fraction to Decimal' : 'Decimal to Fraction');
@@ -415,7 +416,7 @@ export function useGameLogic(onSessionComplete?: (
         setFeedback('none');
         setCurrentQuestion(questionIndex);
         isProcessingRef.current = false;
-    }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange, fractionLogic, allowNegativeResults, squareRangeType, customSquareRange]);
+    }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange, fractionNumeratorRange, fractionDenominatorRange, allowNegativeResults, squareRangeType, customSquareRange]);
 
     // ── TTS: Auto-speak on new question ─────────────────────
     const speakCurrentQuestion = useCallback(() => {
