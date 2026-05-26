@@ -31,6 +31,14 @@ const modeLabels: Record<string, string> = {
     multiplication: 'Multiplication',
     division: 'Division',
     mixed: 'Mixed Operations',
+    square: 'Square Numbers',
+    fraction: 'Fractions',
+    percentage: 'Percentages',
+    'square-root': 'Square Roots',
+    approximation: 'Estimation',
+    'number-series': 'Number Series',
+    ratio: 'Ratios',
+    'chain-calculation': 'Chain Calculation',
 };
 
 const difficultyLevels: { value: Difficulty; label: string }[] = [
@@ -126,8 +134,8 @@ export default function GameSetup({
                     </section>
                 )}
 
-                {/* Number of digits — only for non-mixed modes and non-fraction modes */}
-                {(mode !== 'multiplication-table' && mode !== 'square' && mode !== 'fraction') && (
+                {/* Number of digits — only for operations that use generateNumber() */}
+                {['addition', 'subtraction', 'multiplication', 'division', 'mixed'].includes(mode) && (
                     <section>
                         <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
                             Number of Digits
