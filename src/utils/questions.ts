@@ -113,33 +113,29 @@ export function generateQuestion(
 }
 
 export function generatePercentageQuestion(diff: Difficulty): { question: string; answer: number } {
-    let num1: number, num2: number, answer: number, display: string;
-
     if (diff === 'easy') {
         const easyPcts = [10, 25, 50, 75];
-        num1 = easyPcts[randomInRange(0, easyPcts.length - 1)];
-        num2 = randomInRange(2, 10);
-        let baseValue = num2 * (num1 === 25 ? 4 : num1 === 50 ? 2 : num1 === 75 ? 4/3 : 10);
-        if (num1 === 75) { num2 = randomInRange(2, 12); baseValue = num2 * 4/3; }
-        answer = Math.round((num1 * (num2 * 100)) / 100);
-        display = `${num1}% of ${Math.round(baseValue)}`;
-        if (num1 === 10) { num2 = randomInRange(5, 50); display = `10% of ${num2 * 10}`; }
-    } else {
-        const type = Math.random() < 0.5 ? 'percentOf' : 'whatPercent';
-        if (type === 'percentOf') {
-            num1 = randomInRange(1, 20) * 5;
-            num2 = randomInRange(10, 50 + (diff === 'hard' ? 50 : 0));
-            answer = Math.round((num1 * num2) / 100);
-            display = `${num1}% of ${num2}`;
-        } else {
-            num1 = randomInRange(1, 20) * 5;
-            num2 = Math.round((num1 * randomInRange(2, 20)) / 100);
-            answer = num1;
-            display = `${num2} is what % of ${Math.round(num2 * (100 / num1))}`;
-        }
+        const pct = easyPcts[randomInRange(0, easyPcts.length - 1)];
+        const multiplier = pct === 25 ? 4 : pct === 50 ? 2 : pct === 75 ? 4/3 : 10;
+        const baseNum = pct === 75 ? randomInRange(2, 12) : randomInRange(2, 10);
+        const baseValue = Math.round(baseNum * multiplier);
+        const answer = Math.round((pct / 100) * baseValue);
+        return { question: `${pct}% of ${baseValue}`, answer };
     }
 
-    return { question: display, answer };
+    const type = Math.random() < 0.5 ? 'percentOf' : 'whatPercent';
+    if (type === 'percentOf') {
+        const pct = randomInRange(1, 20) * 5;
+        const value = randomInRange(10, 50 + (diff === 'hard' ? 50 : 0));
+        const answer = Math.round((pct * value) / 100);
+        return { question: `${pct}% of ${value}`, answer };
+    } else {
+        const pct = randomInRange(1, 20) * 5;
+        const result = randomInRange(2, 20);
+        const value = Math.round((result * 100) / pct);
+        const answer = pct;
+        return { question: `${result} is what % of ${value}`, answer };
+    }
 }
 
 export function generateSquareRootQuestion(diff: Difficulty): { question: string; answer: number } {
@@ -159,18 +155,24 @@ export function generateSquareRootQuestion(diff: Difficulty): { question: string
     return { question: `√${num}`, answer: root };
 }
 
+const POW10 = [1, 10, 100, 1000, 10000];
+
 export function generateApproximationQuestion(diff: Difficulty): { question: string; answer: number } {
     const ops: Operation[] = ['+', '-', '*'];
     const op = ops[Math.floor(Math.random() * (diff === 'easy' ? 2 : 3))];
-    let num1: number, num2: number, exactAnswer: number;
 
     const digitsCount = diff === 'easy' ? 2 : diff === 'medium' ? 3 : 4;
-    num1 = randomInRange(Math.pow(10, digitsCount - 1), Math.pow(10, digitsCount) - 1);
-    num2 = randomInRange(Math.pow(10, digitsCount - 1), Math.pow(10, digitsCount) - 1);
+    const min = POW10[digitsCount - 1];
+    const max = POW10[digitsCount] - 1;
+    const num1 = randomInRange(min, max);
+    const num2 = randomInRange(min, max);
 
+    let exactAnswer: number;
     switch (op) {
         case '+': exactAnswer = num1 + num2; break;
-        case '-': if (num1 < num2) [num1, num2] = [num2, num1]; exactAnswer = num1 - num2; break;
+        case '-':
+            exactAnswer = num1 >= num2 ? num1 - num2 : num2 - num1;
+            break;
         default: exactAnswer = num1 * num2;
     }
 
@@ -193,11 +195,16 @@ export function generateNumberSeriesQuestion(diff: Difficulty): { question: stri
         case 'geometric': {
             const start = randomInRange(1, 5);
             const ratio = randomInRange(2, 3);
-            series = Array.from({ length }, (_, i) => {
-                const val = start * Math.pow(ratio, i);
-                return val > 1000 ? 0 : val;
-            });
-            if (series.includes(0)) series = [1, 2, 4, 8, 16, 32].slice(0, length);
+            series = [];
+            let val = start;
+            for (let i = 0; i < length; i++) {
+                if (val > 1000) {
+                    series = [1, 2, 4, 8, 16, 32].slice(0, length);
+                    break;
+                }
+                series.push(val);
+                val *= ratio;
+            }
             break;
         }
         case 'square': {
