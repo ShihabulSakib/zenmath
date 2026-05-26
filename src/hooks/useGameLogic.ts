@@ -266,7 +266,6 @@ export function useGameLogic(onSessionComplete?: (
     const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isProcessingRef = useRef(false);
 
-    // ── Timer ───────────────────────────────────────────────
     const stopTimer = useCallback(() => {
         if (timerRef.current) {
             clearInterval(timerRef.current);
@@ -276,18 +275,14 @@ export function useGameLogic(onSessionComplete?: (
 
     const startTimer = useCallback(() => {
         stopTimer();
+        questionStartRef.current = Date.now();
         setTimeRemaining(settings.timeLimit);
         setCurrentQuestionTimeElapsed(0);
-        questionStartRef.current = Date.now();
         timerRef.current = setInterval(() => {
-            setCurrentQuestionTimeElapsed(Date.now() - questionStartRef.current);
-            setTimeRemaining(prev => {
-                if (prev <= 1) {
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+            const elapsed = Date.now() - questionStartRef.current;
+            setCurrentQuestionTimeElapsed(elapsed);
+            setTimeRemaining(Math.max(0, settings.timeLimit - Math.floor(elapsed / 1000)));
+        }, 200);
     }, [settings.timeLimit, stopTimer]);
 
     // Handle timeout
