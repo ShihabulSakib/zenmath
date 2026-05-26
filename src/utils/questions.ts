@@ -92,20 +92,15 @@ export function generateQuestion(
             break;
         case '/':
             if (!allowRemainder) {
-                num1 = generateNumber(digits, diff, operation, false);
-                const divDigits = digits > 1 ? Math.floor(digits / 2) : 1;
-                let divisor = generateNumber(divDigits, diff, operation, true);
-                let attempts = 0;
-                while ((num1 % divisor !== 0 || divisor === 1) && attempts < 100) {
-                    divisor = generateNumber(divDigits, diff, operation, true);
-                    if (divisor > num1 / 2) divisor = num1;
-                    attempts++;
-                }
-                if (num1 % divisor !== 0) {
-                    divisor = num1;
-                }
-                num2 = divisor;
-                answer = Math.floor(num1 / num2);
+                const divDigits = Math.max(1, Math.floor(digits / 2));
+                num2 = generateNumber(divDigits, diff, operation, true);
+                const targetMin = Math.pow(10, digits - 1);
+                const targetMax = Math.pow(10, digits) - 1;
+                const qMin = Math.ceil(targetMin / num2);
+                const qMax = Math.floor(targetMax / num2);
+                const q = randomInRange(Math.max(1, qMin), Math.max(1, qMin, qMax));
+                num1 = num2 * q;
+                answer = q;
             } else {
                 answer = Math.floor(num1 / num2);
             }
