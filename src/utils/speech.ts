@@ -103,7 +103,22 @@ export function speakQuestion(
         }
     }
 
-    // Speak!
+    utterance.onerror = (event) => {
+        console.warn('[speech] Utterance failed:', event.error);
+        if (utterance.voice && utterance.voice.voiceURI !== '' && event.error !== 'canceled') {
+            const fallback = window.speechSynthesis.getVoices().find(v =>
+                v.lang.startsWith(navigator.language.split('-')[0]) && v.localService
+            ) || window.speechSynthesis.getVoices().find(v =>
+                v.lang.startsWith(navigator.language.split('-')[0])
+            );
+            if (fallback && fallback.voiceURI !== utterance.voice.voiceURI) {
+                utterance.voice = fallback;
+                utterance.lang = fallback.lang;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+    };
+
     window.speechSynthesis.speak(utterance);
 }
 
