@@ -3,6 +3,7 @@ import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type Voice
 import { audioSpritePlayer } from '../services/audio';
 import { requestNotificationPermission, getTodayProgress, showLocalNotification, type NotificationTime } from '../services/notifications';
 import ToggleSwitch, { ToggleCard } from './ToggleSwitch';
+import RangeSlider from './RangeSlider';
 
 interface SettingsScreenProps {
     settings: {
@@ -149,13 +150,11 @@ const handleSave = async () => {
                             <span className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-bold">{totalQuestions} Questions</span>
                         </div>
                         <div className="px-2">
-                            <input
-                                type="range"
-                                min="1"
-                                max="50"
+                            <RangeSlider
                                 value={totalQuestions}
-                                onChange={(e) => setTotalQuestions(parseInt(e.target.value))}
-                                style={{ "--range-progress": `${((totalQuestions - 1) / 49) * 100}%` } as React.CSSProperties}
+                                min={1}
+                                max={50}
+                                onChange={setTotalQuestions}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
@@ -176,13 +175,11 @@ const handleSave = async () => {
                             <span className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-bold">{timeLimit} Seconds</span>
                         </div>
                         <div className="px-2">
-                            <input
-                                type="range"
-                                min="6"
-                                max="60"
+                            <RangeSlider
                                 value={timeLimit}
-                                onChange={(e) => setTimeLimit(parseInt(e.target.value))}
-                                style={{ "--range-progress": `${((timeLimit - 6) / 54) * 100}%` } as React.CSSProperties}
+                                min={6}
+                                max={60}
+                                onChange={setTimeLimit}
                             />
                         </div>
                         <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
@@ -375,14 +372,12 @@ const handleSave = async () => {
                                     <span className="text-sm text-primary font-black">{spriteSpeed.toFixed(2)}×</span>
                                 </div>
                                 <div className="px-2">
-                                    <input
-                                        type="range"
-                                        min="1"
-                                        max="2"
-                                        step="0.25"
+                                    <RangeSlider
                                         value={spriteSpeed}
-                                        onChange={(e) => setSpriteSpeed(parseFloat(e.target.value))}
-                                        style={{ "--range-progress": `${((spriteSpeed - 1) / 1) * 100}%` } as React.CSSProperties}
+                                        min={1}
+                                        max={2}
+                                        step={0.25}
+                                        onChange={setSpriteSpeed}
                                     />
                                 </div>
                                 <div className="flex justify-between text-[10px] font-black text-secondary mt-2 px-2 uppercase tracking-widest opacity-40">
@@ -420,14 +415,12 @@ const handleSave = async () => {
                                         <span className="text-sm text-primary font-black">{speechRate.toFixed(2)}×</span>
                                     </div>
                                     <div className="px-2">
-                                        <input
-                                            type="range"
-                                            min="0.25"
-                                            max="2.0"
-                                            step="0.25"
+                                        <RangeSlider
                                             value={speechRate}
-                                            onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                                            style={{ "--range-progress": `${((speechRate - 0.25) / 1.75) * 100}%` } as React.CSSProperties}
+                                            min={0.25}
+                                            max={2.0}
+                                            step={0.25}
+                                            onChange={setSpeechRate}
                                         />
                                     </div>
                                     <div className="flex justify-between text-[10px] font-black text-secondary mt-2 px-2 uppercase tracking-widest opacity-40">

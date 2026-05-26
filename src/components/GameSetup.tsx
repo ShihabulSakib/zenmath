@@ -1,4 +1,5 @@
 import type { Difficulty, GameMode } from '../hooks/useGameLogic';
+import RangeSlider from './RangeSlider';
 
 interface GameSetupProps {
     mode: GameMode;
@@ -234,13 +235,11 @@ export default function GameSetup({
                             ))}
                         </div>
                         <div className="relative px-2">
-                            <input
-                                type="range"
-                                min="0"
-                                max="2"
+                            <RangeSlider
                                 value={diffIdx}
-                                onChange={(e) => onDifficultyChange(difficultyLevels[parseInt(e.target.value)].value)}
-                                style={{ "--range-progress": `${(diffIdx / 2) * 100}%` } as React.CSSProperties}
+                                min={0}
+                                max={2}
+                                onChange={(val) => onDifficultyChange(difficultyLevels[Math.round(val)].value)}
                             />
                         </div>
                     </div>
