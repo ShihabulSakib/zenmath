@@ -383,18 +383,19 @@ void practiceMath(char operation, int digits, Difficulty diff, bool allowRemaind
         // Special handling for division
         if(operation == '/') {
             if(!allowRemainder) {
-                // Ensure clean division by generating num1 first, then finding a divisor (num2)
-                num1 = generateNumber(digits, diff, operation, false);
-                
-                // Find a non-trivial divisor for num2
-                int temp_divisor = generateNumber(digits > 1 ? digits / 2 : 1, diff, operation, true);
-                while(num1 % temp_divisor != 0 || temp_divisor == 1) {
-                    temp_divisor = generateNumber(digits > 1 ? digits / 2 : 1, diff, operation, true);
-                    // Failsafe to prevent infinite loop on prime numbers, though unlikely with larger numbers
-                    if (temp_divisor > num1 / 2) temp_divisor = num1;
-                }
-                num2 = temp_divisor;
-                correctAnswer = num1 / num2;
+                // Product-based: generate divisor first, then quotient for exact division
+                int divDigits = digits > 1 ? digits / 2 : 1;
+                num2 = generateNumber(divDigits, diff, operation, true);
+                int targetMin = 1;
+                for(int j = 0; j < digits - 1; j++) targetMin *= 10;
+                int targetMax = targetMin * 10 - 1;
+                int qMin = (targetMin + num2 - 1) / num2;
+                int qMax = targetMax / num2;
+                if(qMin < 1) qMin = 1;
+                if(qMax < qMin) qMax = qMin;
+                int q = generateRandomNumber(qMin, qMax);
+                num1 = num2 * q;
+                correctAnswer = q;
             } else {
                 correctAnswer = num1 / num2;
             }
@@ -489,18 +490,19 @@ void practiceMixed(int digits, Difficulty diff, bool allowRemainder, bool ops[4]
         // Calculate correct answer (same logic as practiceMath)
         if(operation == '/') {
             if(!allowRemainder) {
-                // Ensure clean division by generating num1 first, then finding a divisor (num2)
-                num1 = generateNumber(digits, diff, operation, false);
-                
-                // Find a non-trivial divisor for num2
-                int temp_divisor = generateNumber(digits > 1 ? digits / 2 : 1, diff, operation, true);
-                while(num1 % temp_divisor != 0 || temp_divisor == 1) {
-                    temp_divisor = generateNumber(digits > 1 ? digits / 2 : 1, diff, operation, true);
-                    // Failsafe to prevent infinite loop on prime numbers, though unlikely with larger numbers
-                    if (temp_divisor > num1 / 2) temp_divisor = num1;
-                }
-                num2 = temp_divisor;
-                correctAnswer = num1 / num2;
+                // Product-based: generate divisor first, then quotient for exact division
+                int divDigits = digits > 1 ? digits / 2 : 1;
+                num2 = generateNumber(divDigits, diff, operation, true);
+                int targetMin = 1;
+                for(int j = 0; j < digits - 1; j++) targetMin *= 10;
+                int targetMax = targetMin * 10 - 1;
+                int qMin = (targetMin + num2 - 1) / num2;
+                int qMax = targetMax / num2;
+                if(qMin < 1) qMin = 1;
+                if(qMax < qMin) qMax = qMin;
+                int q = generateRandomNumber(qMin, qMax);
+                num1 = num2 * q;
+                correctAnswer = q;
             } else {
                 correctAnswer = num1 / num2;
             }
