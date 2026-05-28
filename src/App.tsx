@@ -1,6 +1,7 @@
 import { useGameLogic, type QuestionResult } from './hooks/useGameLogic';
 import { useStats } from './hooks/useStats';
-import { checkAndShowNotification } from './services/notifications';
+import { evaluateAndSend, startNotificationScheduler, stopNotificationScheduler, setFeedbackCallback } from './services/notifications';
+import { ToastProvider, useToast } from './hooks/useToast';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenLayout from './components/ZenLayout';
 import MainMenu from './components/MainMenu';
@@ -12,15 +13,22 @@ import SpecialMenu from './components/SpecialMenu';
 import RevisionScreen from './components/RevisionScreen';
 import StatsScreen from './components/StatsScreen';
 import HistoryScreen from './components/HistoryScreen';
+import ToastContainer from './components/Toast';
 import { useEffect } from 'react';
 
-export default function App() {
+function AppInner() {
   const stats = useStats();
+  const { showToast } = useToast();
 
   useEffect(() => {
-    // Check and show notification on app load
-    checkAndShowNotification();
-  }, []);
+    setFeedbackCallback(showToast);
+    evaluateAndSend();
+    startNotificationScheduler();
+    return () => {
+      setFeedbackCallback(null);
+      stopNotificationScheduler();
+    };
+  }, [showToast]);
 
   const handleSessionComplete = (
     mode: string,
@@ -117,9 +125,9 @@ export default function App() {
               ttsEnabled={game.settings.ttsEnabled}
               listenOnlyMode={game.settings.ttsEnabled && game.settings.listenOnlyMode}
               onSpeak={game.speakCurrentQuestion}
-          streak={game.streak}
-          showStreak={game.settings.showStreak}
-          currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
+              streak={game.streak}
+              showStreak={game.settings.showStreak}
+              currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
             />
           </ErrorBoundary>
         )}
@@ -160,6 +168,15 @@ export default function App() {
           />
         )}
       </ZenLayout>
+      <ToastContainer />
     </ErrorBoundary>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   );
 }

@@ -46,25 +46,56 @@ registerRoute(
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-    const { title, body, icon, badge, tag } = event.data;
-    
-    self.registration.showNotification(title, {
+    const { title, body, icon, badge, tag, actions, silent, vibrate, requireInteraction } = event.data;
+
+    const options = {
       body,
       icon: icon || '/pwa-192x192.png',
       badge: badge || '/pwa-192x192.png',
       tag: tag || 'zenmath-notification',
-      requireInteraction: true,
-      vibrate: [200, 100, 200],
-      data: { url: '/' }
-    });
+      requireInteraction: requireInteraction !== undefined ? requireInteraction : true,
+      vibrate: vibrate || [200, 100, 200],
+      silent: silent || false,
+      data: { url: '/' },
+    };
+
+    if (actions && Array.isArray(actions)) {
+      options.actions = actions;
+    }
+
+    self.registration.showNotification(title, options);
   }
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
+
+  const action = event.action;
   const url = event.notification.data?.url || '/';
-  
+
+  if (action === 'snooze') {
+    event.waitUntil(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          self.registration.showNotification(
+            event.notification.title,
+            {
+              body: 'Time to practice! Your 30-minute snooze is up.',
+              icon: event.notification.icon || '/pwa-192x192.png',
+              badge: '/pwa-192x192.png',
+              tag: 'zenmath-snooze',
+              requireInteraction: true,
+              vibrate: [200, 100, 200],
+              data: { url: '/' },
+            }
+          );
+          resolve();
+        }, 30 * 60 * 1000);
+      })
+    );
+    return;
+  }
+
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {

@@ -1,300 +1,410 @@
 const NOTIFICATION_PERMISSION_KEY = 'zenmath-notification-permission';
-const NOTIFICATION_TIMES_KEY = 'zenmath-notification-times';
 const LAST_NOTIFICATION_DATE_KEY = 'zenmath-last-notification-date';
+const SETTINGS_KEY = 'zenmath-settings';
+const DAILY_PROGRESS_KEY = 'zenmath-daily-progress';
+const SENT_TIMES_KEY = 'zenmath-notification-sent-times';
 
-export type NotificationTime = '20:00' | '21:00' | '22:00' | '23:00';
+export type NotificationTime = '08:00' | '12:00' | '15:00' | '18:00' | '20:00';
+
+export interface TimeSlotInfo {
+  value: NotificationTime;
+  label: string;
+  period: 'morning' | 'midday' | 'afternoon' | 'evening' | 'night';
+}
+
+export const TIME_SLOTS: TimeSlotInfo[] = [
+  { value: '08:00', label: '8:00 AM', period: 'morning' },
+  { value: '12:00', label: '12:00 PM', period: 'midday' },
+  { value: '15:00', label: '3:00 PM', period: 'afternoon' },
+  { value: '18:00', label: '6:00 PM', period: 'evening' },
+  { value: '20:00', label: '8:00 PM', period: 'night' },
+];
+
+type FeedbackCallback = (message: string) => void;
+let feedbackCallback: FeedbackCallback | null = null;
+
+export function setFeedbackCallback(cb: FeedbackCallback | null) {
+  feedbackCallback = cb;
+}
+
+function notify(msg: string) {
+  if (feedbackCallback) {
+    feedbackCallback(msg);
+  }
+}
+
+// ── Cache ────────────────────────────────────────────────────
+
+interface CachedSettings {
+  notificationsEnabled: boolean;
+  notificationTimes: NotificationTime[];
+  dailyGoal: number;
+}
+
+let settingsCache: { data: CachedSettings; ts: number } | null = null;
+const CACHE_TTL = 2000;
+
+function readSettings(): CachedSettings {
+  const now = Date.now();
+  if (settingsCache && (now - settingsCache.ts) < CACHE_TTL) {
+    return settingsCache.data;
+  }
+  const raw = localStorage.getItem(SETTINGS_KEY);
+  const parsed = raw ? JSON.parse(raw) : {};
+  const result: CachedSettings = {
+    notificationsEnabled: parsed.notificationsEnabled === true,
+    notificationTimes: Array.isArray(parsed.notificationTimes)
+      ? parsed.notificationTimes.filter((t: string) =>
+          TIME_SLOTS.some(s => s.value === t)
+        ) as NotificationTime[]
+      : [],
+    dailyGoal: parsed.dailyGoal || 5,
+  };
+  settingsCache = { data: result, ts: now };
+  return result;
+}
+
+export function invalidateSettingsCache() {
+  settingsCache = null;
+}
+
+// ── Time helpers ─────────────────────────────────────────────
+
+function getPeriod(hour: number): TimeSlotInfo['period'] {
+  if (hour < 12) return 'morning';
+  if (hour < 14) return 'midday';
+  if (hour < 17) return 'afternoon';
+  if (hour < 21) return 'evening';
+  return 'night';
+}
+
+function getGreeting(period: TimeSlotInfo['period']): string {
+  switch (period) {
+    case 'morning': return 'Good morning';
+    case 'midday': return 'Good afternoon';
+    case 'afternoon': return 'Good afternoon';
+    case 'evening': return 'Good evening';
+    case 'night': return 'Good evening';
+  }
+}
+
+// ── Message generator ────────────────────────────────────────
+
+interface MessageContext {
+  remaining: number;
+  goal: number;
+  streak: number;
+  period: TimeSlotInfo['period'];
+  dayIndex: number;
+}
+
+const MESSAGE_TEMPLATES: Record<TimeSlotInfo['period'], string[]> = {
+  morning: [
+    'Start your day sharp — {remaining} of {goal} exercises waiting.',
+    'Morning brain boost! {remaining} exercises to reach your goal.',
+    'Rise and shine! Only {remaining} left to hit {goal} today.',
+    'Early bird gets the math done — {remaining} exercises to go.',
+  ],
+  midday: [
+    'Midday mental workout! {remaining} exercises remaining.',
+    'Keep the momentum going — {remaining} of {goal} left.',
+    'Perfect time for a brain break: {remaining} exercises to go.',
+    'You are {remaining} away from your daily goal of {goal}.',
+  ],
+  afternoon: [
+    'Afternoon practice time! {remaining} exercises left.',
+    'Stay sharp — {remaining} exercises to reach your goal.',
+    'Great time for a math session: {remaining} of {goal} remaining.',
+    'You have {remaining} exercises to go this afternoon.',
+  ],
+  evening: [
+    'Evening wind-down: {remaining} exercises to complete your goal.',
+    'One last push! {remaining} exercises left this evening.',
+    'Finish strong — {remaining} of {goal} exercises remaining.',
+    'Evening practice: {remaining} more to reach your daily target.',
+  ],
+  night: [
+    'Quick night session? {remaining} exercises to hit your goal.',
+    'Before you go: {remaining} exercises left today.',
+    'Night practice: {remaining} of {goal} exercises remaining.',
+    'Close out the day strong — {remaining} exercises to go.',
+  ],
+};
+
+const STREAK_MESSAGES = [
+  'Your {streak}-day streak is on the line — {remaining} to go!',
+  'Keep that {streak}-day streak alive! {remaining} exercises left.',
+  'Don\'t break the chain! {streak} days strong, {remaining} to go.',
+];
+
+function generateNotificationBody(ctx: MessageContext): string {
+  const templates = MESSAGE_TEMPLATES[ctx.period];
+  const idx = ctx.dayIndex % templates.length;
+  let body = templates[idx]
+    .replace('{remaining}', String(ctx.remaining))
+    .replace('{goal}', String(ctx.goal));
+
+  if (ctx.streak > 0 && ctx.dayIndex % 3 === 0) {
+    const streakMsg = STREAK_MESSAGES[ctx.dayIndex % STREAK_MESSAGES.length]
+      .replace('{streak}', String(ctx.streak))
+      .replace('{remaining}', String(ctx.remaining));
+    body = streakMsg;
+  }
+
+  return body;
+}
+
+// ── Permission ────────────────────────────────────────────────
 
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
-        console.warn('Notifications not supported in this browser');
-        return 'denied';
-    }
-    
-    console.log('Requesting notification permission...');
-    const permission = await Notification.requestPermission();
-    console.log('Notification permission:', permission);
-    localStorage.setItem(NOTIFICATION_PERMISSION_KEY, permission);
-    return permission;
+  if (!('Notification' in window)) {
+    notify('Notifications not supported in this browser');
+    return 'denied';
+  }
+  const permission = await Notification.requestPermission();
+  localStorage.setItem(NOTIFICATION_PERMISSION_KEY, permission);
+  return permission;
 }
 
 export function getNotificationPermission(): NotificationPermission {
-    return (localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission) || 'default';
+  return (localStorage.getItem(NOTIFICATION_PERMISSION_KEY) as NotificationPermission) || 'default';
 }
 
+// ─── Times ────────────────────────────────────────────────────
+
 export function getNotificationTimes(): NotificationTime[] {
-    // First check settings (new way)
-    const settings = JSON.parse(localStorage.getItem('zenmath-settings') || '{}');
-    if (settings.notificationTimes && Array.isArray(settings.notificationTimes)) {
-        return settings.notificationTimes as NotificationTime[];
-    }
-    
-    // Fallback to old storage key
-    const stored = localStorage.getItem(NOTIFICATION_TIMES_KEY);
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch {
-            return ['21:00'];
-        }
-    }
-    return ['21:00'];
+  return readSettings().notificationTimes;
 }
 
 export function setNotificationTimes(times: NotificationTime[]): void {
-    localStorage.setItem(NOTIFICATION_TIMES_KEY, JSON.stringify(times));
+  localStorage.setItem('zenmath-notification-times', JSON.stringify(times));
+  invalidateSettingsCache();
 }
 
+// ─── Progress ─────────────────────────────────────────────────
+
 export function canDecreaseGoal(): boolean {
-    const today = new Date().toISOString().split('T')[0];
-    const stored = localStorage.getItem('zenmath-daily-progress');
-    console.log('canDecreaseGoal check:', { stored, today });
-    
-    if (!stored) {
-        console.log('No stored progress, returning false');
-        return false;
-    }
-    
-    try {
-        const { date, count } = JSON.parse(stored);
-        const settings = JSON.parse(localStorage.getItem('zenmath-settings') || '{}');
-        const dailyGoal = settings.dailyGoal || 5;
-        
-        console.log('Progress check:', { date, count, today, dailyGoal, sameDay: date === today });
-        
-        // Only allow decrease if goal is achieved today
-        if (date === today && count >= dailyGoal) {
-            console.log('Goal achieved, can decrease');
-            return true;
-        }
-        console.log('Goal not achieved, cannot decrease');
-        return false;
-    } catch (e) {
-        console.log('Error parsing progress:', e);
-        return false;
-    }
+  const today = new Date().toISOString().split('T')[0];
+  const stored = localStorage.getItem(DAILY_PROGRESS_KEY);
+  if (!stored) return false;
+  try {
+    const { date, count } = JSON.parse(stored);
+    const { dailyGoal } = readSettings();
+    return date === today && count >= dailyGoal;
+  } catch {
+    return false;
+  }
 }
 
 export function getTodayProgress(): { count: number; goal: number; goalAchieved: boolean } {
-    const today = new Date().toISOString().split('T')[0];
-    const stored = localStorage.getItem('zenmath-daily-progress');
-    const settings = JSON.parse(localStorage.getItem('zenmath-settings') || '{}');
-    const dailyGoal = settings.dailyGoal || 5;
-    
-    let count = 0;
-    if (stored) {
-        try {
-            const { date, count: c } = JSON.parse(stored);
-            if (date === today) {
-                count = c;
-            }
-        } catch {
-            count = 0;
-        }
+  const today = new Date().toISOString().split('T')[0];
+  const stored = localStorage.getItem(DAILY_PROGRESS_KEY);
+  const { dailyGoal } = readSettings();
+  let count = 0;
+  if (stored) {
+    try {
+      const { date, count: c } = JSON.parse(stored);
+      if (date === today) count = c;
+    } catch { /* ignore */ }
+  }
+  return { count, goal: dailyGoal, goalAchieved: count >= dailyGoal };
+}
+
+// ─── Send notification ────────────────────────────────────────
+
+async function sendViaServiceWorker(title: string, body: string): Promise<boolean> {
+  if (!('serviceWorker' in navigator)) return false;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    if (registration.active) {
+      registration.active.postMessage({
+        type: 'SHOW_NOTIFICATION',
+        title,
+        body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        tag: 'daily-reminder',
+        actions: [
+          { action: 'practice', title: 'Start Practice' },
+          { action: 'snooze', title: 'Snooze 30 min' },
+        ],
+      });
+      return true;
     }
-    
-    return {
-        count,
-        goal: dailyGoal,
-        goalAchieved: count >= dailyGoal
+  } catch { /* fall through */ }
+  return false;
+}
+
+function sendDirectNotification(title: string, body: string) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  try {
+    const notification = new Notification(title, {
+      body,
+      icon: '/pwa-192x192.png',
+      tag: 'daily-reminder',
+    });
+    notification.onclick = () => {
+      window.focus();
+      notification.close();
     };
+  } catch { /* ignore */ }
 }
 
 export async function showLocalNotification(title: string, body: string): Promise<void> {
-    console.log('showLocalNotification called');
-    
-    if (!('Notification' in window)) {
-        console.error('Notifications not supported in this browser');
-        alert('Notifications not supported in this browser');
-        return;
+  if (!('Notification' in window)) {
+    notify('Notifications not supported in this browser');
+    return;
+  }
+
+  const permission = Notification.permission;
+  if (permission === 'default') {
+    const result = await Notification.requestPermission();
+    if (result !== 'granted') {
+      notify('Notifications not allowed. Please enable in browser settings.');
+      return;
     }
-    
-    const permission = Notification.permission;
-    console.log('Current permission:', permission);
-    
-    if (permission === 'default') {
-        const result = await Notification.requestPermission();
-        console.log('Permission result:', result);
-        
-        if (result !== 'granted') {
-            alert('Notifications not allowed. Please enable in browser settings.');
-            return;
-        }
-    }
-    
-    if (permission !== 'granted' && permission !== 'default') {
-        alert('Notifications blocked. Please enable in browser settings.');
-        return;
-    }
-    
-    console.log('Creating notification via Service Worker...');
-    
-    try {
-        // Use ServiceWorker to show notification (required for PWA)
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            // Send message to service worker to show notification
-            navigator.serviceWorker.controller.postMessage({
-                type: 'SHOW_NOTIFICATION',
-                title: title,
-                body: body,
-                icon: '/pwa-192x192.png',
-                badge: '/pwa-192x192.png',
-                tag: 'daily-reminder'
-            });
-            
-            alert('Notification sent! Check your notification tray.');
-        } else {
-            // Fallback: try direct notification if service worker not available
-            console.log('No active service worker, using direct notification');
-            const notification = new Notification(title, {
-                body,
-                icon: '/pwa-192x192.png',
-                tag: 'daily-reminder'
-            });
-            
-            notification.onclick = () => {
-                window.focus();
-                notification.close();
-            };
-            
-            alert('Notification sent! Check your notification tray.');
-        }
-    } catch (e) {
-        console.error('Error creating notification:', e);
-        alert('Failed to show notification: ' + e);
-    }
+  }
+  if (permission !== 'granted' && permission !== 'default') {
+    notify('Notifications blocked. Please enable in browser settings.');
+    return;
+  }
+
+  const sent = await sendViaServiceWorker(title, body);
+  if (!sent) {
+    sendDirectNotification(title, body);
+  }
 }
+
+// ─── Periodic sync ────────────────────────────────────────────
 
 export async function registerPeriodicSync(): Promise<boolean> {
-    if (!('serviceWorker' in navigator)) {
-        console.warn('Service Worker not supported');
-        return false;
-    }
-    
-    if (!('periodicSync' in window)) {
-        console.warn('Periodic Background Sync not supported');
-        return false;
-    }
-    
-    try {
-        const registration = await navigator.serviceWorker.ready;
-        const status = await (navigator.permissions as any).query({ name: 'periodic-background-sync' });
-        
-        if (status.state !== 'granted') {
-            console.warn('Periodic sync permission not granted');
-            return false;
-        }
-        
-        await (registration as any).periodicSync.register('daily-reminder', {
-            minInterval: 24 * 60 * 60 * 1000
-        });
-        
-        console.log('Periodic sync registered');
-        return true;
-    } catch (e) {
-        console.error('Failed to register periodic sync:', e);
-        return false;
-    }
+  if (!('serviceWorker' in navigator)) return false;
+  if (!('periodicSync' in window)) return false;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const status = await (navigator.permissions as any).query({ name: 'periodic-background-sync' });
+    if (status.state !== 'granted') return false;
+    await (registration as any).periodicSync.register('daily-reminder', {
+      minInterval: 24 * 60 * 60 * 1000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
+// ─── Evaluate & send ──────────────────────────────────────────
+
+export function evaluateAndSend(): Promise<void> {
+  const { notificationsEnabled, notificationTimes } = readSettings();
+
+  if (!notificationsEnabled || Notification.permission !== 'granted') {
+    return Promise.resolve();
+  }
+
+  const { count, goal } = getTodayProgress();
+  if (count >= goal) {
+    return Promise.resolve();
+  }
+
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const today = new Date().toISOString().split('T')[0];
+
+  const sentTimes: Record<string, string[]> = JSON.parse(
+    localStorage.getItem(SENT_TIMES_KEY) || '{}'
+  );
+  const todaySent = sentTimes[today] || [];
+
+  for (const time of notificationTimes) {
+    const [hour, minute] = time.split(':').map(Number);
+
+    const isPastTime = currentHour > hour || (currentHour === hour && currentMinute >= minute);
+    if (!isPastTime) continue;
+    if (todaySent.includes(time)) continue;
+    if (todaySent.length >= 3) continue;
+
+    const remaining = goal - count;
+    const period = getPeriod(currentHour);
+    const dayIndex = today.split('-').reduce((sum, p) => sum + parseInt(p, 10), 0);
+    const streak = getStreak();
+
+    const greeting = getGreeting(period);
+    const body = generateNotificationBody({ remaining, goal, streak, period, dayIndex });
+
+    showLocalNotification(
+      `${greeting} — ZenMath`,
+      body
+    );
+
+    const newSentTimes = { ...sentTimes, [today]: [...todaySent, time] };
+    localStorage.setItem(SENT_TIMES_KEY, JSON.stringify(newSentTimes));
+    localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
+
+    break;
+  }
+
+  return Promise.resolve();
+}
+
+// ─── Streak helper ────────────────────────────────────────────
+
+function getStreak(): number {
+  try {
+    const stored = localStorage.getItem('zenmath-daily-progress');
+    if (!stored) return 0;
+    const { streak } = JSON.parse(stored);
+    return typeof streak === 'number' ? streak : 0;
+  } catch {
+    return 0;
+  }
+}
+
+// ─── Scheduling ───────────────────────────────────────────────
+
+let checkInterval: ReturnType<typeof setInterval> | null = null;
+
+export function startNotificationScheduler(): void {
+  stopNotificationScheduler();
+
+  evaluateAndSend();
+
+  checkInterval = setInterval(() => {
+    evaluateAndSend();
+  }, 60_000);
+}
+
+export function stopNotificationScheduler(): void {
+  if (checkInterval) {
+    clearInterval(checkInterval);
+    checkInterval = null;
+  }
+}
+
+// Legacy aliases — kept for backward compat
 export function shouldSendNotification(): boolean {
-    const settings = JSON.parse(localStorage.getItem('zenmath-settings') || '{}');
-    if (!settings.notificationsEnabled) {
-        return false;
-    }
-    
-    const { count, goal } = getTodayProgress();
-    if (count >= goal) {
-        return false;
-    }
-    
-    const today = new Date().toISOString().split('T')[0];
-    const lastDate = localStorage.getItem(LAST_NOTIFICATION_DATE_KEY);
-    
-    const times = getNotificationTimes();
-    const now = new Date();
-    const currentHour = now.getHours();
-    
-    for (const time of times) {
-        const [hour] = time.split(':').map(Number);
-        if (currentHour >= hour) {
-            if (lastDate !== today) {
-                return true;
-            }
-        }
-    }
-    
-    return false;
+  const { notificationsEnabled, notificationTimes } = readSettings();
+  if (!notificationsEnabled) return false;
+  const { count, goal } = getTodayProgress();
+  if (count >= goal) return false;
+  const lastDate = localStorage.getItem(LAST_NOTIFICATION_DATE_KEY);
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const currentHour = now.getHours();
+  for (const time of notificationTimes) {
+    const [hour] = time.split(':').map(Number);
+    if (currentHour >= hour && lastDate !== today) return true;
+  }
+  return false;
 }
 
 export function recordNotificationSent(): void {
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
+  const today = new Date().toISOString().split('T')[0];
+  localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
 }
 
 export async function checkAndShowNotification(): Promise<void> {
-    console.log('checkAndShowNotification called');
-    console.log('Notification permission:', Notification.permission);
-    
-    if (Notification.permission !== 'granted') {
-        console.log('No notification permission, skipping');
-        return;
-    }
-    
-    const settings = JSON.parse(localStorage.getItem('zenmath-settings') || '{}');
-    console.log('Settings:', settings);
-    
-    if (!settings.notificationsEnabled) {
-        console.log('Notifications not enabled in settings');
-        return;
-    }
-    
-    const { count, goal } = getTodayProgress();
-    console.log('Progress:', { count, goal });
-    
-    if (count >= goal) {
-        console.log('Goal already achieved');
-        return;
-    }
-    
-    const times = getNotificationTimes();
-    const now = new Date();
-    const currentHour = now.getHours();
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Get already sent times today
-    const sentTimes = JSON.parse(localStorage.getItem('zenmath-notification-sent-times') || '{}');
-    const todaySent = sentTimes[today] || [];
-    
-    console.log('Current hour:', currentHour, 'Configured times:', times, 'Already sent:', todaySent);
-    
-    for (const time of times) {
-        const [hour] = time.split(':').map(Number);
-        
-        // Check if we've passed this time AND haven't sent for this time slot
-        if (currentHour >= hour && !todaySent.includes(time)) {
-            // Don't send more than 3 notifications per day
-            if (todaySent.length >= 3) {
-                console.log('Max notifications sent today');
-                continue;
-            }
-            
-            console.log('Sending notification for time:', time);
-            const remaining = goal - count;
-            
-            // Use showLocalNotification for consistent handling
-            await showLocalNotification(
-                'ZenMath - Daily Practice Reminder',
-                `You have ${remaining} exercises left to reach your daily goal of ${goal}! Keep going! 💪`
-            );
-            
-            // Record that we sent this notification
-            const newSentTimes = { ...sentTimes, [today]: [...todaySent, time] };
-            localStorage.setItem('zenmath-notification-sent-times', JSON.stringify(newSentTimes));
-            localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
-            
-            return;
-        }
-    }
-    
-    console.log('No notification time matched or already sent');
+  return evaluateAndSend();
 }

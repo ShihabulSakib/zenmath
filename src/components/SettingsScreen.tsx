@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
-import { requestNotificationPermission, getTodayProgress, showLocalNotification, type NotificationTime } from '../services/notifications';
+import { requestNotificationPermission, getTodayProgress, showLocalNotification, TIME_SLOTS, invalidateSettingsCache, type TimeSlotInfo } from '../services/notifications';
+import { useToast } from '../hooks/useToast';
 import ToggleSwitch, { ToggleCard } from './ToggleSwitch';
 import RangeSlider from './RangeSlider';
 
@@ -38,8 +39,9 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.adaptiveDifficulty);
     const [showStreak, setShowStreak] = useState(settings.showStreak);
     const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
-    const [notificationTimes, setNotificationTimes] = useState<string[]>(settings.notificationTimes || ['21:00']);
+    const [notificationTimes, setNotificationTimes] = useState<string[]>(settings.notificationTimes && settings.notificationTimes.length > 0 ? settings.notificationTimes : [TIME_SLOTS[2].value]);
     const [voices, setVoices] = useState<VoiceOption[]>([]);
+    const { showToast } = useToast();
 
     // Load available voices
     useEffect(() => {
@@ -51,6 +53,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
 const handleSave = async () => {
         cancelSpeech();
         audioSpritePlayer.stop();
+        invalidateSettingsCache();
         
         // Request permission when saving if notifications are enabled
         if (notificationsEnabled && Notification.permission !== 'granted') {
@@ -234,20 +237,16 @@ const handleSave = async () => {
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    console.log('Toggle clicked, current:', notificationsEnabled);
-                                    
                                     if (!notificationsEnabled) {
-                                        // Trying to enable - request permission first
                                         if ('Notification' in window) {
                                             const perm = await Notification.requestPermission();
-                                            console.log('Permission result:', perm);
                                             if (perm === 'granted') {
                                                 setNotificationsEnabled(true);
                                             } else {
-                                                alert('Please allow notifications in browser settings');
+                                                showToast('Please allow notifications in browser settings');
                                             }
                                         } else {
-                                            alert('Notifications not supported in this browser');
+                                            showToast('Notifications not supported in this browser');
                                         }
                                     } else {
                                         setNotificationsEnabled(false);
@@ -268,40 +267,101 @@ const handleSave = async () => {
                                 <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>schedule</span>
                                 <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Reminder Times</span>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                                {(['20:00', '21:00', '22:00', '23:00'] as NotificationTime[]).map((time) => (
-                                    <button
-                                        key={time}
-                                        onClick={() => {
-                                            if (notificationTimes.includes(time)) {
-                                                setNotificationTimes(notificationTimes.filter(t => t !== time));
-                                            } else {
-                                                setNotificationTimes([...notificationTimes, time]);
-                                            }
-                                        }}
-                                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                                            notificationTimes.includes(time)
-                                                ? 'bg-primary text-on-primary'
-                                                : 'bg-primary/10 text-secondary border border-primary/20'
-                                        }`}
-                                    >
-                                        {time}
-                                    </button>
-                                ))}
-                            </div>
+
+                            {/* Grouped time slots by period */}
+                            {(['morning', 'midday', 'afternoon', 'evening', 'night'] as TimeSlotInfo['period'][]).map((period) => {
+                                const periodSlots = TIME_SLOTS.filter(s => s.period === period);
+                                if (periodSlots.length === 0) return null;
+                                return (
+                                    <div key={period} className="mb-3 last:mb-0">
+                                        <div className="text-[9px] font-black uppercase tracking-widest text-secondary opacity-40 mb-2 ml-1">
+                                            {period === 'morning' ? 'Morning' :
+                                             period === 'midday' ? 'Midday' :
+                                             period === 'afternoon' ? 'Afternoon' :
+                                             period === 'evening' ? 'Evening' : 'Night'}
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {periodSlots.map((slot) => (
+                                                <button
+                                                    key={slot.value}
+                                                    onClick={() => {
+                                                        invalidateSettingsCache();
+                                                        if (notificationTimes.includes(slot.value)) {
+                                                            setNotificationTimes(notificationTimes.filter(t => t !== slot.value));
+                                                        } else {
+                                                            setNotificationTimes([...notificationTimes, slot.value]);
+                                                        }
+                                                    }}
+                                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                                                        notificationTimes.includes(slot.value)
+                                                            ? 'bg-primary text-on-primary'
+                                                            : 'bg-primary/10 text-secondary border border-primary/20'
+                                                    }`}
+                                                >
+                                                    {slot.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
                             <p className="text-[10px] text-secondary opacity-40 mt-3 ml-1">
                                 Send up to 3 reminders at these times if goal not met
                             </p>
-                            
+
+                            {/* Next scheduled notification */}
+                            {notificationTimes.length > 0 && (() => {
+                                const now = new Date();
+                                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                                const upcoming = notificationTimes
+                                    .map(t => {
+                                        const [h, m] = t.split(':').map(Number);
+                                        return { time: t, totalMinutes: h * 60 + m };
+                                    })
+                                    .filter(t => t.totalMinutes > currentMinutes)
+                                    .sort((a, b) => a.totalMinutes - b.totalMinutes);
+                                if (upcoming.length > 0) {
+                                    const slot = TIME_SLOTS.find(s => s.value === upcoming[0].time);
+                                    return (
+                                        <p className="text-[10px] font-bold text-primary mt-2 ml-1">
+                                            Next reminder: {slot ? slot.label : upcoming[0].time}
+                                        </p>
+                                    );
+                                }
+                                return null;
+                            })()}
+
+                            {/* Message preview */}
+                            {(() => {
+                                const { goal, count } = getTodayProgress();
+                                const remaining = Math.max(0, goal - count);
+                                const now = new Date();
+                                const hour = now.getHours();
+                                const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                                return (
+                                    <div className="mt-4 bg-surface border border-card rounded-2xl p-3">
+                                        <div className="text-[9px] font-black uppercase tracking-widest text-secondary opacity-40 mb-1">Message Preview</div>
+                                        <p className="text-xs text-secondary opacity-80">
+                                            {remaining > 0
+                                                ? `"${greeting}! ${remaining} of ${goal} exercises remaining."`
+                                                : '"Goal achieved! Great job!"'}
+                                        </p>
+                                    </div>
+                                );
+                            })()}
+
                             {('Notification' in window) && (
                                 <button
                                     onClick={() => {
                                         const { goal, count } = getTodayProgress();
                                         const remaining = Math.max(0, goal - count);
                                         showLocalNotification(
-                                            'ZenMath - Test Notification',
+                                            remaining > 0
+                                                ? 'ZenMath — Practice Reminder'
+                                                : 'ZenMath — Goal Achieved',
                                             remaining > 0 
-                                                ? `You have ${remaining} exercises left to reach your goal!`
+                                                ? `${remaining} of ${goal} exercises remaining`
                                                 : 'Great job! You\'ve met your daily goal!'
                                         );
                                     }}
