@@ -15,8 +15,8 @@ const ranges: { range: [number, number]; label: string; subtitle: string }[] = [
 export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps) {
     const [customMode, setCustomMode] = useState(false);
     const [customValue, setCustomValue] = useState('7');
-    const title = mode === 'multiplication-table' ? 'Times Tables' : 'Square Numbers';
-    const isTables = mode === 'multiplication-table';
+    const title = mode === 'multiplication-table' ? 'Times Tables' : mode === 'factor-finding' ? 'Finding Factors' : 'Square Numbers';
+    const isTablesOrFactors = mode === 'multiplication-table' || mode === 'factor-finding';
 
     if (customMode) {
         return (
@@ -36,7 +36,7 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
 
                 <div className="px-6 pt-4 pb-8">
                     <h1 className="text-main text-[32px] font-bold leading-tight tracking-tight uppercase">
-                        Custom Table
+                        {mode === 'factor-finding' ? 'Custom Factor Table' : 'Custom Table'}
                     </h1>
                     <p className="text-muted text-xs font-semibold mt-1 uppercase tracking-[0.2em]">
                         Enter a number (1–20)
@@ -47,7 +47,7 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
                     <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
                         <div className="flex flex-col items-center gap-4">
                             <span className="text-[10px] text-secondary font-black uppercase tracking-widest opacity-60">
-                                {isTables ? 'Practice the' : 'Square numbers up to'}
+                                {isTablesOrFactors ? 'Practice the' : 'Square numbers up to'}
                             </span>
                             <input
                                 type="number"
@@ -66,9 +66,14 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
                                 className="w-32 p-4 text-5xl font-black text-center bg-surface border border-card rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-main"
                             />
                         </div>
-                        {isTables && customValue && (
+                        {mode === 'multiplication-table' && customValue && (
                             <p className="text-center text-secondary text-xs mt-4 font-medium">
                                 {customValue} × 1 through {customValue} × 12
+                            </p>
+                        )}
+                        {mode === 'factor-finding' && customValue && (
+                            <p className="text-center text-secondary text-xs mt-4 font-medium">
+                                Find factors of the {customValue} × Table
                             </p>
                         )}
                     </div>
@@ -136,7 +141,7 @@ export default function SpecialMenu({ mode, onSelect, onBack }: SpecialMenuProps
                     </button>
                 ))}
 
-                {isTables && (
+                {isTablesOrFactors && (
                     <button
                         onClick={() => setCustomMode(true)}
                         className="group relative flex w-full flex-col justify-between overflow-hidden rounded-xl bg-card border border-dashed border-primary/40 p-6 text-left transition-all active:scale-[0.98] active:bg-primary/10"

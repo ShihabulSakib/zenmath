@@ -96,6 +96,15 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                                 <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Tables</span>
                             </button>
                             <button
+                                onClick={() => onSelect('factor-finding')}
+                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
+                            >
+                                <span className="material-symbols-outlined text-xl text-primary/75 icon-glow-purple">
+                                    exposure
+                                </span>
+                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Factors</span>
+                            </button>
+                            <button
                                 onClick={() => onSelect('square')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
                             >

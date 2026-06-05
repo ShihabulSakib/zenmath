@@ -36,6 +36,7 @@ export type GameMode =
     | 'division'
     | 'mixed'
     | 'multiplication-table'
+    | 'factor-finding'
     | 'square'
     | 'fraction'
     | 'percentage'
@@ -334,6 +335,28 @@ export function useGameLogic(onSessionComplete?: (
                 setCorrectAnswer(n1 * n2);
             }
             setFractionQuestionDisplay('');
+            setFractionCorrectAnswer('');
+        } else if (mode === 'factor-finding') {
+            if (tableRange[0] === tableRange[1]) {
+                const n1 = tableRange[0];
+                const n2 = randomInRange(1, 12);
+                setNum1(n1 * n2);
+                setNum2(n1);
+                setCurrentOperation('×');
+                setCorrectAnswer(n2);
+                setFractionQuestionDisplay(`${n1 * n2}`);
+            } else {
+                let n1 = randomInRange(tableRange[0], tableRange[1]);
+                const n2 = randomInRange(tableRange[0], tableRange[1]);
+                if (tableRange[0] !== tableRange[1]) {
+                    while (n1 === n2) n1 = randomInRange(tableRange[0], tableRange[1]);
+                }
+                setNum1(n1 * n2);
+                setNum2(n1);
+                setCurrentOperation('×');
+                setCorrectAnswer(n2);
+                setFractionQuestionDisplay(`${n1 * n2} = ${n1} × ?`);
+            }
             setFractionCorrectAnswer('');
         } else if (mode === 'mixed') {
             const ops: Operation[] = ['+', '-', '*', '/'];
@@ -667,7 +690,7 @@ export function useGameLogic(onSessionComplete?: (
 
     const selectMode = useCallback((m: GameMode) => {
         setMode(m);
-        if (m === 'multiplication-table') {
+        if (m === 'multiplication-table' || m === 'factor-finding') {
             setScreen('special-menu');
         } else if (m === 'square' || m === 'fraction') {
             setScreen('setup');
@@ -710,6 +733,27 @@ export function useGameLogic(onSessionComplete?: (
                 setNum2(n2);
                 setCurrentOperation('×');
                 setCorrectAnswer(n1 * n2);
+            }
+        } else if (mode === 'factor-finding') {
+            if (range[0] === range[1]) {
+                const n1 = range[0];
+                const n2 = randomInRange(1, 12);
+                setNum1(n1 * n2);
+                setNum2(n1);
+                setCurrentOperation('×');
+                setCorrectAnswer(n2);
+                setFractionQuestionDisplay(`${n1 * n2}`);
+            } else {
+                let n1 = randomInRange(range[0], range[1]);
+                const n2 = randomInRange(range[0], range[1]);
+                if (range[0] !== range[1]) {
+                    while (n1 === n2) n1 = randomInRange(range[0], range[1]);
+                }
+                setNum1(n1 * n2);
+                setNum2(n1);
+                setCurrentOperation('×');
+                setCorrectAnswer(n2);
+                setFractionQuestionDisplay(`${n1 * n2} = ${n1} × ?`);
             }
         } else if (mode === 'square') {
             const n = randomInRange(range[0], range[1]);

@@ -90,6 +90,11 @@ export function problemToSpriteKeys(
     mode?: string,
     fractionQuestionDisplay?: string,
 ): string[] {
+    // Factor-finding mode: use Web Speech fallback
+    if (mode === 'factor-finding') {
+        return [];
+    }
+
     // Fraction mode: parse "Convert X/Y to decimal" pattern
     if (mode === 'fraction' && fractionQuestionDisplay) {
         const match = fractionQuestionDisplay.match(/(\d+)\/(\d+)/);

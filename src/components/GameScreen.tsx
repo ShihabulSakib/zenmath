@@ -23,6 +23,7 @@ interface GameScreenProps {
     streak: number;
     showStreak: boolean;
     currentQuestionTimeElapsed: number; // ms
+    tableRange: [number, number];
 }
 
 export default function GameScreen({
@@ -46,11 +47,12 @@ export default function GameScreen({
     streak,
     showStreak,
     currentQuestionTimeElapsed,
+    tableRange,
 }: GameScreenProps) {
     const isSquareOp = operation === '²';
     const showNegative = operation === '−';
     const showFraction = mode === 'fraction';
-    const showNewModes = ['percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation'].includes(mode);
+    const showNewModes = ['percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation', 'factor-finding'].includes(mode);
     const isTimeLow = timeRemaining <= 5 && timeRemaining > 0;
 
     // Format timer as mm:ss
@@ -124,6 +126,15 @@ export default function GameScreen({
                                 <div className="flex flex-col items-center gap-3">
                                     <span className="material-symbols-outlined text-primary/30" style={{ fontSize: 48, fontVariationSettings: "'FILL' 1" }}>headphones</span>
                                     <span className="text-lg font-medium text-secondary/50 tracking-wide">Listen...</span>
+                                </div>
+                            ) : mode === 'factor-finding' && tableRange[0] === tableRange[1] ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <span className="text-xs text-secondary font-semibold uppercase tracking-wider">
+                                        Finding factors of the {tableRange[0]} × Table
+                                    </span>
+                                    <span className="text-6xl sm:text-7xl font-mono font-bold">
+                                        {fractionQuestionDisplay}
+                                    </span>
                                 </div>
                             ) : showNewModes || mode === 'fraction' ? (
                                 <>{fractionQuestionDisplay}</>

@@ -39,6 +39,7 @@ const modeLabels: Record<string, string> = {
     'number-series': 'Number Series',
     ratio: 'Ratios',
     'chain-calculation': 'Chain Calculation',
+    'factor-finding': 'Finding Factors',
 };
 
 const difficultyLevels: { value: Difficulty; label: string }[] = [

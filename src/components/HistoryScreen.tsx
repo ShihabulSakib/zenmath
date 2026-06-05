@@ -5,7 +5,7 @@ interface HistoryScreenProps {
     onBack: () => void;
 }
 
-const MODE_FILTERS = ['all', 'addition', 'subtraction', 'multiplication', 'division', 'mixed', 'multiplication-table', 'square', 'fraction', 'percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation'];
+const MODE_FILTERS = ['all', 'addition', 'subtraction', 'multiplication', 'division', 'mixed', 'multiplication-table', 'factor-finding', 'square', 'fraction', 'percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation'];
 
 export default function HistoryScreen({ onBack }: HistoryScreenProps) {
     const [sessions, setSessions] = useState<Session[]>([]);

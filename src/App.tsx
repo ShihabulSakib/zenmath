@@ -128,6 +128,7 @@ function AppInner() {
               streak={game.streak}
               showStreak={game.settings.showStreak}
               currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
+              tableRange={game.tableRange}
             />
           </ErrorBoundary>
         )}
