@@ -1,7 +1,7 @@
 interface KeypadProps {
     onKey: (key: string) => void;
     disabled?: boolean;
-    showNegative?: boolean;
+    negativeEnabled?: boolean;
     showFraction?: boolean;
     showDecimal?: boolean;
 }
@@ -40,7 +40,7 @@ const KeyButton = ({ k, label, isPrimary, isAction, disabled, onClick, className
 export default function Keypad({
     onKey,
     disabled = false,
-    showNegative = true,
+    negativeEnabled = true,
     showFraction = true,
     showDecimal = true,
 }: KeypadProps) {
@@ -66,11 +66,7 @@ export default function Keypad({
                 <KeyButton k="4" disabled={disabled} onClick={handlePress}  />
                 <KeyButton k="5" disabled={disabled} onClick={handlePress}  />
                 <KeyButton k="6" disabled={disabled} onClick={handlePress}  />
-                {showNegative ? (
-                    <KeyButton k="-" label="−" disabled={disabled} onClick={handlePress}  />
-                ) : (
-                    <div className="h-full" />
-                )}
+                <KeyButton k="-" label="−" disabled={disabled || !negativeEnabled} onClick={handlePress} className={!negativeEnabled ? 'opacity-30' : ''} />
 
                 {/* Row 3 */}
                 <KeyButton k="7" disabled={disabled} onClick={handlePress}  />

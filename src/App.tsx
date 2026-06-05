@@ -129,6 +129,7 @@ function AppInner() {
               showStreak={game.settings.showStreak}
               currentQuestionTimeElapsed={game.currentQuestionTimeElapsed}
               tableRange={game.tableRange}
+              allowNegativeResults={game.allowNegativeResults}
             />
           </ErrorBoundary>
         )}
@@ -149,6 +150,7 @@ function AppInner() {
           <StatsScreen
             onBack={game.goToMenu}
             stats={stats}
+            dailyGoal={game.settings.dailyGoal}
           />
         )}
 

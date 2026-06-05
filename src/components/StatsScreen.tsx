@@ -1,19 +1,105 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { StatsData, RecentPerformance } from '../hooks/useStats';
 
 interface StatsScreenProps {
     onBack: () => void;
+    dailyGoal?: number;
     stats: {
         stats: StatsData | null;
         recentPerformance: RecentPerformance[];
+        sessions: { date: string; totalQuestions: number }[];
         loading: boolean;
         refreshStats: () => void;
         clearAllData: () => Promise<void>;
     };
 }
 
-export default function StatsScreen({ onBack, stats }: StatsScreenProps) {
-    const { stats: data, recentPerformance, loading, refreshStats, clearAllData } = stats;
+function ActivityCalendar({ sessions, goal }: { sessions: { date: string; totalQuestions: number }[]; goal: number }) {
+    const [monthIndex, setMonthIndex] = useState(0);
+
+    const activityByDate = useMemo(() => {
+        const map: Record<string, number> = {};
+        sessions.forEach(s => {
+            const d = s.date.split('T')[0];
+            map[d] = (map[d] || 0) + 1;
+        });
+        return map;
+    }, [sessions]);
+
+    const now = new Date();
+    const targetDate = new Date(now.getFullYear(), now.getMonth() - monthIndex, 1);
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
+    const label = targetDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const cells: ({ day: number; date: string } | null)[] = [];
+    for (let i = 0; i < firstDay; i++) cells.push(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        cells.push({ day: d, date: dateStr });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+
+    return (
+        <div className="bg-card border border-card rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-black uppercase tracking-widest text-secondary opacity-60">Monthly Activity</h3>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setMonthIndex(Math.min(monthIndex + 1, 2))}
+                        disabled={monthIndex >= 2}
+                        className="flex items-center justify-center w-6 h-6 rounded-full text-secondary disabled:opacity-20"
+                    >
+                        <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <button
+                        onClick={() => setMonthIndex(Math.max(monthIndex - 1, 0))}
+                        disabled={monthIndex <= 0}
+                        className="flex items-center justify-center w-6 h-6 rounded-full text-secondary disabled:opacity-20"
+                    >
+                        <span className="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+            <p className="text-[10px] font-bold text-secondary mb-2">{label}</p>
+            <div className="grid grid-cols-7 gap-1">
+                {['S','M','T','W','T','F','S'].map(d => (
+                    <span key={d} className="text-[8px] text-center text-secondary font-mono">{d}</span>
+                ))}
+                {cells.map((cell, i) =>
+                    cell ? (
+                        <div
+                            key={i}
+                            title={`${cell.date}: ${activityByDate[cell.date] || 0} sessions`}
+                            className={`aspect-square rounded-sm text-[8px] flex items-center justify-center font-mono ${
+                                cell.date === today ? 'ring-1 ring-primary' : ''
+                            } ${
+                                activityByDate[cell.date] >= goal ? 'bg-correct text-black' :
+                                activityByDate[cell.date] ? 'bg-primary/20 text-secondary' :
+                                'bg-surface text-muted'
+                            }`}
+                        >
+                            {cell.day}
+                        </div>
+                    ) : (
+                        <div key={i} />
+                    )
+                )}
+            </div>
+            <div className="flex items-center gap-3 mt-3 text-[9px] text-secondary">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-surface" /> None</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary/20" /> Practiced</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-correct" /> Met goal</span>
+            </div>
+        </div>
+    );
+}
+
+export default function StatsScreen({ onBack, dailyGoal = 5, stats }: StatsScreenProps) {
+    const { stats: data, recentPerformance, sessions, loading, refreshStats, clearAllData } = stats;
 
     useEffect(() => {
         refreshStats();
@@ -82,6 +168,10 @@ export default function StatsScreen({ onBack, stats }: StatsScreenProps) {
                                 })}
                             </div>
                         </div>
+                    )}
+
+                    {sessions.length > 0 && (
+                        <ActivityCalendar sessions={sessions} goal={dailyGoal} />
                     )}
 
                     {Object.keys(data.modes).length > 0 && (

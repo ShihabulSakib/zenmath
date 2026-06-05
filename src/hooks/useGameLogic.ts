@@ -649,10 +649,12 @@ export function useGameLogic(onSessionComplete?: (
         } else if (key === 'backspace') {
             setUserInput(prev => prev.slice(0, -1));
         } else if (key === '-') {
-            setUserInput(prev => {
-                if (prev.startsWith('-')) return prev.slice(1);
-                return '-' + prev;
-            });
+            if (mode === 'subtraction' && allowNegativeResults) {
+                setUserInput(prev => {
+                    if (prev.startsWith('-')) return prev.slice(1);
+                    return '-' + prev;
+                });
+            }
         } else if (key === '/') {
             setUserInput(prev => {
                 if (mode === 'fraction' && !prev.includes('/') && prev.length > 0) {
@@ -674,7 +676,7 @@ export function useGameLogic(onSessionComplete?: (
                 return prev + key;
             });
         }
-    }, [feedback, handleSubmit, mode]);
+    }, [feedback, handleSubmit, mode, allowNegativeResults]);
 
     // ── Navigation ──────────────────────────────────────────
     const goToMenu = useCallback(() => {

@@ -29,7 +29,7 @@ export function useStats() {
             const [statsData, recent, sessionList] = await Promise.all([
                 db.getOverallStats(),
                 db.getRecentPerformance(30),
-                db.getSessions(50),
+                db.getSessions(500),
             ]);
             setStats(statsData);
             setRecentPerformance(recent);

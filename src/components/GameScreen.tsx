@@ -24,6 +24,7 @@ interface GameScreenProps {
     showStreak: boolean;
     currentQuestionTimeElapsed: number; // ms
     tableRange: [number, number];
+    allowNegativeResults?: boolean;
 }
 
 export default function GameScreen({
@@ -48,9 +49,10 @@ export default function GameScreen({
     showStreak,
     currentQuestionTimeElapsed,
     tableRange,
+    allowNegativeResults = false,
 }: GameScreenProps) {
     const isSquareOp = operation === '²';
-    const showNegative = operation === '−';
+    const negativeEnabled = mode === 'subtraction' && allowNegativeResults;
     const showFraction = mode === 'fraction';
     const showNewModes = ['percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation', 'factor-finding'].includes(mode);
     const isTimeLow = timeRemaining <= 5 && timeRemaining > 0;
@@ -121,7 +123,7 @@ export default function GameScreen({
 
                     <div className="relative z-10 flex flex-col items-center gap-8">
                         {/* Question */}
-                        <h1 className="font-mono text-5xl sm:text-6xl font-bold text-main tracking-tight text-center leading-tight">
+                        <h1 className={`font-mono font-bold text-main tracking-tight text-center leading-tight ${mode === 'ratio' ? 'text-2xl sm:text-3xl' : mode === 'chain-calculation' ? 'text-3xl sm:text-4xl' : 'text-5xl sm:text-6xl'}`}>
                             {listenOnlyMode && feedback === 'none' ? (
                                 <div className="flex flex-col items-center gap-3">
                                     <span className="material-symbols-outlined text-primary/30" style={{ fontSize: 48, fontVariationSettings: "'FILL' 1" }}>headphones</span>
@@ -187,7 +189,7 @@ export default function GameScreen({
                 <Keypad
                     onKey={onKey}
                     disabled={feedback !== 'none'}
-                    showNegative={showNegative}
+                    negativeEnabled={negativeEnabled}
                     showFraction={showFraction}
                 />
             </div>

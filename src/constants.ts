@@ -14,7 +14,7 @@ export const MIN_TIME_LIMIT_SLIDER = 6;
 // ─── Default settings ────────────────────────────────────
 export const DEFAULT_TOTAL_QUESTIONS = 5;
 export const DEFAULT_TIME_LIMIT = 20;
-export const DEFAULT_DAILY_GOAL = 5;
+export const DEFAULT_DAILY_GOAL = 10;
 export const DEFAULT_SPRITE_SPEED = 1.0;
 export const DEFAULT_SPEECH_RATE = 1.0;
 

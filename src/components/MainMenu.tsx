@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode, GameSettings } from '../hooks/useGameLogic';
 import { BookOpen } from 'lucide-react';
@@ -19,6 +20,20 @@ interface MainMenuProps {
 
 export default function MainMenu({ onSelect, onSettings, onRevision, onStats, onHistory, game }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
+    const mainRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const el = mainRef.current;
+        if (!el) return;
+        const saved = sessionStorage.getItem('menu-scroll');
+        if (saved) requestAnimationFrame(() => { el.scrollTop = parseInt(saved, 10); });
+        const handleScroll = () => sessionStorage.setItem('menu-scroll', String(el.scrollTop));
+        el.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            el.removeEventListener('scroll', handleScroll);
+            sessionStorage.setItem('menu-scroll', String(el.scrollTop));
+        };
+    }, []);
 
     const ops: { mode: GameMode; symbol: string; label: string; color: string; glow: string }[] = [
         { mode: 'addition', symbol: '+', label: 'Addition', color: 'text-primary', glow: 'icon-glow-blue' },
@@ -43,7 +58,7 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
             </header>
 
             {/* Scrollable content area */}
-            <main className="flex-1 overflow-y-auto px-6 pb-24">
+            <main ref={mainRef} className="flex-1 overflow-y-auto px-6 pb-24">
                 <div className="max-w-lg mx-auto flex flex-col gap-6 pt-4">
                     {/* Section label */}
                     <div className="py-1">
@@ -140,17 +155,6 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                                 </span>
                                 <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Roots</span>
                             </button>
-                            <button
-                                onClick={() => onSelect('approximation')}
-                                className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
-                            >
-                                <span className="material-symbols-outlined text-xl text-primary/70 icon-glow-amber">
-                                    calculate
-                                </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Estimate</span>
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
                             <button
                                 onClick={() => onSelect('number-series')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
