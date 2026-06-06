@@ -58,7 +58,7 @@ function readSettings(): CachedSettings {
           TIME_SLOTS.some(s => s.value === t)
         ) as NotificationTime[]
       : [],
-    dailyGoal: parsed.dailyGoal || 5,
+    dailyGoal: parsed.dailyGoal || 10,
   };
   settingsCache = { data: result, ts: now };
   return result;

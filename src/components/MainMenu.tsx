@@ -1,9 +1,11 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useLayoutEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode, GameSettings } from '../hooks/useGameLogic';
 import { BookOpen } from 'lucide-react';
 import { canDecreaseGoal } from '../services/notifications';
 import ProgressBar from './ProgressBar';
+
+const SCROLL_STORAGE_KEY = 'zenmath-menu-scroll-position';
 
 interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
@@ -22,16 +24,59 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
     const { theme, toggleTheme } = useTheme();
     const mainRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const el = mainRef.current;
-        if (!el) return;
-        const saved = sessionStorage.getItem('menu-scroll');
-        if (saved) requestAnimationFrame(() => { el.scrollTop = parseInt(saved, 10); });
-        const handleScroll = () => sessionStorage.setItem('menu-scroll', String(el.scrollTop));
-        el.addEventListener('scroll', handleScroll, { passive: true });
+    // Handle Scroll Restoration with increased robustness
+    useLayoutEffect(() => {
+        const container = mainRef.current;
+        if (!container) return;
+
+        // 1. Restore position with a retry mechanism to handle layout shifts
+        const savedPosition = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+        if (savedPosition) {
+            const targetPos = parseInt(savedPosition, 10);
+            let attempts = 0;
+            const maxAttempts = 15; // Increased attempts for slower devices
+            
+            const performRestoration = () => {
+                if (!container) return;
+                
+                container.scrollTop = targetPos;
+                
+                // Check if we've reached the target OR if we're at the bottom
+                const reachedTarget = Math.abs(container.scrollTop - targetPos) < 2;
+                const atBottom = Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) < 2;
+
+                if (!reachedTarget && !atBottom && attempts < maxAttempts) {
+                    attempts++;
+                    requestAnimationFrame(performRestoration);
+                } else if (attempts >= maxAttempts || atBottom) {
+                    // If we can't reach the target after max attempts, 
+                    // sync the ACTUAL position back to storage to prevent stale data.
+                    sessionStorage.setItem(SCROLL_STORAGE_KEY, String(container.scrollTop));
+                }
+            };
+
+            requestAnimationFrame(performRestoration);
+            const timeoutId = setTimeout(performRestoration, 150);
+            return () => clearTimeout(timeoutId);
+        }
+
+        // 2. Setup scroll listener for saving
+        let scrollTimeout: ReturnType<typeof setTimeout>;
+        const handleScroll = () => {
+            // Use a small debounce to avoid hammering sessionStorage
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (container) {
+                    sessionStorage.setItem(SCROLL_STORAGE_KEY, String(container.scrollTop));
+                }
+            }, 50);
+        };
+
+        container.addEventListener('scroll', handleScroll, { passive: true });
+
         return () => {
-            el.removeEventListener('scroll', handleScroll);
-            sessionStorage.setItem('menu-scroll', String(el.scrollTop));
+            clearTimeout(scrollTimeout);
+            container.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
@@ -223,7 +268,7 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                                             }
                                         }}
                                         className={`w-16 bg-primary/5 text-xl font-black text-primary text-center rounded-xl border border-primary/20 focus:outline-none focus:ring-4 focus:ring-primary/10 px-2 py-2 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${!canDecreaseGoal() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        placeholder="5"
+                                        placeholder="10"
                                     />
                                 </div>
                                 <span className="text-[9px] text-secondary mt-1.5 uppercase font-black tracking-widest opacity-60">

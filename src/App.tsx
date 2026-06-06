@@ -16,6 +16,12 @@ import HistoryScreen from './components/HistoryScreen';
 import ToastContainer from './components/Toast';
 import { useEffect } from 'react';
 
+// Reset menu scroll position on hard reload/app launch.
+// This runs once when the module is loaded, before any components mount.
+if (typeof sessionStorage !== 'undefined') {
+  sessionStorage.removeItem('zenmath-menu-scroll-position');
+}
+
 function AppInner() {
   const stats = useStats();
   const { showToast } = useToast();

@@ -98,7 +98,7 @@ function ActivityCalendar({ sessions, goal }: { sessions: { date: string; totalQ
     );
 }
 
-export default function StatsScreen({ onBack, dailyGoal = 5, stats }: StatsScreenProps) {
+export default function StatsScreen({ onBack, dailyGoal = 10, stats }: StatsScreenProps) {
     const { stats: data, recentPerformance, sessions, loading, refreshStats, clearAllData } = stats;
 
     useEffect(() => {
