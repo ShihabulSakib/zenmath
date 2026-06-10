@@ -18,8 +18,8 @@ export interface QuestionRecord {
     num1: number;
     num2: number;
     operation: string;
-    correctAnswer: number;
-    userAnswer: number | null;
+    correctAnswer: number | string;
+    userAnswer: number | string | null;
     timeMs: number;
     isCorrect: boolean;
     mode: string;

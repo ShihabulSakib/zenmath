@@ -1,5 +1,7 @@
 import type { Difficulty, Operation } from '../hooks/useGameLogic';
 
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
 export function randomInRange(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -116,25 +118,43 @@ export function generatePercentageQuestion(diff: Difficulty): { question: string
     if (diff === 'easy') {
         const easyPcts = [10, 25, 50, 75];
         const pct = easyPcts[randomInRange(0, easyPcts.length - 1)];
-        const multiplier = pct === 25 ? 4 : pct === 50 ? 2 : pct === 75 ? 4/3 : 10;
-        const baseNum = pct === 75 ? randomInRange(2, 12) : randomInRange(2, 10);
-        const baseValue = Math.round(baseNum * multiplier);
-        const answer = Math.round((pct / 100) * baseValue);
+        let baseValue: number;
+        let answer: number;
+        if (pct === 75) {
+            const m = randomInRange(2, 12);
+            baseValue = m * 4;
+            answer = baseValue * 3 / 4;
+        } else if (pct === 25) {
+            const m = randomInRange(2, 10);
+            baseValue = m * 4;
+            answer = baseValue / 4;
+        } else if (pct === 50) {
+            const m = randomInRange(2, 10);
+            baseValue = m * 2;
+            answer = baseValue / 2;
+        } else {
+            const m = randomInRange(2, 10);
+            baseValue = m * 10;
+            answer = baseValue / 10;
+        }
         return { question: `${pct}% of ${baseValue}`, answer };
     }
 
     const type = Math.random() < 0.5 ? 'percentOf' : 'whatPercent';
     if (type === 'percentOf') {
         const pct = randomInRange(1, 20) * 5;
-        const value = randomInRange(10, 50 + (diff === 'hard' ? 50 : 0));
-        const answer = Math.round((pct * value) / 100);
+        const multiplier = 100 / gcd(pct, 100);
+        const k = randomInRange(1, Math.floor(100 / multiplier));
+        const value = k * multiplier;
+        const answer = (pct * value) / 100;
         return { question: `${pct}% of ${value}`, answer };
     } else {
         const pct = randomInRange(1, 20) * 5;
-        const result = randomInRange(2, 20);
-        const value = Math.round((result * 100) / pct);
-        const answer = pct;
-        return { question: `${result} is what % of ${value}`, answer };
+        const multiplier = 100 / gcd(pct, 100);
+        const k = randomInRange(1, Math.floor(100 / multiplier));
+        const value = k * multiplier;
+        const result = (value * pct) / 100;
+        return { question: `${result} is what % of ${value}`, answer: pct };
     }
 }
 
@@ -175,7 +195,8 @@ export function generateApproximationQuestion(diff: Difficulty): { question: str
     switch (op) {
         case '+': exactAnswer = num1 + num2; break;
         case '-':
-            exactAnswer = num1 >= num2 ? num1 - num2 : num2 - num1;
+            if (num1 < num2) [num1, num2] = [num2, num1];
+            exactAnswer = num1 - num2;
             break;
         default: exactAnswer = num1 * num2;
     }
