@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { generateFractionQuestion } from '../utils/fractions';
 import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
@@ -732,13 +732,17 @@ export function useGameLogic(onSessionComplete?: (
     // ── Computed values ─────────────────────────────────────
     const totalQuestions = settings.totalQuestions;
 
-    const avgTime = results.length > 0
-        ? results.reduce((sum, r) => sum + r.timeTaken, 0) / results.length
-        : 0;
+    const avgTime = useMemo(() =>
+        results.length > 0
+            ? results.reduce((sum, r) => sum + r.timeTaken, 0) / results.length
+            : 0,
+    [results]);
 
-    const percentage = results.length > 0
-        ? (score / results.length) * 100
-        : 0;
+    const percentage = useMemo(() =>
+        results.length > 0
+            ? (score / results.length) * 100
+            : 0,
+    [score, results.length]);
 
     return {
         // State
