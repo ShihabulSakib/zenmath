@@ -232,13 +232,15 @@ export function useGameLogic(onSessionComplete?: (
     const [settings, setSettings] = useState<GameSettings>(loadSettings);
     const [audioSpriteLoaded, setAudioSpriteLoaded] = useState(false);
 
-    // ── Audio Sprite Initialization ─────────────────────────
-    useEffect(() => {
-        audioSpritePlayer.load()
-            .then(() => {
-                setAudioSpriteLoaded(audioSpritePlayer.isLoaded);
-            });
-    }, []);
+    // ── Audio Sprite: lazy-load on demand ───────────────────
+    const loadAudioSprites = useCallback(async () => {
+        if (audioSpriteLoaded || audioSpritePlayer.isLoaded) {
+            setAudioSpriteLoaded(true);
+            return;
+        }
+        await audioSpritePlayer.load();
+        setAudioSpriteLoaded(audioSpritePlayer.isLoaded);
+    }, [audioSpriteLoaded]);
 
     // ── Daily Progress Persistence ─────────────────────────
     useEffect(() => {
@@ -801,5 +803,6 @@ export function useGameLogic(onSessionComplete?: (
         selectTableRange,
         speakCurrentQuestion,
         audioSpriteLoaded,
+        loadAudioSprites,
     };
 }

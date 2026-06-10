@@ -98,9 +98,9 @@ export function generateQuestion(
                 num2 = generateNumber(divDigits, diff, operation, true);
                 const targetMin = Math.pow(10, digits - 1);
                 const targetMax = Math.pow(10, digits) - 1;
-                const qMin = Math.ceil(targetMin / num2);
-                const qMax = Math.floor(targetMax / num2);
-                const q = randomInRange(Math.max(1, qMin), Math.max(1, qMin, qMax));
+                const qMin = Math.max(1, Math.ceil(targetMin / num2));
+                const qMax = Math.max(qMin, Math.floor(targetMax / num2));
+                const q = randomInRange(qMin, qMax);
                 num1 = num2 * q;
                 answer = q;
             } else {

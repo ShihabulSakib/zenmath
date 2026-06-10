@@ -174,6 +174,7 @@ function AppInner() {
             onSave={game.updateSettings}
             onBack={game.goToMenu}
             audioSpriteLoaded={game.audioSpriteLoaded}
+            onLoadAudioSprites={game.loadAudioSprites}
           />
         )}
       </ZenLayout>

@@ -25,9 +25,10 @@ interface SettingsScreenProps {
     onSave: (settings: any) => void;
     onBack: () => void;
     audioSpriteLoaded: boolean;
+    onLoadAudioSprites: () => void;
 }
 
-export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLoaded }: SettingsScreenProps) {
+export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLoaded, onLoadAudioSprites }: SettingsScreenProps) {
     const [totalQuestions, setTotalQuestions] = useState(settings.totalQuestions);
     const [timeLimit, setTimeLimit] = useState(settings.timeLimit);
     const [ttsEnabled, setTtsEnabled] = useState(settings.ttsEnabled);
@@ -408,14 +409,19 @@ const handleSave = async () => {
                             </div>
                         </div>
 
-                        {/* Audio Sprite Toggle — only when TTS is enabled and sprites are loaded */}
-                        {ttsEnabled && audioSpriteLoaded && (
+                        {/* Audio Sprite Toggle — shown when TTS is enabled, triggers lazy load on first enable */}
+                        {ttsEnabled && (
                             <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4 animate-fade-in">
                                 <ToggleSwitch
                                     enabled={audioSpriteEnabled}
-                                    onChange={setAudioSpriteEnabled}
+                                    onChange={(v) => {
+                                        if (v && !audioSpriteLoaded) {
+                                            onLoadAudioSprites();
+                                        }
+                                        setAudioSpriteEnabled(v);
+                                    }}
                                     label="HD Voice"
-                                    description="Pre-recorded audio sprites (works offline)"
+                                    description={audioSpriteLoaded ? "Pre-recorded audio sprites (works offline)" : "Loading audio assets..."}
                                     icon="graphic_eq"
                                 />
                             </div>
