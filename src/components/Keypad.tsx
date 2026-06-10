@@ -92,7 +92,7 @@ export default function Keypad({
                 {showFraction ? (
                     <KeyButton k="/" label="/" disabled={disabled} onClick={handlePress}  />
                 ) : (
-                    <KeyButton k="/" label="÷" disabled={disabled} onClick={handlePress}  />
+                    <KeyButton k="/" label="÷" disabled={true} onClick={handlePress} className="opacity-30"  />
                 )}
             </div>
         </section>

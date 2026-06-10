@@ -100,40 +100,40 @@ interface MessageContext {
 
 const MESSAGE_TEMPLATES: Record<TimeSlotInfo['period'], string[]> = {
   morning: [
-    'Start your day sharp — {remaining} of {goal} exercises waiting.',
-    'Morning brain boost! {remaining} exercises to reach your goal.',
+    'Start your day sharp — {remaining} of {goal} sessions waiting.',
+    'Morning brain boost! {remaining} sessions to reach your goal.',
     'Rise and shine! Only {remaining} left to hit {goal} today.',
-    'Early bird gets the math done — {remaining} exercises to go.',
+    'Early bird gets the math done — {remaining} sessions to go.',
   ],
   midday: [
-    'Midday mental workout! {remaining} exercises remaining.',
+    'Midday mental workout! {remaining} sessions remaining.',
     'Keep the momentum going — {remaining} of {goal} left.',
-    'Perfect time for a brain break: {remaining} exercises to go.',
+    'Perfect time for a brain break: {remaining} sessions to go.',
     'You are {remaining} away from your daily goal of {goal}.',
   ],
   afternoon: [
-    'Afternoon practice time! {remaining} exercises left.',
-    'Stay sharp — {remaining} exercises to reach your goal.',
+    'Afternoon practice time! {remaining} sessions left.',
+    'Stay sharp — {remaining} sessions to reach your goal.',
     'Great time for a math session: {remaining} of {goal} remaining.',
-    'You have {remaining} exercises to go this afternoon.',
+    'You have {remaining} sessions to go this afternoon.',
   ],
   evening: [
-    'Evening wind-down: {remaining} exercises to complete your goal.',
-    'One last push! {remaining} exercises left this evening.',
-    'Finish strong — {remaining} of {goal} exercises remaining.',
+    'Evening wind-down: {remaining} sessions to complete your goal.',
+    'One last push! {remaining} sessions left this evening.',
+    'Finish strong — {remaining} of {goal} sessions remaining.',
     'Evening practice: {remaining} more to reach your daily target.',
   ],
   night: [
-    'Quick night session? {remaining} exercises to hit your goal.',
-    'Before you go: {remaining} exercises left today.',
-    'Night practice: {remaining} of {goal} exercises remaining.',
-    'Close out the day strong — {remaining} exercises to go.',
+    'Quick night session? {remaining} sessions to hit your goal.',
+    'Before you go: {remaining} sessions left today.',
+    'Night practice: {remaining} of {goal} sessions remaining.',
+    'Close out the day strong — {remaining} sessions to go.',
   ],
 };
 
 const STREAK_MESSAGES = [
   'Your {streak}-day streak is on the line — {remaining} to go!',
-  'Keep that {streak}-day streak alive! {remaining} exercises left.',
+  'Keep that {streak}-day streak alive! {remaining} sessions left.',
   'Don\'t break the chain! {streak} days strong, {remaining} to go.',
 ];
 

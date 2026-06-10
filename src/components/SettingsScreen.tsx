@@ -230,7 +230,7 @@ const handleSave = async () => {
                                     <p className="text-[10px] text-secondary opacity-60 mt-0.5">
                                         {getTodayProgress().goalAchieved 
                                             ? 'Goal achieved! Great job!' 
-                                            : `${getTodayProgress().goal - getTodayProgress().count} exercises to go`}
+                                            : `${getTodayProgress().goal - getTodayProgress().count} sessions to go`}
                                     </p>
                                 </div>
                             </div>
@@ -344,7 +344,7 @@ const handleSave = async () => {
                                         <div className="text-[9px] font-black uppercase tracking-widest text-secondary opacity-40 mb-1">Message Preview</div>
                                         <p className="text-xs text-secondary opacity-80">
                                             {remaining > 0
-                                                ? `"${greeting}! ${remaining} of ${goal} exercises remaining."`
+                                                ? `"${greeting}! ${remaining} of ${goal} sessions remaining."`
                                                 : '"Goal achieved! Great job!"'}
                                         </p>
                                     </div>
@@ -361,7 +361,7 @@ const handleSave = async () => {
                                                 ? 'ZenMath — Practice Reminder'
                                                 : 'ZenMath — Goal Achieved',
                                             remaining > 0 
-                                                ? `${remaining} of ${goal} exercises remaining`
+                                                ? `${remaining} of ${goal} sessions remaining`
                                                 : 'Great job! You\'ve met your daily goal!'
                                         );
                                     }}

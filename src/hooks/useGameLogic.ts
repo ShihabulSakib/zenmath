@@ -174,6 +174,7 @@ export function useGameLogic(onSessionComplete?: (
             const hash = window.location.hash.replace('#', '') as ScreenState;
             const validScreens: ScreenState[] = ['menu', 'setup', 'special-menu', 'playing', 'result', 'settings', 'revision', 'stats', 'history'];
             if (validScreens.includes(hash)) {
+                if (hash === 'playing' && currentQuestion === 0) return;
                 setScreenInternal(hash);
             } else if (!window.location.hash) {
                 setScreenInternal('menu');
@@ -184,7 +185,7 @@ export function useGameLogic(onSessionComplete?: (
 
         window.addEventListener('hashchange', handleHashChange);
         return () => window.removeEventListener('hashchange', handleHashChange);
-    }, []);
+    }, [currentQuestion]);
 
     const setScreen = useCallback((newScreen: ScreenState) => {
         if (newScreen === 'menu') {
@@ -193,7 +194,6 @@ export function useGameLogic(onSessionComplete?: (
         } else {
             window.location.hash = newScreen;
         }
-        setScreenInternal(newScreen);
     }, []);
     const [mode, setMode] = useState<GameMode>('addition');
     const [difficulty, setDifficulty] = useState<Difficulty>('medium');
@@ -716,60 +716,18 @@ export function useGameLogic(onSessionComplete?: (
         setResults([]);
         setScore(0);
         setScreen('playing');
-        // For special modes, generate first question inline
-        if (mode === 'multiplication-table') {
-            if (range[0] === range[1]) {
-                const n1 = range[0];
-                const n2 = randomInRange(1, 12);
-                setNum1(n1);
-                setNum2(n2);
-                setCurrentOperation('×');
-                setCorrectAnswer(n1 * n2);
-            } else {
-                let n1 = randomInRange(range[0], range[1]);
-                const n2 = randomInRange(range[0], range[1]);
-                if (range[0] !== range[1]) {
-                    while (n1 === n2) n1 = randomInRange(range[0], range[1]);
-                }
-                setNum1(n1);
-                setNum2(n2);
-                setCurrentOperation('×');
-                setCorrectAnswer(n1 * n2);
-            }
-        } else if (mode === 'factor-finding') {
-            if (range[0] === range[1]) {
-                const n1 = range[0];
-                const n2 = randomInRange(1, 12);
-                setNum1(n1 * n2);
-                setNum2(n1);
-                setCurrentOperation('×');
-                setCorrectAnswer(n2);
-                setFractionQuestionDisplay(`${n1 * n2}`);
-            } else {
-                let n1 = randomInRange(range[0], range[1]);
-                const n2 = randomInRange(range[0], range[1]);
-                if (range[0] !== range[1]) {
-                    while (n1 === n2) n1 = randomInRange(range[0], range[1]);
-                }
-                setNum1(n1 * n2);
-                setNum2(n1);
-                setCurrentOperation('×');
-                setCorrectAnswer(n2);
-                setFractionQuestionDisplay(`${n1 * n2} = ${n1} × ?`);
-            }
-        } else if (mode === 'square') {
-            const n = randomInRange(range[0], range[1]);
-            setNum1(n);
-            setNum2(n);
-            setCurrentOperation('²');
-            setCorrectAnswer(n * n);
-        }
+        setCurrentQuestion(1);
         setUserInput('');
         setFeedback('none');
-        setCurrentQuestion(1);
         isProcessingRef.current = false;
-        startTimer();
-    }, [mode, startTimer, setScreen]);
+        // generateNextQuestion reads tableRange from current render's
+        // closure, which still has the old value. Schedule generation
+        // after React 19 batches the setTableRange above.
+        requestAnimationFrame(() => {
+            generateNextQuestion(1);
+            startTimer();
+        });
+    }, [mode, startTimer, setScreen, generateNextQuestion]);
 
     // ── Computed values ─────────────────────────────────────
     const totalQuestions = settings.totalQuestions;

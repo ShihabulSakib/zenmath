@@ -236,7 +236,7 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                             <div>
                                 <h3 className="text-main font-bold text-lg">Daily Goal</h3>
                                 <p className="text-xs text-secondary font-medium mt-0.5">
-                                    {game.dailyProgress} / {game.settings.dailyGoal} exercises today
+                                    {game.dailyProgress} / {game.settings.dailyGoal} sessions today
                                     {game.dailyProgress >= game.settings.dailyGoal && (
                                         <span className="ml-2 text-emerald-500">✓</span>
                                     )}
