@@ -22,7 +22,7 @@ import {
     USER_INPUT_MAX_LENGTH, FEEDBACK_DELAY_MS, TIMEOUT_DELAY_MS,
     ADAPTIVE_ACCURACY_THRESHOLD,
     DIFFICULTY_ORDER, MAX_DIGITS,
-    DEFAULT_TABLE_RANGE, DEFAULT_SQUARE_RANGE,
+    DEFAULT_TABLE_RANGE, DEFAULT_SQUARE_RANGE, DEFAULT_SQRT_RANGE,
     DEFAULT_FRACTION_DENOM_RANGE, DEFAULT_FRACTION_NUM_RANGE,
 } from '../constants';
 
@@ -203,6 +203,9 @@ export function useGameLogic(onSessionComplete?: (
     const [allowNegativeResults, setAllowNegativeResults] = useState(false);
     const [squareRangeType, setSquareRangeType] = useState<'fixed' | 'custom'>('fixed');
     const [customSquareRange, setCustomSquareRange] = useState<[number, number]>(DEFAULT_SQUARE_RANGE);
+
+    const [sqrtRangeType, setSqrtRangeType] = useState<'fixed' | 'custom'>('fixed');
+    const [customSqrtRange, setCustomSqrtRange] = useState<[number, number]>(DEFAULT_SQRT_RANGE);
 
     const [fractionDenominatorRange, setFractionDenominatorRange] = useState<[number, number]>(DEFAULT_FRACTION_DENOM_RANGE);
     const [fractionNumeratorRange, setFractionNumeratorRange] = useState<[number, number]>(DEFAULT_FRACTION_NUM_RANGE);
@@ -391,7 +394,8 @@ export function useGameLogic(onSessionComplete?: (
             setFractionQuestionDisplay(question);
             setFractionCorrectAnswer('');
         } else if (mode === 'square-root') {
-            const { question, answer } = generateSquareRootQuestion(difficulty);
+            const range = sqrtRangeType === 'custom' ? customSqrtRange : undefined;
+            const { question, answer } = generateSquareRootQuestion(difficulty, range);
             setNum1(0);
             setNum2(0);
             setCurrentOperation('√');
@@ -445,7 +449,7 @@ export function useGameLogic(onSessionComplete?: (
         setFeedback('none');
         setCurrentQuestion(questionIndex);
         isProcessingRef.current = false;
-    }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange, fractionNumeratorRange, fractionDenominatorRange, allowNegativeResults, squareRangeType, customSquareRange]);
+    }, [mode, digits, difficulty, allowRemainder, mixedOps, tableRange, fractionNumeratorRange, fractionDenominatorRange, allowNegativeResults, squareRangeType, customSquareRange, sqrtRangeType, customSqrtRange]);
 
     // ── TTS: Auto-speak on new question ─────────────────────
     const speakCurrentQuestion = useCallback(() => {
@@ -777,6 +781,8 @@ export function useGameLogic(onSessionComplete?: (
         dailyProgress,
         squareRangeType,
         customSquareRange,
+        sqrtRangeType,
+        customSqrtRange,
         fractionQuestionDisplay,
         fractionCorrectAnswer,
         fractionDenominatorRange,
@@ -790,6 +796,8 @@ export function useGameLogic(onSessionComplete?: (
         setMixedOps,
         setSquareRangeType,
         setCustomSquareRange,
+        setSqrtRangeType,
+        setCustomSqrtRange,
         setFractionDenominatorRange,
         setFractionNumeratorRange,
         startGame,

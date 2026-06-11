@@ -17,6 +17,10 @@ interface GameSetupProps {
     customSquareRange: [number, number];
     onSquareRangeTypeChange: (type: 'fixed' | 'custom') => void;
     onCustomSquareRangeChange: (range: [number, number]) => void;
+    sqrtRangeType: 'fixed' | 'custom';
+    customSqrtRange: [number, number];
+    onSqrtRangeTypeChange: (type: 'fixed' | 'custom') => void;
+    onCustomSqrtRangeChange: (range: [number, number]) => void;
     fractionDenominatorRange: [number, number];
     onFractionDenominatorRangeChange: (range: [number, number]) => void;
     fractionNumeratorRange: [number, number];
@@ -64,6 +68,8 @@ export default function GameSetup({
     allowNegativeResults,
     squareRangeType,
     customSquareRange,
+    sqrtRangeType,
+    customSqrtRange,
     onDigitsChange,
     onDifficultyChange,
     onAllowRemainderChange,
@@ -71,6 +77,8 @@ export default function GameSetup({
     onAllowNegativeResultsChange,
     onSquareRangeTypeChange,
     onCustomSquareRangeChange,
+    onSqrtRangeTypeChange,
+    onCustomSqrtRangeChange,
     fractionDenominatorRange,
     onFractionDenominatorRangeChange,
     fractionNumeratorRange,
@@ -227,12 +235,81 @@ export default function GameSetup({
                     </section>
                 )}
 
+                {/* Square Root Range Selector */}
+                {mode === 'square-root' && (
+                    <section>
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
+                            Square Root Range
+                        </h3>
+                        <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
+                            <div className="flex gap-3 mb-6">
+                                <button
+                                    onClick={() => onSqrtRangeTypeChange('fixed')}
+                                    className={`flex-1 py-4 rounded-2xl font-bold transition-all duration-200 ${sqrtRangeType === 'fixed'
+                                        ? 'bg-primary text-on-primary'
+                                        : 'bg-surface/50 border border-card text-secondary'
+                                        }`}
+                                >
+                                    By Difficulty
+                                </button>
+                                <button
+                                    onClick={() => onSqrtRangeTypeChange('custom')}
+                                    className={`flex-1 py-4 rounded-2xl font-bold transition-all duration-200 ${sqrtRangeType === 'custom'
+                                        ? 'bg-primary text-on-primary'
+                                        : 'bg-surface/50 border border-card text-secondary'
+                                        }`}
+                                >
+                                    Custom
+                                </button>
+                            </div>
+
+                            {sqrtRangeType === 'custom' && (
+                                <div className="flex justify-between items-center gap-6 mt-4 animate-scale-in">
+                                    <div className="flex-1 flex flex-col gap-2">
+                                        <span className="text-[10px] text-secondary uppercase font-black text-center tracking-widest opacity-60">Min Root</span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max={customSqrtRange[1]}
+                                            value={customSqrtRange[0]}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value, 10);
+                                                if (!isNaN(val) && val >= 1 && val <= customSqrtRange[1]) {
+                                                    onCustomSqrtRangeChange([val, customSqrtRange[1]]);
+                                                }
+                                            }}
+                                            className="w-full p-4 text-2xl font-black text-center bg-input-card border border-card rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-main"
+                                        />
+                                    </div>
+                                    <span className="text-primary font-black text-2xl mt-6">/</span>
+                                    <div className="flex-1 flex flex-col gap-2">
+                                        <span className="text-[10px] text-secondary uppercase font-black text-center tracking-widest opacity-60">Max Root</span>
+                                        <input
+                                            type="number"
+                                            min={customSqrtRange[0]}
+                                            max="999"
+                                            value={customSqrtRange[1]}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value, 10);
+                                                if (!isNaN(val) && val >= customSqrtRange[0] && val <= 999) {
+                                                    onCustomSqrtRangeChange([customSqrtRange[0], val]);
+                                                }
+                                            }}
+                                            className="w-full p-4 text-2xl font-black text-center bg-input-card border border-card rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all text-main"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                )}
+
                 {/* Difficulty slider */}
                 <section>
                     <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
                         Difficulty
                     </h3>
-                    <div className="bg-card border border-card rounded-3xl p-6 pb-10 shadow-sm">
+                    <div className={`bg-card border border-card rounded-3xl p-6 pb-10 shadow-sm transition-opacity duration-300 ${mode === 'square-root' && sqrtRangeType === 'custom' ? 'opacity-40 pointer-events-none' : ''}`}>
                         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-secondary mb-10 px-1 opacity-80">
                             {difficultyLevels.map((d, i) => (
                                 <span
@@ -251,6 +328,11 @@ export default function GameSetup({
                                 onChange={(val) => onDifficultyChange(difficultyLevels[Math.round(val)].value)}
                             />
                         </div>
+                        {mode === 'square-root' && sqrtRangeType === 'custom' && (
+                            <p className="text-[10px] text-secondary text-center mt-4 opacity-60 font-medium">
+                                Difficulty ignored when using custom range
+                            </p>
+                        )}
                     </div>
                 </section>
 

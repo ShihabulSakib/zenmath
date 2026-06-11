@@ -87,6 +87,8 @@ function AppInner() {
             mixedOps={game.mixedOps}
             squareRangeType={game.squareRangeType}
             customSquareRange={game.customSquareRange}
+            sqrtRangeType={game.sqrtRangeType}
+            customSqrtRange={game.customSqrtRange}
             fractionDenominatorRange={game.fractionDenominatorRange}
             fractionNumeratorRange={game.fractionNumeratorRange}
             onDigitsChange={game.setDigits}
@@ -96,6 +98,8 @@ function AppInner() {
             onAllowNegativeResultsChange={game.setAllowNegativeResults}
             onSquareRangeTypeChange={game.setSquareRangeType}
             onCustomSquareRangeChange={game.setCustomSquareRange}
+            onSqrtRangeTypeChange={game.setSqrtRangeType}
+            onCustomSqrtRangeChange={game.setCustomSqrtRange}
             onFractionDenominatorRangeChange={game.setFractionDenominatorRange}
             onFractionNumeratorRangeChange={game.setFractionNumeratorRange}
             onStart={game.startGame}
