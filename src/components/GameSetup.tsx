@@ -351,7 +351,7 @@ export default function GameSetup({
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-base font-bold text-main">Negative Results</span>
-                                        <span className="text-[10px] text-secondary font-black uppercase tracking-widest mt-0.5">{allowNegativeResults ? 'State A: Forced' : 'State B: Positive Only'}</span>
+                                        <span className="text-[10px] text-secondary font-black uppercase tracking-widest mt-0.5">{allowNegativeResults ? 'Negative answers forced' : 'Positive results only'}</span>
                                     </div>
                                 </div>
                                 <button

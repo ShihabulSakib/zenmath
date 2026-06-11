@@ -250,22 +250,24 @@ export function useGameLogic(onSessionComplete?: (
         const today = new Date().toISOString().split('T')[0];
         const stored = localStorage.getItem('zenmath-daily-progress');
         if (stored) {
-            const { date, count } = JSON.parse(stored);
+            const { date, count, bestStreak: savedBest } = JSON.parse(stored);
             if (date === today) {
                 setDailyProgress(count);
+                if (typeof savedBest === 'number') setBestStreak(savedBest);
             } else {
                 setDailyProgress(0);
-                localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: 0 }));
+                setBestStreak(0);
+                localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: 0, bestStreak: 0 }));
             }
         } else {
-            localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: 0 }));
+            localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: 0, bestStreak: 0 }));
         }
     }, []);
 
     useEffect(() => {
         const today = new Date().toISOString().split('T')[0];
-        localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: dailyProgress }));
-    }, [dailyProgress]);
+        localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: dailyProgress, bestStreak }));
+    }, [dailyProgress, bestStreak]);
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const questionStartRef = useRef<number>(Date.now());
@@ -700,8 +702,6 @@ export function useGameLogic(onSessionComplete?: (
         setMode(m);
         if (m === 'multiplication-table' || m === 'factor-finding') {
             setScreen('special-menu');
-        } else if (m === 'square' || m === 'fraction') {
-            setScreen('setup');
         } else {
             setScreen('setup');
         }
