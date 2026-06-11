@@ -169,6 +169,8 @@ export function useGameLogic(onSessionComplete?: (
         return validScreens.includes(hash) ? hash : 'menu';
     });
 
+    const [currentQuestion, setCurrentQuestion] = useState(0);
+
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.replace('#', '') as ScreenState;
@@ -212,7 +214,6 @@ export function useGameLogic(onSessionComplete?: (
 
     const [dailyProgress, setDailyProgress] = useState(0);
 
-    const [currentQuestion, setCurrentQuestion] = useState(0);
     const [num1, setNum1] = useState(0);
     const [num2, setNum2] = useState(0);
     const [currentOperation, setCurrentOperation] = useState('+');
@@ -545,7 +546,7 @@ export function useGameLogic(onSessionComplete?: (
             generateNextQuestion(currentQuestion + 1);
             startTimer();
         }
-    }, [currentQuestion, settings.totalQuestions, generateNextQuestion, startTimer, stopTimer, setScreen, onSessionComplete, results, mode, difficulty]);
+    }, [currentQuestion, settings.totalQuestions, settings.adaptiveDifficulty, digits, generateNextQuestion, startTimer, stopTimer, setScreen, onSessionComplete, results, mode, difficulty]);
 
     const recordResult = useCallback((
         isCorrect: boolean,
@@ -624,7 +625,7 @@ export function useGameLogic(onSessionComplete?: (
         if (isCorrect) {
             setStreak(prev => {
                 const newStreak = prev + 1;
-                if (newStreak > bestStreak) setBestStreak(newStreak);
+                setBestStreak(prevBest => Math.max(prevBest, newStreak));
                 return newStreak;
             });
         } else {
@@ -733,7 +734,7 @@ export function useGameLogic(onSessionComplete?: (
             generateNextQuestion(1);
             startTimer();
         });
-    }, [mode, startTimer, setScreen, generateNextQuestion]);
+    }, [startTimer, setScreen, generateNextQuestion]);
 
     // ── Computed values ─────────────────────────────────────
     const totalQuestions = settings.totalQuestions;

@@ -186,8 +186,8 @@ export function generateApproximationQuestion(diff: Difficulty): { question: str
     const digitsCount = diff === 'easy' ? 2 : diff === 'medium' ? 3 : 4;
     const min = POW10[digitsCount - 1];
     const max = POW10[digitsCount] - 1;
-    const num1 = randomInRange(min, max);
-    const num2 = randomInRange(min, max);
+    let num1 = randomInRange(min, max);
+    let num2 = randomInRange(min, max);
 
     let exactAnswer: number;
     switch (op) {

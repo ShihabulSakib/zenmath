@@ -30,7 +30,7 @@ export default function HistoryScreen({ onBack }: HistoryScreenProps) {
     }, []);
 
     useEffect(() => {
-        let filtered = modeFilter === 'all'
+        const filtered = modeFilter === 'all'
             ? sessions
             : sessions.filter(s => s.mode === modeFilter);
         setFilteredSessions(filtered);

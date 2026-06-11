@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode, GameSettings } from '../hooks/useGameLogic';
 import { BookOpen } from 'lucide-react';
