@@ -31,6 +31,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('zenmath-theme', theme);
         document.documentElement.classList.toggle('light', theme === 'light');
         document.documentElement.classList.toggle('dark', theme === 'dark');
+
+        // Update meta theme-color
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', theme === 'light' ? '#F4F4F5' : '#000000');
+        }
     }, [theme]);
 
     const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');

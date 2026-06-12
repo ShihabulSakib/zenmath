@@ -46,17 +46,18 @@ registerRoute(
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
-    const { title, body, icon, badge, tag, actions, silent, vibrate, requireInteraction } = event.data;
+    const { title, body, icon, badge, tag, actions, silent, vibrate, requireInteraction, color } = event.data;
 
     const options = {
       body,
-      icon: icon || '/notification-icon.png',
-      badge: '/notification-badge.png',
+      icon: icon || '/pwa-512x512(bgremoved).png',
+      badge: badge || '/pwa(vector).svg',
       tag: tag || 'zenmath-notification',
       requireInteraction: requireInteraction !== undefined ? requireInteraction : true,
       vibrate: vibrate || [200, 100, 200, 100, 400],
       silent: silent || false,
       timestamp: Date.now(),
+      color: color || '#121214',
       data: { url: '/' },
     };
 
@@ -82,12 +83,13 @@ self.addEventListener('notificationclick', (event) => {
             event.notification.title,
             {
               body: 'Time to practice! Your 30-minute snooze is up.',
-              icon: '/notification-icon.png',
-              badge: '/notification-badge.png',
+              icon: '/pwa-512x512(bgremoved).png',
+              badge: '/pwa(vector).svg',
               tag: 'zenmath-snooze',
               requireInteraction: true,
               vibrate: [200, 100, 200],
               timestamp: Date.now(),
+              color: event.notification.color || '#121214',
               data: { url: '/' },
             }
           );
@@ -124,12 +126,13 @@ self.addEventListener('push', (event) => {
   
   self.registration.showNotification(data.title, {
     body: data.body,
-    icon: data.icon || '/notification-icon.png',
-    badge: '/notification-badge.png',
+    icon: data.icon || '/pwa-512x512(bgremoved).png',
+    badge: data.badge || '/pwa(vector).svg',
     tag: 'zenmath-push',
     requireInteraction: true,
     vibrate: [200, 100, 200],
     timestamp: Date.now(),
+    color: data.color || '#121214',
     data: { url: '/' }
   });
 });

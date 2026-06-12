@@ -210,6 +210,18 @@ export function getTodayProgress(): { count: number; goal: number; goalAchieved:
   return { count, goal: dailyGoal, goalAchieved: count >= dailyGoal };
 }
 
+// ─── Theme helper ──────────────────────────────────────────
+
+function getThemeColor(): string {
+  try {
+    const theme = localStorage.getItem('zenmath-theme') || 'dark';
+    // Dark: Midnight BG (#000000), Light: Paper Zen BG (#F4F4F5)
+    return theme === 'light' ? '#F4F4F5' : '#000000';
+  } catch {
+    return '#000000';
+  }
+}
+
 // ─── Send notification ────────────────────────────────────────
 
 async function sendViaServiceWorker(title: string, body: string): Promise<boolean> {
@@ -221,8 +233,9 @@ async function sendViaServiceWorker(title: string, body: string): Promise<boolea
         type: 'SHOW_NOTIFICATION',
         title,
         body,
-        icon: '/notification-icon.png',
-        badge: '/notification-badge.png',
+        icon: '/pwa-512x512(bgremoved).png',
+        badge: '/pwa(vector).svg',
+        color: getThemeColor(),
         tag: 'daily-reminder',
         vibrate: [200, 100, 200, 100, 400],
         timestamp: Date.now(),
@@ -243,11 +256,12 @@ function sendDirectNotification(title: string, body: string) {
   try {
     const notification = new Notification(title, {
       body,
-      icon: '/notification-icon.png',
-      badge: '/notification-badge.png',
+      icon: '/pwa-512x512(bgremoved).png',
+      badge: '/pwa(vector).svg',
       tag: 'daily-reminder',
       vibrate: [200, 100, 200],
       timestamp: Date.now(),
+      color: getThemeColor(),
     } as any); // Cast to any because some properties might not be in standard Notification constructor but supported by browsers
     notification.onclick = () => {
       window.focus();
