@@ -4,6 +4,8 @@
 
 | Commit | Description | Files |
 |--------|-------------|-------|
+| `cfcb577` | fix: results off-by-one due to stale closure, PWA notification icons | `useGameLogic.ts`, `vite.config.ts` |
+| `8301ed0` | fix: white screen caused by const reassignment in generateApproximationQuestion | `useGameLogic.ts`, `questions.ts`, `HistoryScreen.tsx`, `MainMenu.tsx` |
 | `75a6d13` | fix: persist bestStreak, clean up selectMode, fix debug labels | `useGameLogic.ts`, `GameSetup.tsx` |
 | `0e79022` | feat: customizable square root range with difficulty defaults | `constants.ts`, `questions.ts`, `useGameLogic.ts`, `GameSetup.tsx`, `App.tsx` |
 | `0610537` | perf(P3): lazy-load audio sprites, harden division generation | `useGameLogic.ts`, `audio.ts`, `App.tsx`, `SettingsScreen.tsx` |
@@ -74,6 +76,20 @@ Subtraction mode toggle displayed internal labels `"State A: Forced"` / `"State 
 
 ---
 
+## Phase 3 — Stale Closure & PWA Assets
+
+### Results count off by 1 (19/20 instead of 20/20)
+
+**Root cause:** `advanceToNext` was captured in a `setTimeout` callback inside `handleSubmit`/`handleTimeout`. When `recordResult` called `setResults`, React queued a re-render that created a new `advanceToNext` with updated `results`. But the `setTimeout` still held the old closure. For the *last* question, `advanceToNext` read stale `results` (missing the final entry), reporting 19 instead of 20.
+
+**Fix:** Added `advanceToNextRef` — a `useRef` that always points to the latest `advanceToNext`. Both `setTimeout` calls now invoke `advanceToNextRef.current()`, ensuring they always resolve the latest closure.
+
+### PWA notification icons offline
+
+The 192×192 icon was missing `purpose: 'any maskable'`, which Android requires for proper rendering. Also added `audio/*.{wav,json}` to `includeAssets` and `.webmanifest` to `globPatterns` so audio sprites and manifest files are precached for offline use.
+
+---
+
 ## All fixes (across all audit rounds)
 
 | Priority | Issue | Fix | Commit |
@@ -92,8 +108,13 @@ Subtraction mode toggle displayed internal labels `"State A: Forced"` / `"State 
 | P3 | Audio sprites loaded eagerly on mount | Lazy-loaded on first HD Voice enable in Settings | `0610537` |
 | P3 | Division generation: `qMin/qMax` could put `num1` out of digit range | Simplified guard guarantees `num1` stays in target range | `0610537` |
 | P0 | Streak never persisted to localStorage | Added `bestStreak` to daily progress object | `75a6d13` |
+| P0 | Stale closure in setTimeout drops last result (19/20) | `advanceToNextRef` always resolves latest advanceToNext in timeouts | `cfcb577` |
+| P0 | White screen: const reassignment in generateApproximationQuestion | Changed `const` → `let` for `num1`/`num2` | `8301ed0` |
 | P1 | selectMode redundant branches (`square`, `fraction`) | Removed, consolidated to default | `75a6d13` |
+| P1 | currentQuestion used before declaration (TS build error) | Hoisted before hashchange effect | `8301ed0` |
 | P2 | Debug labels visible in production | Replaced with user-facing text | `75a6d13` |
+| P2 | Missing useMemo deps, unused imports | Added deps, removed unused imports | `8301ed0` |
+| — | Offline notification icons missing | Added `purpose: any maskable` to 192×192 icon, audio/* to includeAssets, .webmanifest to globPatterns | `cfcb577` |
 | — | Square root: customizable range with difficulty defaults | New UI section, updated generator | `0e79022` |
 
 ---
