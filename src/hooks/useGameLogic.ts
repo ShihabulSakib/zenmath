@@ -548,6 +548,9 @@ export function useGameLogic(onSessionComplete?: (
         }
     }, [currentQuestion, settings.totalQuestions, settings.adaptiveDifficulty, digits, generateNextQuestion, startTimer, stopTimer, setScreen, onSessionComplete, results, mode, difficulty]);
 
+    const advanceToNextRef = useRef(advanceToNext);
+    advanceToNextRef.current = advanceToNext;
+
     const recordResult = useCallback((
         isCorrect: boolean,
         userAns: number | string | null,
@@ -633,9 +636,9 @@ export function useGameLogic(onSessionComplete?: (
         }
 
         feedbackTimeoutRef.current = setTimeout(() => {
-            advanceToNext();
+            advanceToNextRef.current();
         }, FEEDBACK_DELAY_MS);
-    }, [userInput, correctAnswer, feedback, stopTimer, recordResult, advanceToNext, mode, fractionCorrectAnswer]);
+    }, [userInput, correctAnswer, feedback, stopTimer, recordResult, mode, fractionCorrectAnswer]);
 
     const handleTimeout = useCallback(() => {
         if (isProcessingRef.current) return;
@@ -646,9 +649,9 @@ export function useGameLogic(onSessionComplete?: (
         recordResult(false, null, true);
         setFeedback('timeout');
         feedbackTimeoutRef.current = setTimeout(() => {
-            advanceToNext();
+            advanceToNextRef.current();
         }, TIMEOUT_DELAY_MS);
-    }, [stopTimer, recordResult, advanceToNext]);
+    }, [stopTimer, recordResult]);
 
     // ── Input handling ──────────────────────────────────────
     const handleKeyPress = useCallback((key: string) => {

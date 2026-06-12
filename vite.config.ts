@@ -20,10 +20,10 @@ export default defineConfig({
         swSrc: 'public/sw.js',
         swDest: 'dist/sw.js',
         globDirectory: 'dist',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wav,json}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wav,json,webmanifest}'],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
       },
-      includeAssets: ['favicon.ico', 'pwa-192x192.png', 'pwa-512x512.png'],
+      includeAssets: ['favicon.ico', 'pwa-192x192.png', 'pwa-512x512.png', 'audio/*.wav', 'audio/*.json'],
       manifest: {
         name: 'ZenMath — Mental Arithmetic',
         short_name: 'ZenMath',
@@ -43,6 +43,7 @@ export default defineConfig({
             src: '/pwa-192x192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any maskable',
           },
           {
             src: '/pwa-512x512.png',
