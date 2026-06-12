@@ -50,12 +50,13 @@ self.addEventListener('message', (event) => {
 
     const options = {
       body,
-      icon: icon || '/pwa-192x192.png',
-      badge: badge || '/pwa-192x192.png',
+      icon: icon || '/notification-icon.png',
+      badge: '/notification-badge.png',
       tag: tag || 'zenmath-notification',
       requireInteraction: requireInteraction !== undefined ? requireInteraction : true,
-      vibrate: vibrate || [200, 100, 200],
+      vibrate: vibrate || [200, 100, 200, 100, 400],
       silent: silent || false,
+      timestamp: Date.now(),
       data: { url: '/' },
     };
 
@@ -81,11 +82,12 @@ self.addEventListener('notificationclick', (event) => {
             event.notification.title,
             {
               body: 'Time to practice! Your 30-minute snooze is up.',
-              icon: event.notification.icon || '/pwa-192x192.png',
-              badge: '/pwa-192x192.png',
+              icon: '/notification-icon.png',
+              badge: '/notification-badge.png',
               tag: 'zenmath-snooze',
               requireInteraction: true,
               vibrate: [200, 100, 200],
+              timestamp: Date.now(),
               data: { url: '/' },
             }
           );
@@ -94,6 +96,10 @@ self.addEventListener('notificationclick', (event) => {
       })
     );
     return;
+  }
+
+  if (action === 'practice') {
+    // Handle specific practice action if needed
   }
 
   event.waitUntil(
@@ -114,15 +120,17 @@ self.addEventListener('push', (event) => {
   const data = event.data?.json() || {
     title: 'ZenMath',
     body: 'Time to practice!',
-    icon: '/pwa-192x192.png'
   };
   
   self.registration.showNotification(data.title, {
     body: data.body,
-    icon: data.icon || '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
+    icon: data.icon || '/notification-icon.png',
+    badge: '/notification-badge.png',
     tag: 'zenmath-push',
-    requireInteraction: true
+    requireInteraction: true,
+    vibrate: [200, 100, 200],
+    timestamp: Date.now(),
+    data: { url: '/' }
   });
 });
 

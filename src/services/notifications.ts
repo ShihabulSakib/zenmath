@@ -221,9 +221,11 @@ async function sendViaServiceWorker(title: string, body: string): Promise<boolea
         type: 'SHOW_NOTIFICATION',
         title,
         body,
-        icon: '/pwa-192x192.png',
-        badge: '/pwa-192x192.png',
+        icon: '/notification-icon.png',
+        badge: '/notification-badge.png',
         tag: 'daily-reminder',
+        vibrate: [200, 100, 200, 100, 400],
+        timestamp: Date.now(),
         actions: [
           { action: 'practice', title: 'Start Practice' },
           { action: 'snooze', title: 'Snooze 30 min' },
@@ -241,9 +243,12 @@ function sendDirectNotification(title: string, body: string) {
   try {
     const notification = new Notification(title, {
       body,
-      icon: '/pwa-192x192.png',
+      icon: '/notification-icon.png',
+      badge: '/notification-badge.png',
       tag: 'daily-reminder',
-    });
+      vibrate: [200, 100, 200],
+      timestamp: Date.now(),
+    } as any); // Cast to any because some properties might not be in standard Notification constructor but supported by browsers
     notification.onclick = () => {
       window.focus();
       notification.close();
