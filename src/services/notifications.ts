@@ -218,7 +218,7 @@ function getThemeColor(): string {
     // Dark: Midnight BG (#000000), Light: Paper Zen BG (#F4F4F5)
     return theme === 'light' ? '#F4F4F5' : '#000000';
   } catch {
-    return '#000000';
+    return '#F4F4F5';
   }
 }
 
@@ -234,7 +234,7 @@ async function sendViaServiceWorker(title: string, body: string): Promise<boolea
         title,
         body,
         icon: '/pwa-512x512(bgremoved).png',
-        badge: '/pwa(vector).svg',
+        badge: '/pwa-512x512(bgremoved).png',
         color: getThemeColor(),
         tag: 'daily-reminder',
         vibrate: [200, 100, 200, 100, 400],
@@ -257,7 +257,7 @@ function sendDirectNotification(title: string, body: string) {
     const notification = new Notification(title, {
       body,
       icon: '/pwa-512x512(bgremoved).png',
-      badge: '/pwa(vector).svg',
+      badge: '/pwa-512x512(bgremoved).png',
       tag: 'daily-reminder',
       vibrate: [200, 100, 200],
       timestamp: Date.now(),

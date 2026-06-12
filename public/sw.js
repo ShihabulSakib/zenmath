@@ -51,13 +51,13 @@ self.addEventListener('message', (event) => {
     const options = {
       body,
       icon: icon || '/pwa-512x512(bgremoved).png',
-      badge: badge || '/pwa(vector).svg',
+      badge: badge || '/pwa-512x512(bgremoved).png',
       tag: tag || 'zenmath-notification',
       requireInteraction: requireInteraction !== undefined ? requireInteraction : true,
       vibrate: vibrate || [200, 100, 200, 100, 400],
       silent: silent || false,
       timestamp: Date.now(),
-      color: color || '#121214',
+      color: color || '#F4F4F5',
       data: { url: '/' },
     };
 
@@ -84,12 +84,12 @@ self.addEventListener('notificationclick', (event) => {
             {
               body: 'Time to practice! Your 30-minute snooze is up.',
               icon: '/pwa-512x512(bgremoved).png',
-              badge: '/pwa(vector).svg',
+              badge: '/pwa-512x512(bgremoved).png',
               tag: 'zenmath-snooze',
               requireInteraction: true,
               vibrate: [200, 100, 200],
               timestamp: Date.now(),
-              color: event.notification.color || '#121214',
+              color: event.notification.color || '#F4F4F5',
               data: { url: '/' },
             }
           );
@@ -127,12 +127,12 @@ self.addEventListener('push', (event) => {
   self.registration.showNotification(data.title, {
     body: data.body,
     icon: data.icon || '/pwa-512x512(bgremoved).png',
-    badge: data.badge || '/pwa(vector).svg',
+    badge: data.badge || '/pwa-512x512(bgremoved).png',
     tag: 'zenmath-push',
     requireInteraction: true,
     vibrate: [200, 100, 200],
     timestamp: Date.now(),
-    color: data.color || '#121214',
+    color: data.color || '#F4F4F5',
     data: { url: '/' }
   });
 });
