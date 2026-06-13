@@ -233,8 +233,8 @@ async function sendViaServiceWorker(title: string, body: string): Promise<boolea
         type: 'SHOW_NOTIFICATION',
         title,
         body,
-        icon: '/pwa-512x512(bgremoved).png',
-        badge: '/pwa-512x512(bgremoved).png',
+        icon: '/notification-icon.png',
+        badge: '/notification-badge.png',
         color: getThemeColor(),
         tag: 'daily-reminder',
         vibrate: [200, 100, 200, 100, 400],
@@ -256,8 +256,8 @@ function sendDirectNotification(title: string, body: string) {
   try {
     const notification = new Notification(title, {
       body,
-      icon: '/pwa-512x512(bgremoved).png',
-      badge: '/pwa-512x512(bgremoved).png',
+      icon: '/notification-icon.png',
+      badge: '/notification-badge.png',
       tag: 'daily-reminder',
       vibrate: [200, 100, 200],
       timestamp: Date.now(),

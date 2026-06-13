@@ -50,8 +50,8 @@ self.addEventListener('message', (event) => {
 
     const options = {
       body,
-      icon: icon || '/pwa-512x512(bgremoved).png',
-      badge: badge || '/pwa-512x512(bgremoved).png',
+      icon: icon || '/notification-icon.png',
+      badge: badge || '/notification-badge.png',
       tag: tag || 'zenmath-notification',
       requireInteraction: requireInteraction !== undefined ? requireInteraction : true,
       vibrate: vibrate || [200, 100, 200, 100, 400],
@@ -83,8 +83,8 @@ self.addEventListener('notificationclick', (event) => {
             event.notification.title,
             {
               body: 'Time to practice! Your 30-minute snooze is up.',
-              icon: '/pwa-512x512(bgremoved).png',
-              badge: '/pwa-512x512(bgremoved).png',
+              icon: '/notification-icon.png',
+              badge: '/notification-badge.png',
               tag: 'zenmath-snooze',
               requireInteraction: true,
               vibrate: [200, 100, 200],
@@ -126,8 +126,8 @@ self.addEventListener('push', (event) => {
   
   self.registration.showNotification(data.title, {
     body: data.body,
-    icon: data.icon || '/pwa-512x512(bgremoved).png',
-    badge: data.badge || '/pwa-512x512(bgremoved).png',
+    icon: data.icon || '/notification-icon.png',
+    badge: data.badge || '/notification-badge.png',
     tag: 'zenmath-push',
     requireInteraction: true,
     vibrate: [200, 100, 200],
