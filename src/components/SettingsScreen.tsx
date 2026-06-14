@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
-import { requestNotificationPermission, getTodayProgress, showLocalNotification, TIME_SLOTS, invalidateSettingsCache, type TimeSlotInfo } from '../services/notifications';
+import { 
+    requestNotificationPermission, 
+    getTodayProgress, 
+    showLocalNotification, 
+    TIME_SLOTS, 
+    invalidateSettingsCache, 
+    subscribeToPush,
+    unsubscribeFromPush,
+    type TimeSlotInfo 
+} from '../services/notifications';
 import { useToast } from '../hooks/useToast';
 import ToggleSwitch, { ToggleCard } from './ToggleSwitch';
 import RangeSlider from './RangeSlider';

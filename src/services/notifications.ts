@@ -362,7 +362,11 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
-  return Uint8Array.from([...rawData].map(ch => ch.charCodeAt(0)));
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 }
 
 export async function subscribeToPush(): Promise<boolean> {
@@ -376,7 +380,7 @@ export async function subscribeToPush(): Promise<boolean> {
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
     });
 
     await fetch('/api/push', {
@@ -490,10 +494,13 @@ export function evaluateAndSend(): Promise<void> {
     const newSentTimes = { ...sentTimes, [today]: [...todaySent, time] };
     localStorage.setItem(SENT_TIMES_KEY, JSON.stringify(newSentTimes));
     localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
+    
+    syncStateToServiceWorker(); // Update bridge after sending
 
     break;
   }
 
+  syncStateToServiceWorker(); // Ensure bridge is up to date
   return Promise.resolve();
 }
 
