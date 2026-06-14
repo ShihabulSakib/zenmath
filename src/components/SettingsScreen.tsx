@@ -243,6 +243,7 @@ const handleSave = async () => {
                                             const perm = await Notification.requestPermission();
                                             if (perm === 'granted') {
                                                 setNotificationsEnabled(true);
+                                                await subscribeToPush();
                                             } else {
                                                 showToast('Please allow notifications in browser settings');
                                             }
@@ -251,6 +252,7 @@ const handleSave = async () => {
                                         }
                                     } else {
                                         setNotificationsEnabled(false);
+                                        await unsubscribeFromPush();
                                     }
                                 }}
                                 className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${notificationsEnabled ? 'bg-primary' : 'bg-toggle-off'}`}
@@ -353,23 +355,64 @@ const handleSave = async () => {
                             })()}
 
                             {('Notification' in window) && (
-                                <button
-                                    onClick={() => {
-                                        const { goal, count } = getTodayProgress();
-                                        const remaining = Math.max(0, goal - count);
-                                        showLocalNotification(
-                                            remaining > 0
-                                                ? 'ZenMath — Practice Reminder'
-                                                : 'ZenMath — Goal Achieved',
-                                            remaining > 0 
-                                                ? `${remaining} of ${goal} sessions remaining`
-                                                : 'Great job! You\'ve met your daily goal!'
-                                        );
-                                    }}
-                                    className="mt-4 w-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold py-3 px-4 rounded-2xl active:scale-[0.98] transition-transform"
-                                >
-                                    Test Notification
-                                </button>
+                                <div className="flex flex-col gap-2 mt-4">
+                                    <button
+                                        onClick={() => {
+                                            const { goal, count } = getTodayProgress();
+                                            const remaining = Math.max(0, goal - count);
+                                            showLocalNotification(
+                                                remaining > 0
+                                                    ? 'ZenMath — Practice Reminder'
+                                                    : 'ZenMath — Goal Achieved',
+                                                remaining > 0 
+                                                    ? `${remaining} of ${goal} sessions remaining`
+                                                    : 'Great job! You\'ve met your daily goal!'
+                                            );
+                                        }}
+                                        className="w-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold py-3 px-4 rounded-2xl active:scale-[0.98] transition-transform"
+                                    >
+                                        Test Notification (Immediate)
+                                    </button>
+
+                                    {/* Debug Section */}
+                                    <div className="mt-4 pt-4 border-t border-primary/10">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 mb-3 ml-1">Advanced / Debug</h4>
+                                        <button
+                                            onClick={async () => {
+                                                if (!('serviceWorker' in navigator)) return;
+                                                const reg = await navigator.serviceWorker.ready;
+                                                if (reg.active) {
+                                                    reg.active.postMessage({ type: 'TEST_PERIODIC_CHECK' });
+                                                    showToast('Simulating background check...');
+                                                }
+                                            }}
+                                            className="w-full bg-surface border border-card text-secondary text-[11px] font-bold py-2 px-4 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
+                                            Simulate Background Sync
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const { triggerTestPush, subscribeToPush } = await import('../services/notifications');
+                                                    // Ensure subscribed first
+                                                    await subscribeToPush();
+                                                    await triggerTestPush();
+                                                    showToast('Triggering server push...');
+                                                } catch (e: any) {
+                                                    showToast(e.message || 'Push test failed');
+                                                }
+                                            }}
+                                            className="w-full mt-2 bg-surface border border-card text-secondary text-[11px] font-bold py-2 px-4 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>cloud_sync</span>
+                                            Simulate Server Push
+                                        </button>
+                                        <p className="text-[9px] text-secondary opacity-40 mt-2 px-1">
+                                            Tests if the server can wake your phone even if the browser is completely closed.
+                                        </p>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}

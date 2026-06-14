@@ -44,7 +44,69 @@ registerRoute(
   })
 );
 
+const SW_BRIDGE_CACHE = 'zenmath-sw-bridge';
+const SW_BRIDGE_KEY = '/sw-bridge-data.json';
+
+async function getBridgeData() {
+  try {
+    const cache = await caches.open(SW_BRIDGE_CACHE);
+    const response = await cache.match(SW_BRIDGE_KEY);
+    if (response) return await response.json();
+  } catch (e) {
+    console.error('SW: Failed to read bridge data', e);
+  }
+  return null;
+}
+
+async function handlePeriodicCheck() {
+  const data = await getBridgeData();
+  if (!data || !data.settings?.notificationsEnabled) return;
+
+  const { settings, progress, today, sentTimes } = data;
+  if (progress.count >= settings.dailyGoal) return;
+
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  
+  const todaySent = sentTimes[today] || [];
+
+  for (const time of settings.notificationTimes) {
+    const [hour, minute] = time.split(':').map(Number);
+    const isPastTime = currentHour > hour || (currentHour === hour && currentMinute >= minute);
+    
+    if (isPastTime && !todaySent.includes(time) && todaySent.length < 3) {
+      // Show notification
+      const greeting = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening';
+      const remaining = settings.dailyGoal - progress.count;
+      
+      self.registration.showNotification(`${greeting} — ZenMath`, {
+        body: `Keep it up! ${remaining} of ${settings.dailyGoal} sessions remaining today.`,
+        icon: '/notification-icon.png',
+        badge: '/notification-badge.png',
+        tag: 'daily-reminder',
+        requireInteraction: true,
+        vibrate: [200, 100, 200],
+        data: { url: '/' }
+      });
+      
+      // Note: We can't easily update the bridge's sentTimes from here 
+      // without some complexity, but showing the notification is the goal.
+      break;
+    }
+  }
+}
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'daily-reminder') {
+    event.waitUntil(handlePeriodicCheck());
+  }
+});
+
 self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'TEST_PERIODIC_CHECK') {
+    event.waitUntil(handlePeriodicCheck());
+  }
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, icon, badge, tag, actions, silent, vibrate, requireInteraction, color } = event.data;
 

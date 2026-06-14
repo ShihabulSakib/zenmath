@@ -41,6 +41,46 @@ interface CachedSettings {
   dailyGoal: number;
 }
 
+const SW_BRIDGE_CACHE = 'zenmath-sw-bridge';
+const SW_BRIDGE_KEY = '/sw-bridge-data.json';
+
+/**
+ * Bridges app state to the Service Worker via Cache API.
+ * This is necessary because SW cannot access localStorage.
+ */
+async function syncStateToServiceWorker() {
+  if (!('caches' in window)) return;
+  
+  const settings = readSettings();
+  const progress = getTodayProgress();
+  const streak = getStreak();
+  const today = new Date().toISOString().split('T')[0];
+  
+  const sentTimesRaw = localStorage.getItem(SENT_TIMES_KEY);
+  const sentTimes = sentTimesRaw ? JSON.parse(sentTimesRaw) : {};
+
+  const bridgeData = {
+    settings,
+    progress,
+    streak,
+    today,
+    sentTimes,
+    lastUpdated: Date.now()
+  };
+
+  try {
+    const cache = await caches.open(SW_BRIDGE_CACHE);
+    await cache.put(
+      new Request(SW_BRIDGE_KEY),
+      new Response(JSON.stringify(bridgeData), {
+        headers: { 'Content-Type': 'application/json' }
+      })
+    );
+  } catch (e) {
+    console.error('Failed to sync state to SW:', e);
+  }
+}
+
 let settingsCache: { data: CachedSettings; ts: number } | null = null;
 const CACHE_TTL = 2000;
 
@@ -66,6 +106,7 @@ function readSettings(): CachedSettings {
 
 export function invalidateSettingsCache() {
   settingsCache = null;
+  syncStateToServiceWorker(); // Sync on change
 }
 
 // ── Time helpers ─────────────────────────────────────────────
@@ -310,6 +351,94 @@ export async function registerPeriodicSync(): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+// ─── Web Push ─────────────────────────────────────────────────
+
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(ch => ch.charCodeAt(0)));
+}
+
+export async function subscribeToPush(): Promise<boolean> {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !VAPID_PUBLIC_KEY) {
+    return false;
+  }
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const existing = await registration.pushManager.getSubscription();
+    if (existing) return true;
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+
+    await fetch('/api/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'subscribe', subscription }),
+    });
+    return true;
+  } catch (e) {
+    console.error('Push subscription failed:', e);
+    return false;
+  }
+}
+
+export async function unsubscribeFromPush(): Promise<boolean> {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (!subscription) return true;
+
+    await fetch('/api/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'unsubscribe', endpoint: subscription.endpoint }),
+    });
+    
+    await subscription.unsubscribe();
+    return true;
+  } catch (e) {
+    console.error('Push unsubscription failed:', e);
+    return false;
+  }
+}
+
+export async function triggerTestPush(): Promise<void> {
+  if (!('serviceWorker' in navigator)) return;
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  
+  if (!subscription) {
+    throw new Error('No push subscription found. Enable notifications first.');
+  }
+
+  const response = await fetch('/api/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      action: 'trigger', 
+      subscription,
+      payload: {
+        title: 'ZenMath — Server Test',
+        body: 'This push was sent from the server successfully!',
+        icon: '/notification-icon.png',
+        badge: '/notification-badge.png'
+      }
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to trigger test push');
   }
 }
 
