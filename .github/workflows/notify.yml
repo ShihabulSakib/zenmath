@@ -1,0 +1,14 @@
+name: Hourly Notification Trigger
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit Notification Endpoint
+        run: |
+          curl -X GET "https://${{ secrets.VERCEL_URL }}/api/push?action=automated-check&secret=${{ secrets.CRON_SECRET }}"

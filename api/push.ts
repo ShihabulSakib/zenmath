@@ -1,16 +1,18 @@
 import webpush from 'web-push';
+import { kv } from '@vercel/kv';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const publicVapidKey = process.env.VITE_VAPID_PUBLIC_KEY;
 const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
 const contactEmail = process.env.PUSH_CONTACT_EMAIL || 'mailto:example@example.com';
+const cronSecret = process.env.CRON_SECRET;
 
 if (publicVapidKey && privateVapidKey) {
   webpush.setVapidDetails(contactEmail, publicVapidKey, privateVapidKey);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Vercel Cron uses GET, App use POST
+  // Vercel Cron or GitHub Action uses GET, App use POST
   const action = req.query.action || req.body?.action;
 
   if (!publicVapidKey || !privateVapidKey) {
@@ -20,16 +22,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // 1. Handle Automated Cron Trigger
     if (action === 'automated-check') {
-      console.log('Cron trigger received at:', new Date().toISOString());
+      // Security check
+      const authHeader = req.headers.authorization;
+      if (cronSecret && authHeader !== `Bearer ${cronSecret}` && req.query.secret !== cronSecret) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      console.log('Automated push check started...');
       
-      /* 
-       * PROFESSIONAL NOTE:
-       * To make this "Better", you need to fetch all subscriptions from a database 
-       * (like Vercel KV or Upstash) here and send notifications to all of them.
-       * 
-       * For now, this endpoint is ready to receive the cron signal.
-       */
-      return res.status(200).json({ success: true, message: 'Cron check processed' });
+      // Get all subscriptions from KV
+      const keys = await kv.keys('sub:*');
+      if (keys.length === 0) {
+        return res.status(200).json({ message: 'No subscriptions found' });
+      }
+
+      const results = { sent: 0, failed: 0 };
+      
+      for (const key of keys) {
+        const subscription: any = await kv.get(key);
+        if (!subscription) continue;
+
+        try {
+          await webpush.sendNotification(
+            subscription,
+            JSON.stringify({
+              title: 'ZenMath — Daily Goal',
+              body: 'Time to sharpen your mind! Check your daily progress.',
+              icon: '/notification-icon.png',
+              badge: '/notification-badge.png',
+              tag: 'daily-reminder'
+            })
+          );
+          results.sent++;
+        } catch (error: any) {
+          console.error(`Failed to send to ${key}:`, error.statusCode);
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            // Subscription expired or gone, remove it
+            await kv.del(key);
+          }
+          results.failed++;
+        }
+      }
+
+      return res.status(200).json({ 
+        success: true, 
+        message: `Processed ${keys.length} subscriptions`,
+        results 
+      });
     }
 
     // 2. Handle POST requests from the App
@@ -39,17 +78,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { subscription, payload } = req.body;
 
-  try {
     switch (action) {
       case 'subscribe':
-        // In a real app, you would save the subscription to a database here.
-        // For this PWA, we'll return 200 and rely on the client to send the 
-        // subscription for the 'trigger' action during testing.
-        console.log('New subscription received:', subscription.endpoint);
+        if (!subscription?.endpoint) {
+          return res.status(400).json({ error: 'Invalid subscription' });
+        }
+        // Save to KV with 30-day expiration to keep storage clean
+        await kv.set(`sub:${subscription.endpoint}`, subscription, { ex: 60 * 60 * 24 * 30 });
+        console.log('Saved subscription:', subscription.endpoint);
         return res.status(200).json({ success: true });
 
       case 'unsubscribe':
-        console.log('Unsubscription request for:', req.body.endpoint);
+        if (req.body.endpoint) {
+          await kv.del(`sub:${req.body.endpoint}`);
+          console.log('Removed subscription:', req.body.endpoint);
+        }
         return res.status(200).json({ success: true });
 
       case 'trigger':
