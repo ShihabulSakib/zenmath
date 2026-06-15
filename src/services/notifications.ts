@@ -1,5 +1,4 @@
 const NOTIFICATION_PERMISSION_KEY = 'zenmath-notification-permission';
-const LAST_NOTIFICATION_DATE_KEY = 'zenmath-last-notification-date';
 const SETTINGS_KEY = 'zenmath-settings';
 const DAILY_PROGRESS_KEY = 'zenmath-daily-progress';
 const SENT_TIMES_KEY = 'zenmath-notification-sent-times';
@@ -107,92 +106,6 @@ function readSettings(): CachedSettings {
 export function invalidateSettingsCache() {
   settingsCache = null;
   syncStateToServiceWorker(); // Sync on change
-}
-
-// ── Time helpers ─────────────────────────────────────────────
-
-function getPeriod(hour: number): TimeSlotInfo['period'] {
-  if (hour < 12) return 'morning';
-  if (hour < 14) return 'midday';
-  if (hour < 17) return 'afternoon';
-  if (hour < 21) return 'evening';
-  return 'night';
-}
-
-function getGreeting(period: TimeSlotInfo['period']): string {
-  switch (period) {
-    case 'morning': return 'Good morning';
-    case 'midday': return 'Good afternoon';
-    case 'afternoon': return 'Good afternoon';
-    case 'evening': return 'Good evening';
-    case 'night': return 'Good evening';
-  }
-}
-
-// ── Message generator ────────────────────────────────────────
-
-interface MessageContext {
-  remaining: number;
-  goal: number;
-  streak: number;
-  period: TimeSlotInfo['period'];
-  dayIndex: number;
-}
-
-const MESSAGE_TEMPLATES: Record<TimeSlotInfo['period'], string[]> = {
-  morning: [
-    'Start your day sharp — {remaining} of {goal} sessions waiting.',
-    'Morning brain boost! {remaining} sessions to reach your goal.',
-    'Rise and shine! Only {remaining} left to hit {goal} today.',
-    'Early bird gets the math done — {remaining} sessions to go.',
-  ],
-  midday: [
-    'Midday mental workout! {remaining} sessions remaining.',
-    'Keep the momentum going — {remaining} of {goal} left.',
-    'Perfect time for a brain break: {remaining} sessions to go.',
-    'You are {remaining} away from your daily goal of {goal}.',
-  ],
-  afternoon: [
-    'Afternoon practice time! {remaining} sessions left.',
-    'Stay sharp — {remaining} sessions to reach your goal.',
-    'Great time for a math session: {remaining} of {goal} remaining.',
-    'You have {remaining} sessions to go this afternoon.',
-  ],
-  evening: [
-    'Evening wind-down: {remaining} sessions to complete your goal.',
-    'One last push! {remaining} sessions left this evening.',
-    'Finish strong — {remaining} of {goal} sessions remaining.',
-    'Evening practice: {remaining} more to reach your daily target.',
-  ],
-  night: [
-    'Quick night session? {remaining} sessions to hit your goal.',
-    'Before you go: {remaining} sessions left today.',
-    'Night practice: {remaining} of {goal} sessions remaining.',
-    'Close out the day strong — {remaining} sessions to go.',
-  ],
-};
-
-const STREAK_MESSAGES = [
-  'Your {streak}-day streak is on the line — {remaining} to go!',
-  'Keep that {streak}-day streak alive! {remaining} sessions left.',
-  'Don\'t break the chain! {streak} days strong, {remaining} to go.',
-];
-
-function generateNotificationBody(ctx: MessageContext): string {
-  const templates = MESSAGE_TEMPLATES[ctx.period];
-  const idx = ctx.dayIndex % templates.length;
-  let body = templates[idx]
-    .replace('{remaining}', String(ctx.remaining))
-    .replace('{goal}', String(ctx.goal));
-
-  if (ctx.streak > 0 && ctx.dayIndex % 3 === 0) {
-    const streakMsg = STREAK_MESSAGES[ctx.dayIndex % STREAK_MESSAGES.length]
-      .replace('{streak}', String(ctx.streak))
-      .replace('{remaining}', String(ctx.remaining));
-    body = streakMsg;
-  }
-
-  return body;
 }
 
 // ── Permission ────────────────────────────────────────────────
