@@ -1,6 +1,6 @@
 import { useGameLogic, type QuestionResult } from './hooks/useGameLogic';
 import { useStats } from './hooks/useStats';
-import { evaluateAndSend, startNotificationScheduler, stopNotificationScheduler, setFeedbackCallback } from './services/notifications';
+import { syncProgressToServer, setFeedbackCallback } from './services/notifications';
 import { ToastProvider, useToast } from './hooks/useToast';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenLayout from './components/ZenLayout';
@@ -28,11 +28,12 @@ function AppInner() {
 
   useEffect(() => {
     setFeedbackCallback(showToast);
-    evaluateAndSend();
-    startNotificationScheduler();
+    
+    // Sync progress to server on app entry for smart notifications
+    syncProgressToServer();
+
     return () => {
       setFeedbackCallback(null);
-      stopNotificationScheduler();
     };
   }, [showToast]);
 

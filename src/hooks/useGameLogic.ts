@@ -3,6 +3,7 @@ import { generateFractionQuestion } from '../utils/fractions';
 import { speakQuestion, translateMathToText, cancelSpeech } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { problemToSpriteKeys } from '../utils/mathSpeech';
+import { syncProgressToServer } from '../services/notifications';
 import {
     randomInRange,
     generateQuestion, generatePercentageQuestion,
@@ -268,6 +269,7 @@ export function useGameLogic(onSessionComplete?: (
     useEffect(() => {
         const today = new Date().toISOString().split('T')[0];
         localStorage.setItem('zenmath-daily-progress', JSON.stringify({ date: today, count: dailyProgress, bestStreak }));
+        syncProgressToServer();
     }, [dailyProgress, bestStreak]);
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);

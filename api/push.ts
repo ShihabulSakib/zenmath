@@ -48,19 +48,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ message: 'No subscriptions found' });
       }
 
-      const results = { sent: 0, failed: 0 };
+      const results = { sent: 0, skipped: 0, failed: 0 };
+      const today = new Date().toISOString().split('T')[0];
       
       for (const key of keys) {
         const subRaw = await redis.get(key);
         if (!subRaw) continue;
         const subscription = JSON.parse(subRaw);
+        const endpoint = subscription.endpoint;
+
+        // Check if user has already completed goal today
+        const progRaw = await redis.get(`prog:${endpoint}`);
+        let completed = false;
+        let remaining = null;
+
+        if (progRaw) {
+          const prog = JSON.parse(progRaw);
+          if (prog.date === today && prog.completed) {
+            completed = true;
+          }
+          if (prog.date === today) {
+            remaining = prog.remaining;
+          }
+        }
+
+        if (completed) {
+          results.skipped++;
+          continue;
+        }
 
         try {
+          const body = remaining !== null 
+            ? `Only ${remaining} exercises left to reach your daily goal! Keep it up.`
+            : 'Time to sharpen your mind! Check your daily progress.';
+
           await webpush.sendNotification(
             subscription,
             JSON.stringify({
               title: 'ZenMath — Daily Goal',
-              body: 'Time to sharpen your mind! Check your daily progress.',
+              body,
               icon: '/notification-icon.png',
               badge: '/notification-badge.png',
               tag: 'daily-reminder'
@@ -71,6 +97,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           console.error(`Failed to send to ${key}:`, error.statusCode);
           if (error.statusCode === 410 || error.statusCode === 404) {
             await redis.del(key);
+            await redis.del(`prog:${endpoint}`);
           }
           results.failed++;
         }
@@ -88,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { subscription, payload } = req.body;
+    const { subscription, payload, progress } = req.body;
 
     switch (action) {
       case 'subscribe':
@@ -105,8 +132,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       case 'unsubscribe':
         if (req.body.endpoint) {
           await redis.del(`sub:${req.body.endpoint}`);
+          await redis.del(`prog:${req.body.endpoint}`);
           console.log('Removed subscription:', req.body.endpoint);
         }
+        return res.status(200).json({ success: true });
+
+      case 'update-progress':
+        if (!subscription?.endpoint || !progress) {
+          return res.status(400).json({ error: 'Invalid progress data' });
+        }
+        // Store minimal progress data (expires in 7 days)
+        await redis.set(`prog:${subscription.endpoint}`, JSON.stringify({
+          completed: progress.completed,
+          remaining: progress.remaining,
+          date: progress.date || new Date().toISOString().split('T')[0]
+        }), {
+          EX: 60 * 60 * 24 * 7
+        });
         return res.status(200).json({ success: true });
 
       case 'trigger':

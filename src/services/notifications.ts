@@ -369,6 +369,38 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+/**
+ * Syncs user's daily progress to the server for smart push notifications.
+ */
+export async function syncProgressToServer(): Promise<void> {
+  if (!('serviceWorker' in navigator)) return;
+  
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (!subscription) return;
+
+    const { count, goal, goalAchieved } = getTodayProgress();
+    const today = new Date().toISOString().split('T')[0];
+
+    await fetch('/api/push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update-progress',
+        subscription,
+        progress: {
+          completed: goalAchieved,
+          remaining: Math.max(0, goal - count),
+          date: today
+        }
+      }),
+    });
+  } catch (e) {
+    console.error('Failed to sync progress to server:', e);
+  }
+}
+
 export async function subscribeToPush(): Promise<boolean> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !VAPID_PUBLIC_KEY) {
     return false;
@@ -376,7 +408,10 @@ export async function subscribeToPush(): Promise<boolean> {
   try {
     const registration = await navigator.serviceWorker.ready;
     const existing = await registration.pushManager.getSubscription();
-    if (existing) return true;
+    if (existing) {
+      await syncProgressToServer(); // Sync immediately if already subscribed
+      return true;
+    }
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
@@ -388,6 +423,8 @@ export async function subscribeToPush(): Promise<boolean> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'subscribe', subscription }),
     });
+
+    await syncProgressToServer(); // Initial sync
     return true;
   } catch (e) {
     console.error('Push subscription failed:', e);
@@ -449,58 +486,15 @@ export async function triggerTestPush(): Promise<void> {
 // ─── Evaluate & send ──────────────────────────────────────────
 
 export function evaluateAndSend(): Promise<void> {
-  const { notificationsEnabled, notificationTimes } = readSettings();
+  const { notificationsEnabled } = readSettings();
 
   if (!notificationsEnabled || Notification.permission !== 'granted') {
     return Promise.resolve();
   }
 
-  const { count, goal } = getTodayProgress();
-  if (count >= goal) {
-    return Promise.resolve();
-  }
-
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  const today = new Date().toISOString().split('T')[0];
-
-  const sentTimes: Record<string, string[]> = JSON.parse(
-    localStorage.getItem(SENT_TIMES_KEY) || '{}'
-  );
-  const todaySent = sentTimes[today] || [];
-
-  for (const time of notificationTimes) {
-    const [hour, minute] = time.split(':').map(Number);
-
-    const isPastTime = currentHour > hour || (currentHour === hour && currentMinute >= minute);
-    if (!isPastTime) continue;
-    if (todaySent.includes(time)) continue;
-    if (todaySent.length >= 3) continue;
-
-    const remaining = goal - count;
-    const period = getPeriod(currentHour);
-    const dayIndex = today.split('-').reduce((sum, p) => sum + parseInt(p, 10), 0);
-    const streak = getStreak();
-
-    const greeting = getGreeting(period);
-    const body = generateNotificationBody({ remaining, goal, streak, period, dayIndex });
-
-    showLocalNotification(
-      `${greeting} — ZenMath`,
-      body
-    );
-
-    const newSentTimes = { ...sentTimes, [today]: [...todaySent, time] };
-    localStorage.setItem(SENT_TIMES_KEY, JSON.stringify(newSentTimes));
-    localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
-    
-    syncStateToServiceWorker(); // Update bridge after sending
-
-    break;
-  }
-
-  syncStateToServiceWorker(); // Ensure bridge is up to date
+  // Sync progress to the server, which handles the actual push notifications.
+  syncProgressToServer(); 
+  
   return Promise.resolve();
 }
 
@@ -517,49 +511,11 @@ function getStreak(): number {
   }
 }
 
-// ─── Scheduling ───────────────────────────────────────────────
-
-let checkInterval: ReturnType<typeof setInterval> | null = null;
-
-export function startNotificationScheduler(): void {
-  stopNotificationScheduler();
-
-  evaluateAndSend();
-
-  checkInterval = setInterval(() => {
-    evaluateAndSend();
-  }, 60_000);
-}
-
-export function stopNotificationScheduler(): void {
-  if (checkInterval) {
-    clearInterval(checkInterval);
-    checkInterval = null;
-  }
-}
-
-// Legacy aliases — kept for backward compat
-export function shouldSendNotification(): boolean {
-  const { notificationsEnabled, notificationTimes } = readSettings();
-  if (!notificationsEnabled) return false;
-  const { count, goal } = getTodayProgress();
-  if (count >= goal) return false;
-  const lastDate = localStorage.getItem(LAST_NOTIFICATION_DATE_KEY);
-  const today = new Date().toISOString().split('T')[0];
-  const now = new Date();
-  const currentHour = now.getHours();
-  for (const time of notificationTimes) {
-    const [hour] = time.split(':').map(Number);
-    if (currentHour >= hour && lastDate !== today) return true;
-  }
-  return false;
-}
-
-export function recordNotificationSent(): void {
-  const today = new Date().toISOString().split('T')[0];
-  localStorage.setItem(LAST_NOTIFICATION_DATE_KEY, today);
-}
-
+// Legacy aliases — kept minimal for backward compat if needed, but no-op for notifications
+export function startNotificationScheduler(): void {}
+export function stopNotificationScheduler(): void {}
+export function recordNotificationSent(): void {}
+export function shouldSendNotification(): boolean { return false; }
 export async function checkAndShowNotification(): Promise<void> {
   return evaluateAndSend();
 }
