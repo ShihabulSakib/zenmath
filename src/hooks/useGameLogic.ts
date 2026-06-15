@@ -332,11 +332,8 @@ export function useGameLogic(onSessionComplete?: (
                 setCurrentOperation('×');
                 setCorrectAnswer(n1 * n2);
             } else {
-                let n1 = randomInRange(tableRange[0], tableRange[1]);
+                const n1 = randomInRange(tableRange[0], tableRange[1]);
                 const n2 = randomInRange(tableRange[0], tableRange[1]);
-                if (tableRange[0] !== tableRange[1]) {
-                    while (n1 === n2) n1 = randomInRange(tableRange[0], tableRange[1]);
-                }
                 setNum1(n1);
                 setNum2(n2);
                 setCurrentOperation('×');
@@ -348,22 +345,35 @@ export function useGameLogic(onSessionComplete?: (
             if (tableRange[0] === tableRange[1]) {
                 const n1 = tableRange[0];
                 const n2 = randomInRange(1, 12);
-                setNum1(n1 * n2);
-                setNum2(n1);
-                setCurrentOperation('×');
-                setCorrectAnswer(n2);
-                setFractionQuestionDisplay(`${n1 * n2}`);
-            } else {
-                let n1 = randomInRange(tableRange[0], tableRange[1]);
-                const n2 = randomInRange(tableRange[0], tableRange[1]);
-                if (tableRange[0] !== tableRange[1]) {
-                    while (n1 === n2) n1 = randomInRange(tableRange[0], tableRange[1]);
+                const product = n1 * n2;
+                if (Math.random() < 0.5) {
+                    setNum1(product);
+                    setNum2(n1);
+                    setFractionQuestionDisplay(`${product} = ${n1} × ?`);
+                    setCorrectAnswer(n2);
+                } else {
+                    setNum1(product);
+                    setNum2(n2);
+                    setFractionQuestionDisplay(`${product} = ? × ${n2}`);
+                    setCorrectAnswer(n1);
                 }
-                setNum1(n1 * n2);
-                setNum2(n1);
                 setCurrentOperation('×');
-                setCorrectAnswer(n2);
-                setFractionQuestionDisplay(`${n1 * n2} = ${n1} × ?`);
+            } else {
+                const n1 = randomInRange(tableRange[0], tableRange[1]);
+                const n2 = randomInRange(tableRange[0], tableRange[1]);
+                const product = n1 * n2;
+                if (Math.random() < 0.5) {
+                    setNum1(product);
+                    setNum2(n1);
+                    setFractionQuestionDisplay(`${product} = ${n1} × ?`);
+                    setCorrectAnswer(n2);
+                } else {
+                    setNum1(product);
+                    setNum2(n2);
+                    setFractionQuestionDisplay(`${product} = ? × ${n2}`);
+                    setCorrectAnswer(n1);
+                }
+                setCurrentOperation('×');
             }
             setFractionCorrectAnswer('');
         } else if (mode === 'mixed') {
@@ -616,6 +626,10 @@ export function useGameLogic(onSessionComplete?: (
                     }
                 }
             }
+        } else if (mode === 'division' && allowRemainder) {
+            const u = parseFloat(userInput);
+            isCorrect = !isNaN(u) && Math.abs(u - correctAnswer) < 0.001;
+            userAns = u;
         } else {
             userAns = parseInt(userInput, 10);
             isCorrect = userAns === correctAnswer;
@@ -638,7 +652,7 @@ export function useGameLogic(onSessionComplete?: (
         feedbackTimeoutRef.current = setTimeout(() => {
             advanceToNextRef.current();
         }, FEEDBACK_DELAY_MS);
-    }, [userInput, correctAnswer, feedback, stopTimer, recordResult, mode, fractionCorrectAnswer]);
+    }, [userInput, correctAnswer, feedback, stopTimer, recordResult, mode, fractionCorrectAnswer, allowRemainder]);
 
     const handleTimeout = useCallback(() => {
         if (isProcessingRef.current) return;
@@ -661,7 +675,7 @@ export function useGameLogic(onSessionComplete?: (
         } else if (key === 'backspace') {
             setUserInput(prev => prev.slice(0, -1));
         } else if (key === '-') {
-            if (mode === 'subtraction' && allowNegativeResults) {
+            if ((mode === 'subtraction' && allowNegativeResults) || mode === 'chain-calculation') {
                 setUserInput(prev => {
                     if (prev.startsWith('-')) return prev.slice(1);
                     return '-' + prev;

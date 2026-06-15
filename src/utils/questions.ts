@@ -81,11 +81,8 @@ export function generateQuestion(
             answer = num1 + num2;
             break;
         case '-':
-            if (allowNegativeResults) {
-                if (num1 >= num2) [num1, num2] = [num2, num1];
-                if (num1 === num2) num2 += 1;
-            } else {
-                if (num1 < num2) [num1, num2] = [num2, num1];
+            if (!allowNegativeResults && num1 < num2) {
+                [num1, num2] = [num2, num1];
             }
             answer = num1 - num2;
             break;
@@ -104,7 +101,7 @@ export function generateQuestion(
                 num1 = num2 * q;
                 answer = q;
             } else {
-                answer = Math.floor(num1 / num2);
+                answer = parseFloat((num1 / num2).toFixed(4));
             }
             break;
         default:
@@ -199,7 +196,10 @@ export function generateApproximationQuestion(diff: Difficulty): { question: str
         default: exactAnswer = num1 * num2;
     }
 
-    return { question: `${num1} ${getOperationSymbol(op)} ${num2} ≈ ?`, answer: exactAnswer };
+    const rounding = diff === 'easy' ? 10 : diff === 'medium' ? 100 : 1000;
+    const approxAnswer = Math.round(exactAnswer / rounding) * rounding;
+
+    return { question: `${num1} ${getOperationSymbol(op)} ${num2} ≈ ?`, answer: approxAnswer };
 }
 
 export function generateNumberSeriesQuestion(diff: Difficulty): { question: string; answer: number } {

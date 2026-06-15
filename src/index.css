@@ -95,6 +95,10 @@ html.dark .text-muted {
   /* Zinc 700 */
 }
 
+html.dark .text-future {
+  color: rgba(255, 255, 255, 0.35);
+}
+
 html.dark .bg-header {
   background-color: rgba(0, 0, 0, 0.85);
 }
@@ -187,6 +191,10 @@ html.light .text-secondary {
 
 html.light .text-muted {
   color: #71717A;
+}
+
+html.light .text-future {
+  color: #A1A1AA;
 }
 
 html.light .bg-header {

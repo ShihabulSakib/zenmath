@@ -53,7 +53,7 @@ export default function GameScreen({
     allowNegativeResults = false,
 }: GameScreenProps) {
     const isSquareOp = operation === '²';
-    const negativeEnabled = mode === 'subtraction' && allowNegativeResults;
+    const negativeEnabled = (mode === 'subtraction' && allowNegativeResults) || mode === 'chain-calculation';
     const showFraction = mode === 'fraction';
     const showNewModes = ['percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation', 'factor-finding'].includes(mode);
     const isTimeLow = timeRemaining <= 5 && timeRemaining > 0;
@@ -91,7 +91,7 @@ export default function GameScreen({
                         <span className={`text-xs font-mono text-secondary font-medium whitespace-nowrap ${isTimeLow ? 'timer-warning text-incorrect' : ''}`}>
                             {timerStr}
                         </span>
-                        <ProgressBar value={currentQuestion - 1} max={totalQuestions} glow={false} />
+                        <ProgressBar value={currentQuestion} max={totalQuestions} glow={false} />
                     </div>
                     <div className="flex justify-between items-center text-xs font-mono tracking-wider text-muted uppercase">
                         <span>Q {currentQuestion}/{totalQuestions}</span>

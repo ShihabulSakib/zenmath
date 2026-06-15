@@ -75,12 +75,13 @@ function ActivityCalendar({ sessions, goal }: { sessions: { date: string; totalQ
                             key={i}
                             title={`${cell.date}: ${activityByDate[cell.date] || 0} sessions`}
                             className={`aspect-square rounded-sm text-[8px] flex items-center justify-center font-mono ${
-                                cell.date === today ? 'ring-1 ring-primary' : ''
-                            } ${
-                                activityByDate[cell.date] >= goal ? 'bg-correct text-black' :
-                                activityByDate[cell.date] ? 'bg-primary/20 text-secondary' :
-                                'bg-surface text-muted'
-                            }`}
+                                                cell.date === today ? 'ring-1 ring-primary' : ''
+                                            } ${
+                                                activityByDate[cell.date] >= goal ? 'bg-correct text-black' :
+                                                activityByDate[cell.date] ? 'bg-primary/20 text-secondary' :
+                                                cell.date > today ? 'bg-surface text-future' :
+                                                'bg-surface text-muted'
+                                            }`}
                         >
                             {cell.day}
                         </div>
