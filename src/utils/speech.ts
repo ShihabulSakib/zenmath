@@ -37,15 +37,8 @@ export function translateMathToText(
     }
 
     // Factor-finding mode
-    if (mode === 'factor-finding' && fractionQuestionDisplay) {
-        if (fractionQuestionDisplay.includes('=')) {
-            // Range mode: "143 = 11 × ?" → "143 equals 11 times what"
-            return fractionQuestionDisplay
-                .replace(/× \?/g, 'times what')
-                .replace('=', 'equals');
-        }
-        // Custom single-table mode: just the number, e.g. "143"
-        return fractionQuestionDisplay;
+    if (mode === 'factor-finding') {
+        return `${num2} times what equals ${num1}`;
     }
 
     // Square mode

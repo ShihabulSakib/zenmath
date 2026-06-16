@@ -273,24 +273,53 @@ export function generateChainCalculationQuestion(diff: Difficulty): { question: 
     const operations: Operation[] = ['+', '-', '*'];
     const numOps = diff === 'easy' ? 2 : 3;
     const numbers = [randomInRange(2, diff === 'easy' ? 9 : 20)];
+    const ops: Operation[] = [];
 
     for (let i = 0; i < numOps; i++) {
         numbers.push(randomInRange(2, diff === 'easy' ? 9 : 15));
+        ops.push(operations[randomInRange(0, operations.length - 1)]);
     }
 
-    let answer = numbers[0];
     let q = `${numbers[0]}`;
-
     for (let i = 0; i < numOps; i++) {
-        const op = operations[randomInRange(0, operations.length - 1)];
-        const n = numbers[i + 1];
-        q += ` ${getOperationSymbol(op)} ${n}`;
-        switch (op) {
-            case '+': answer += n; break;
-            case '-': answer -= n; break;
-            case '*': answer *= n; break;
+        q += ` ${getOperationSymbol(ops[i])} ${numbers[i + 1]}`;
+    }
+
+    // Evaluate with BODMAS: process * first, then + and -
+    const tokens: (number | string)[] = [numbers[0]];
+    for (let i = 0; i < numOps; i++) {
+        tokens.push(ops[i], numbers[i + 1]);
+    }
+
+    let i = 1;
+    while (i < tokens.length) {
+        if (tokens[i] === '*') {
+            const left = tokens[i - 1] as number;
+            const right = tokens[i + 1] as number;
+            tokens.splice(i - 1, 3, left * right);
+            i = 1;
+        } else {
+            i += 2;
         }
     }
 
-    return { question: q, answer: Math.round(answer) };
+    i = 1;
+    while (i < tokens.length) {
+        if (tokens[i] === '+') {
+            const left = tokens[i - 1] as number;
+            const right = tokens[i + 1] as number;
+            tokens.splice(i - 1, 3, left + right);
+            i = 1;
+        } else if (tokens[i] === '-') {
+            const left = tokens[i - 1] as number;
+            const right = tokens[i + 1] as number;
+            tokens.splice(i - 1, 3, left - right);
+            i = 1;
+        } else {
+            i += 2;
+        }
+    }
+
+    const answer = Math.round(tokens[0] as number);
+    return { question: q, answer };
 }

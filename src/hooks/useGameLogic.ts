@@ -348,33 +348,19 @@ export function useGameLogic(onSessionComplete?: (
                 const n1 = tableRange[0];
                 const n2 = randomInRange(1, 12);
                 const product = n1 * n2;
-                if (Math.random() < 0.5) {
-                    setNum1(product);
-                    setNum2(n1);
-                    setFractionQuestionDisplay(`${product} = ${n1} × ?`);
-                    setCorrectAnswer(n2);
-                } else {
-                    setNum1(product);
-                    setNum2(n2);
-                    setFractionQuestionDisplay(`${product} = ? × ${n2}`);
-                    setCorrectAnswer(n1);
-                }
+                setNum1(product);
+                setNum2(n1);
+                setFractionQuestionDisplay(String(product));
+                setCorrectAnswer(n2);
                 setCurrentOperation('×');
             } else {
                 const n1 = randomInRange(tableRange[0], tableRange[1]);
                 const n2 = randomInRange(tableRange[0], tableRange[1]);
                 const product = n1 * n2;
-                if (Math.random() < 0.5) {
-                    setNum1(product);
-                    setNum2(n1);
-                    setFractionQuestionDisplay(`${product} = ${n1} × ?`);
-                    setCorrectAnswer(n2);
-                } else {
-                    setNum1(product);
-                    setNum2(n2);
-                    setFractionQuestionDisplay(`${product} = ? × ${n2}`);
-                    setCorrectAnswer(n1);
-                }
+                setNum1(product);
+                setNum2(n1);
+                setFractionQuestionDisplay(`${product} = ${n1} × __`);
+                setCorrectAnswer(n2);
                 setCurrentOperation('×');
             }
             setFractionCorrectAnswer('');
@@ -563,6 +549,9 @@ export function useGameLogic(onSessionComplete?: (
     const advanceToNextRef = useRef(advanceToNext);
     advanceToNextRef.current = advanceToNext;
 
+    const generateNextQuestionRef = useRef(generateNextQuestion);
+    generateNextQuestionRef.current = generateNextQuestion;
+
     const recordResult = useCallback((
         isCorrect: boolean,
         userAns: number | string | null,
@@ -746,11 +735,10 @@ export function useGameLogic(onSessionComplete?: (
         setUserInput('');
         setFeedback('none');
         isProcessingRef.current = false;
-        // generateNextQuestion reads tableRange from current render's
-        // closure, which still has the old value. Schedule generation
-        // after React 19 batches the setTableRange above.
+        // Use ref to ensure we call the latest generateNextQuestion
+        // after React 19 commits the setTableRange state update.
         requestAnimationFrame(() => {
-            generateNextQuestion(1);
+            generateNextQuestionRef.current(1);
             startTimer();
         });
     }, [startTimer, setScreen, generateNextQuestion]);

@@ -136,7 +136,7 @@ export default function GameScreen({
 
                     <div className="relative z-10 flex flex-col items-center gap-8">
                         {/* Question */}
-                        <h1 className={`font-mono font-bold text-main tracking-tight text-center leading-tight ${mode === 'ratio' ? 'text-2xl sm:text-3xl' : mode === 'chain-calculation' ? 'text-3xl sm:text-4xl' : 'text-5xl sm:text-6xl'}`}>
+                        <h1 className={`font-mono font-bold text-main tracking-tight text-center leading-tight ${mode === 'ratio' ? 'text-2xl sm:text-3xl' : mode === 'chain-calculation' || mode === 'number-series' ? 'text-3xl sm:text-4xl' : 'text-5xl sm:text-6xl'}`}>
                             {listenOnlyMode && feedback === 'none' && !ttsFailed ? (
                                 <div className="flex flex-col items-center gap-3">
                                     <span className="material-symbols-outlined text-primary/30" style={{ fontSize: 48, fontVariationSettings: "'FILL' 1" }}>headphones</span>
@@ -149,6 +149,15 @@ export default function GameScreen({
                                     </span>
                                     <span className="text-6xl sm:text-7xl font-mono font-bold">
                                         {fractionQuestionDisplay}
+                                    </span>
+                                </div>
+                            ) : mode === 'factor-finding' ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <span className="text-5xl sm:text-6xl font-mono font-bold">
+                                        {num1}
+                                    </span>
+                                    <span className="text-sm text-secondary font-semibold mt-1">
+                                        = {num2} × __
                                     </span>
                                 </div>
                             ) : showNewModes || mode === 'fraction' ? (
