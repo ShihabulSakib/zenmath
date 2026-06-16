@@ -13,6 +13,7 @@ import SpecialMenu from './components/SpecialMenu';
 import RevisionScreen from './components/RevisionScreen';
 import StatsScreen from './components/StatsScreen';
 import HistoryScreen from './components/HistoryScreen';
+import Navbar from './components/Navbar';
 import ToastContainer from './components/Toast';
 import { useEffect } from 'react';
 
@@ -69,10 +70,6 @@ function AppInner() {
           <ErrorBoundary>
             <MainMenu
               onSelect={game.selectMode}
-              onSettings={game.goToSettings}
-              onRevision={game.goToRevision}
-              onStats={game.goToStats}
-              onHistory={game.goToHistory}
               game={game}
             />
           </ErrorBoundary>
@@ -159,18 +156,17 @@ function AppInner() {
 
         {game.screen === 'stats' && (
           <StatsScreen
-            onBack={game.goToMenu}
             stats={stats}
             dailyGoal={game.settings.dailyGoal}
           />
         )}
 
         {game.screen === 'history' && (
-          <HistoryScreen onBack={game.goToMenu} />
+          <HistoryScreen />
         )}
 
         {game.screen === 'revision' && (
-          <RevisionScreen onBack={game.goToMenu} />
+          <RevisionScreen />
         )}
 
         {game.screen === 'settings' && (
@@ -180,6 +176,21 @@ function AppInner() {
             onBack={game.goToMenu}
             audioSpriteLoaded={game.audioSpriteLoaded}
             onLoadAudioSprites={game.loadAudioSprites}
+          />
+        )}
+
+        {['menu', 'stats', 'history', 'revision', 'settings'].includes(game.screen) && (
+          <Navbar 
+            activeScreen={game.screen}
+            onNavigate={(screen) => {
+              if (screen === 'menu') game.goToMenu();
+              else if (screen === 'stats') game.goToStats();
+              else if (screen === 'history') game.goToHistory();
+              else if (screen === 'settings') game.goToSettings();
+              else if (screen === 'revision') game.goToRevision();
+            }}
+            dailyProgress={game.dailyProgress}
+            dailyGoal={game.settings.dailyGoal}
           />
         )}
       </ZenLayout>

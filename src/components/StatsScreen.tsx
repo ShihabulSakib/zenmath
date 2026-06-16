@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import type { StatsData, RecentPerformance } from '../hooks/useStats';
 
 interface StatsScreenProps {
-    onBack: () => void;
     dailyGoal?: number;
     stats: {
         stats: StatsData | null;
@@ -99,7 +98,7 @@ function ActivityCalendar({ sessions, goal }: { sessions: { date: string; totalQ
     );
 }
 
-export default function StatsScreen({ onBack, dailyGoal = 10, stats }: StatsScreenProps) {
+export default function StatsScreen({ dailyGoal = 10, stats }: StatsScreenProps) {
     const { stats: data, recentPerformance, sessions, loading, refreshStats, clearAllData } = stats;
 
     useEffect(() => {
@@ -119,15 +118,11 @@ export default function StatsScreen({ onBack, dailyGoal = 10, stats }: StatsScre
 
     return (
         <div className="flex flex-col h-full bg-surface">
-            <header className="shrink-0 pt-6 pb-3 px-6 flex items-center justify-between sticky top-0 z-20 bg-header backdrop-blur-sm border-b border-nav">
-                <button onClick={onBack} className="flex items-center justify-center p-2 -ml-2 rounded-full text-secondary">
-                    <span className="material-symbols-outlined text-2xl">arrow_back</span>
-                </button>
+            <header className="shrink-0 pt-6 pb-3 px-6 flex items-center justify-center sticky top-0 z-20 bg-header backdrop-blur-sm border-b border-nav">
                 <h1 className="text-xl font-bold tracking-tight text-main">Statistics</h1>
-                <div className="w-10" />
             </header>
 
-            <main className="flex-1 overflow-y-auto px-6 pb-8">
+            <main className="flex-1 overflow-y-auto px-6 pb-32">
                 <div className="max-w-lg mx-auto flex flex-col gap-6 pt-6">
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col items-center justify-center p-5 bg-card border border-card rounded-2xl">

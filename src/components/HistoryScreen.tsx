@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react';
 import { db, type Session } from '../services/database';
 
-interface HistoryScreenProps {
-    onBack: () => void;
-}
-
 const MODE_FILTERS = ['all', 'addition', 'subtraction', 'multiplication', 'division', 'mixed', 'multiplication-table', 'factor-finding', 'square', 'fraction', 'percentage', 'square-root', 'approximation', 'number-series', 'ratio', 'chain-calculation'];
 
-export default function HistoryScreen({ onBack }: HistoryScreenProps) {
+export default function HistoryScreen() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
     const [modeFilter, setModeFilter] = useState('all');
@@ -38,15 +34,11 @@ export default function HistoryScreen({ onBack }: HistoryScreenProps) {
 
     return (
         <div className="flex flex-col h-full bg-surface">
-            <header className="shrink-0 pt-6 pb-3 px-6 flex items-center justify-between sticky top-0 z-20 bg-header backdrop-blur-sm border-b border-nav">
-                <button onClick={onBack} className="flex items-center justify-center p-2 -ml-2 rounded-full text-secondary">
-                    <span className="material-symbols-outlined text-2xl">arrow_back</span>
-                </button>
+            <header className="shrink-0 pt-6 pb-3 px-6 flex items-center justify-center sticky top-0 z-20 bg-header backdrop-blur-sm border-b border-nav">
                 <h1 className="text-xl font-bold tracking-tight text-main">History</h1>
-                <div className="w-10" />
             </header>
 
-            <main className="flex-1 overflow-y-auto px-6 pb-8">
+            <main className="flex-1 overflow-y-auto px-6 pb-32">
                 <div className="max-w-lg mx-auto pt-4">
                     <div className="flex gap-2 overflow-x-auto pb-3 mb-4">
                         {MODE_FILTERS.map(f => (

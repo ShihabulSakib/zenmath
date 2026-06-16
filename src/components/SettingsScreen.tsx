@@ -105,19 +105,13 @@ const handleSave = async () => {
     return (
         <div className="flex flex-col h-full animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-between">
-                <button
-                    onClick={() => { cancelSpeech(); onBack(); }}
-                    className="flex items-center justify-center p-2 -ml-2 rounded-full"
-                >
-                    <span className="material-symbols-outlined text-main" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
-                </button>
-                <h1 className="text-xl font-bold tracking-tight text-center flex-1 pr-10 text-main">
+            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-center">
+                <h1 className="text-xl font-bold tracking-tight text-center flex-1 text-main">
                     Settings
                 </h1>
             </div>
 
-            <main className="flex-1 px-5 pb-32 flex flex-col gap-6 overflow-y-auto pt-4">
+            <main className="flex-1 px-5 pb-48 flex flex-col gap-6 overflow-y-auto pt-4">
                 {/* Session Limits */}
                 <section>
                     <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
@@ -589,11 +583,11 @@ const handleSave = async () => {
                 )}
             </main>
 
-            {/* Fixed bottom CTA */}
-            <div className="fixed bottom-0 left-0 w-full bg-header backdrop-blur-xl p-5 pb-10 z-20">
+            {/* Fixed bottom CTA — adjusted for Zen Island Navbar */}
+            <div className="fixed bottom-24 left-0 w-full px-5 z-20">
                 <button
                     onClick={handleSave}
-                    className="w-full bg-primary text-on-primary font-bold text-lg py-4 px-6 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-primary text-on-primary font-bold text-lg py-4 px-6 rounded-2xl shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <span>Save Settings</span>
                 </button>

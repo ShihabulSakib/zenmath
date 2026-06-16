@@ -1,7 +1,6 @@
 import { useRef, useLayoutEffect } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import type { GameMode, GameSettings } from '../hooks/useGameLogic';
-import { BookOpen } from 'lucide-react';
 import { canDecreaseGoal } from '../services/notifications';
 import ProgressBar from './ProgressBar';
 
@@ -9,10 +8,6 @@ const SCROLL_STORAGE_KEY = 'zenmath-menu-scroll-position';
 
 interface MainMenuProps {
     onSelect: (mode: GameMode) => void;
-    onSettings: () => void;
-    onRevision: () => void;
-    onStats: () => void;
-    onHistory: () => void;
     game: {
         dailyProgress: number;
         settings: GameSettings;
@@ -20,7 +15,7 @@ interface MainMenuProps {
     };
 }
 
-export default function MainMenu({ onSelect, onSettings, onRevision, onStats, onHistory, game }: MainMenuProps) {
+export default function MainMenu({ onSelect, game }: MainMenuProps) {
     const { theme, toggleTheme } = useTheme();
     const mainRef = useRef<HTMLDivElement>(null);
 
@@ -280,51 +275,6 @@ export default function MainMenu({ onSelect, onSettings, onRevision, onStats, on
                     </div>
                 </div>
             </main>
-
-            {/* Bottom navigation — full-width, outside the content container */}
-            <nav className="shrink-0 bg-nav backdrop-blur-lg border-t border-nav pb-6 pt-3 px-6 z-20">
-                <div className="flex justify-around items-center max-w-lg mx-auto">
-                    <button className="flex flex-col items-center gap-1 p-2">
-                        <div className="relative">
-                            <span className="material-symbols-outlined text-primary">school</span>
-                            <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-                        </div>
-                        <span className="text-[10px] font-medium text-primary tracking-wide">Practice</span>
-                    </button>
-
-                    <button
-                        onClick={onRevision}
-                        className="flex flex-col items-center gap-1 p-2 text-primary"
-                    >
-                        <BookOpen size={24} />
-                        <span className="text-[10px] font-medium tracking-wide">Revision</span>
-                    </button>
-
-                    <button
-                        onClick={onHistory}
-                        className="flex flex-col items-center gap-1 p-2 text-primary"
-                    >
-                        <span className="material-symbols-outlined">history</span>
-                        <span className="text-[10px] font-medium tracking-wide">History</span>
-                    </button>
-
-                    <button
-                        onClick={onStats}
-                        className="flex flex-col items-center gap-1 p-2 text-primary"
-                    >
-                        <span className="material-symbols-outlined">bar_chart</span>
-                        <span className="text-[10px] font-medium tracking-wide">Stats</span>
-                    </button>
-
-                    <button
-                        onClick={onSettings}
-                        className="flex flex-col items-center gap-1 p-2 text-primary"
-                    >
-                        <span className="material-symbols-outlined">tune</span>
-                        <span className="text-[10px] font-medium tracking-wide">Settings</span>
-                    </button>
-                </div>
-            </nav>
         </div>
     );
 }

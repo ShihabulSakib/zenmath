@@ -1,10 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, Grid3X3, Hash, Percent } from 'lucide-react';
 
-interface RevisionScreenProps {
-    onBack: () => void;
-}
-
 type TabId = 'tables' | 'squares' | 'fractions';
 
 const TABS: { id: TabId; label: string; icon: typeof Grid3X3 }[] = [
@@ -138,21 +134,15 @@ function CommonFractions() {
 
 // ─── Main Component ──────────────────────────────────────────
 
-export default function RevisionScreen({ onBack }: RevisionScreenProps) {
+export default function RevisionScreen() {
     const [activeTab, setActiveTab] = useState<TabId>('tables');
 
     return (
         <div className="flex flex-col h-full animate-fade-in">
             {/* Header */}
             <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-0 flex flex-col">
-                <div className="flex items-center justify-between pb-3">
-                    <button
-                        onClick={onBack}
-                        className="flex items-center justify-center p-2 -ml-2 rounded-full"
-                    >
-                        <span className="material-symbols-outlined text-main" style={{ fontSize: 24 }}>arrow_back_ios_new</span>
-                    </button>
-                    <h1 className="text-xl font-bold tracking-tight text-center flex-1 pr-10 text-main">
+                <div className="flex items-center justify-center pb-3">
+                    <h1 className="text-xl font-bold tracking-tight text-center text-main">
                         Revision
                     </h1>
                 </div>
@@ -180,7 +170,7 @@ export default function RevisionScreen({ onBack }: RevisionScreenProps) {
             </div>
 
             {/* Tab content */}
-            <main className="flex-1 px-5 pb-12 overflow-y-auto pt-5">
+            <main className="flex-1 px-5 pb-32 overflow-y-auto pt-5">
                 {activeTab === 'tables' && <MultiplicationTables />}
                 {activeTab === 'squares' && <SquareNumbers />}
                 {activeTab === 'fractions' && <CommonFractions />}
