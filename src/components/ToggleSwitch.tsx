@@ -22,11 +22,19 @@ export default function ToggleSwitch({ enabled, onChange, label, description, ic
             </div>
             <button
                 onClick={() => onChange(!enabled)}
-                className={`relative w-12 h-7 rounded-full transition-colors duration-200 shrink-0 ${enabled ? 'bg-primary' : 'bg-toggle-off'}`}
+                className={`relative w-12 h-7 rounded-full transition-colors duration-200 shrink-0 border border-black/5 ${
+                    enabled ? 'bg-toggle-on' : 'bg-toggle-off'
+                }`}
                 role="switch"
                 aria-checked={enabled}
             >
-                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${enabled ? 'translate-x-5' : ''}`} />
+                <div 
+                    className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full shadow-sm transition-transform duration-200 ${
+                        enabled 
+                            ? 'translate-x-5 bg-toggle-thumb' 
+                            : 'bg-white border border-black/5'
+                    }`} 
+                />
             </button>
         </div>
     );

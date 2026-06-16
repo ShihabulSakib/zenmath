@@ -129,12 +129,14 @@ export default function GameSetup({
                                             // Ensure at least one is selected
                                             if (next.some(v => v)) onMixedOpsChange(next);
                                         }}
-                                        className={`w-[52px] h-8 rounded-full relative transition-colors ${mixedOps[i] ? 'bg-primary' : 'bg-toggle-off'
-                                            }`}
+                                        className={`w-12 h-7 rounded-full relative transition-all duration-300 border border-black/5 ${
+                                            mixedOps[i] ? 'bg-toggle-on' : 'bg-toggle-off'
+                                        }`}
                                     >
                                         <div
-                                            className={`absolute top-[2px] left-[2px] w-7 h-7 rounded-full transition-transform ${mixedOps[i] ? 'bg-black' : 'bg-white'}`}
-                                            style={{ transform: mixedOps[i] ? 'translateX(20px)' : 'translateX(0)' }}
+                                            className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full shadow-sm transition-transform duration-300 ${
+                                                mixedOps[i] ? 'translate-x-5 bg-toggle-thumb' : 'bg-white border border-black/5'
+                                            }`}
                                         />
                                     </button>
                                 </div>
@@ -356,12 +358,14 @@ export default function GameSetup({
                                 </div>
                                 <button
                                     onClick={() => onAllowNegativeResultsChange(!allowNegativeResults)}
-                                    className={`w-[56px] h-8 rounded-full relative transition-all duration-300 ${allowNegativeResults ? 'bg-primary' : 'bg-toggle-off'
-                                        }`}
+                                    className={`w-12 h-7 rounded-full relative transition-all duration-300 border border-black/5 ${
+                                        allowNegativeResults ? 'bg-toggle-on' : 'bg-toggle-off'
+                                    }`}
                                 >
                                     <div
-                                        className={`absolute top-[3px] left-[3px] w-6.5 h-6.5 rounded-full transition-transform duration-300 shadow-sm ${allowNegativeResults ? 'bg-black translateX(24px)' : 'bg-white translateX(0)'}`}
-                                        style={{ transform: allowNegativeResults ? 'translateX(24px)' : 'translateX(0)' }}
+                                        className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full transition-transform duration-300 shadow-sm ${
+                                            allowNegativeResults ? 'translate-x-5 bg-toggle-thumb' : 'bg-white border border-black/5'
+                                        }`}
                                     />
                                 </button>
                             </div>
@@ -388,12 +392,14 @@ export default function GameSetup({
                                 </div>
                                 <button
                                     onClick={() => onAllowRemainderChange(!allowRemainder)}
-                                    className={`w-[56px] h-8 rounded-full relative transition-all duration-300 ${allowRemainder ? 'bg-primary' : 'bg-toggle-off'
-                                        }`}
+                                    className={`w-12 h-7 rounded-full relative transition-all duration-300 border border-black/5 ${
+                                        allowRemainder ? 'bg-toggle-on' : 'bg-toggle-off'
+                                    }`}
                                 >
                                     <div
-                                        className={`absolute top-[3px] left-[3px] w-6.5 h-6.5 rounded-full transition-transform duration-300 shadow-sm ${allowRemainder ? 'bg-black' : 'bg-white'}`}
-                                        style={{ transform: allowRemainder ? 'translateX(24px)' : 'translateX(0)' }}
+                                        className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full transition-transform duration-300 shadow-sm ${
+                                            allowRemainder ? 'translate-x-5 bg-toggle-thumb' : 'bg-white border border-black/5'
+                                        }`}
                                     />
                                 </button>
                             </div>

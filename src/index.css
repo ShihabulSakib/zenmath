@@ -3,9 +3,7 @@
 @theme {
   /* Zen Obsidian — Minimalist Dark Palette */
   --color-midnight-bg: #000000;
-  /* OLED Black */
   --color-midnight-card: #121214;
-  /* Deep Zinc */
   --color-midnight-card-hover: #1C1C1F;
   --color-midnight-border: rgba(255, 255, 255, 0.05);
 
@@ -15,22 +13,19 @@
   --color-light-card-hover: #EEEEF0;
   --color-light-border: rgba(0, 0, 0, 0.08);
 
-  /* Primary — Soft Silver Accent */
-  --color-primary: #E4E4E7;
-  /* Zinc 200 */
-  --color-primary-soft: rgba(228, 228, 231, 0.08);
-  --color-primary-glow: rgba(255, 255, 255, 0.12);
+  /* Primary Accent — Theme consistent */
+  --color-primary: var(--color-brand-primary);
+  --color-primary-soft: rgba(var(--color-brand-rgb), 0.08);
+  
+  /* Toggle Colors */
+  --color-toggle-on: var(--color-tg-on);
+  --color-toggle-off: var(--color-tg-off);
+  --color-toggle-thumb: var(--color-tg-thumb);
 
-  /* Feedback — Muted Semantic Tones */
+  /* Feedback */
   --color-correct: #4ADE80;
-  /* Muted Green */
-  --color-correct-soft: rgba(74, 222, 128, 0.08);
   --color-incorrect: #F87171;
-  /* Muted Red */
-  --color-incorrect-soft: rgba(248, 113, 113, 0.08);
   --color-timeout: #FB923C;
-  /* Muted Orange */
-  --color-timeout-soft: rgba(251, 146, 60, 0.08);
 
   /* Fonts */
   --font-display: "Inter", system-ui, sans-serif;
@@ -43,15 +38,27 @@
   user-select: none;
 }
 
-html,
-body,
-#root {
+html, body, #root {
   height: 100dvh;
   margin: 0;
   padding: 0;
 }
 
 /* ── Dark mode (Zen Obsidian) ─────────────────────── */
+html.dark {
+  --color-brand-primary: #E4E4E7;
+  --color-brand-rgb: 228, 228, 231;
+  --color-tg-on: #E4E4E7;
+  --color-tg-off: #27272A;
+  --color-tg-thumb: #000000;
+  
+  --color-keypad-bg: #09090B;
+  --color-keypad-btn: #18181B;
+  --color-keypad-border: rgba(255, 255, 255, 0.04);
+  --color-keypad-text: #FAFAFA;
+  --color-icon-dynamic: #E4E4E7;
+}
+
 html.dark body {
   font-family: var(--font-display);
   background-color: var(--color-midnight-bg);
@@ -60,98 +67,31 @@ html.dark body {
   -webkit-font-smoothing: antialiased;
 }
 
-html.dark {
-  --color-keypad-bg: #09090B;
-  --color-keypad-btn: #18181B;
-  --color-keypad-border: rgba(255, 255, 255, 0.04);
-  --color-keypad-text: #FAFAFA;
-  --color-icon-dynamic: #E4E4E7;
-  --color-primary: #E4E4E7;
-}
-
-html.dark .bg-surface {
-  background-color: var(--color-midnight-bg);
-}
-
-html.dark .bg-card {
-  background-color: var(--color-midnight-card);
-}
-
-html.dark .border-card {
-  border-color: var(--color-midnight-border);
-}
-
-html.dark .text-main {
-  color: #FFFFFF;
-}
-
-html.dark .text-secondary {
-  color: #71717A;
-  /* Zinc 400 */
-}
-
-html.dark .text-muted {
-  color: #3F3F46;
-  /* Zinc 700 */
-}
-
-html.dark .text-future {
-  color: rgba(255, 255, 255, 0.35);
-}
-
-html.dark .bg-header {
-  background-color: rgba(0, 0, 0, 0.85);
-}
-
-html.dark .bg-nav {
-  background-color: rgba(18, 18, 20, 0.85);
-}
-
-html.dark .border-nav {
-  border-color: rgba(255, 255, 255, 0.04);
-}
-
-html.dark .bg-toggle-off {
-  background-color: #27272A;
-}
-
-html.dark .bg-input-card {
-  background-color: #09090B;
-}
-
-html.dark .slider-track {
-  background-color: #27272A;
-}
-
-html.dark .text-input-val {
-  color: #FFFFFF;
-}
-
-html.dark .bg-stat-card {
-  background-color: #121214;
-}
-
-html.dark .border-stat {
-  border-color: rgba(255, 255, 255, 0.04);
-}
-
-/* Text/bg on primary background — ensures contrast */
-html.dark .text-on-primary {
-  color: #09090B;
-}
-
-/* Primary action icon (check) — toggles with theme via text-on-primary */
-
-html.dark .bg-on-primary {
-  background-color: #09090B;
-}
-
-/* Make Material Symbols icons more colorful in dark mode */
-html.dark .material-symbols-outlined {
-  color: var(--color-icon-dynamic);
-}
+html.dark .bg-surface { background-color: var(--color-midnight-bg); }
+html.dark .bg-card { background-color: var(--color-midnight-card); }
+html.dark .border-card { border-color: var(--color-midnight-border); }
+html.dark .text-main { color: #FFFFFF; }
+html.dark .text-secondary { color: #71717A; }
+html.dark .bg-header { background-color: rgba(0, 0, 0, 0.85); }
+html.dark .bg-nav { background-color: rgba(18, 18, 20, 0.85); }
+html.dark .border-nav { border-color: rgba(255, 255, 255, 0.04); }
+html.dark .text-on-primary { color: #000000; }
 
 /* ── Light mode (Paper Zen) ────────────────────────── */
+html.light {
+  --color-brand-primary: #000000; 
+  --color-brand-rgb: 0, 0, 0;
+  --color-tg-on: #000000;
+  --color-tg-off: #D4D4D8;
+  --color-tg-thumb: #FFFFFF;
+
+  --color-keypad-bg: #E4E4E7;
+  --color-keypad-btn: #FAFAFA;
+  --color-keypad-border: #D4D4D8;
+  --color-keypad-text: #18181B;
+  --color-icon-dynamic: #18181B;
+}
+
 html.light body {
   font-family: var(--font-display);
   background-color: var(--color-light-bg);
@@ -160,259 +100,45 @@ html.light body {
   -webkit-font-smoothing: antialiased;
 }
 
-html.light {
-  --color-keypad-bg: #E4E4E7;
-  --color-keypad-btn: #FAFAFA;
-  --color-keypad-border: #D4D4D8;
-  --color-keypad-text: #18181B;
-  --color-icon-dynamic: #18181B;
-  --color-primary: #18181B;
-}
-
-html.light .bg-surface {
-  background-color: var(--color-light-bg);
-}
-
-html.light .bg-card {
-  background-color: var(--color-light-card);
-}
-
-html.light .border-card {
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-html.light .text-main {
-  color: #18181B;
-}
-
-html.light .text-secondary {
-  color: #52525B;
-}
-
-html.light .text-muted {
-  color: #71717A;
-}
-
-html.light .text-future {
-  color: #A1A1AA;
-}
-
-html.light .bg-header {
-  background-color: rgba(244, 244, 245, 0.9);
-}
-
-html.light .bg-nav {
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
-html.light .border-nav {
-  border-color: rgba(0, 0, 0, 0.08);
-}
-
-html.light .bg-toggle-off {
-  background-color: #D4D4D8;
-}
-
-html.light .bg-input-card {
-  background-color: #F4F4F5;
-}
-
-html.light .slider-track {
-  background-color: #D4D4D8;
-}
-
-html.light .text-input-val {
-  color: #18181B;
-}
-
-html.light .bg-stat-card {
-  background-color: #FFFFFF;
-}
-
-html.light .border-stat {
-  border-color: rgba(0, 0, 0, 0.06);
-}
-
-html.light .text-on-primary {
-  color: #FAFAFA;
-}
-
-html.light .bg-on-primary {
-  background-color: #FAFAFA;
-}
-
-/* ── Scrollbar ─────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 0px;
-  background: transparent;
-}
-
-/* ── Flat card — from Stitch ────────────────────── */
-.flat-card {
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.flat-card:active {
-  transform: scale(0.98);
-}
-
-/* ── Feedback flash animations ─────────────────── */
-@keyframes flash-correct {
-  0% {
-    background-color: transparent;
-  }
-
-  30% {
-    background-color: var(--color-correct-soft);
-  }
-
-  100% {
-    background-color: transparent;
-  }
-}
-
-@keyframes flash-incorrect {
-  0% {
-    background-color: transparent;
-  }
-
-  30% {
-    background-color: var(--color-incorrect-soft);
-  }
-
-  100% {
-    background-color: transparent;
-  }
-}
-
-@keyframes flash-timeout {
-  0% {
-    background-color: transparent;
-  }
-
-  30% {
-    background-color: var(--color-timeout-soft);
-  }
-
-  100% {
-    background-color: transparent;
-  }
-}
-
-.flash-correct {
-  animation: flash-correct 0.8s ease-out;
-}
-
-.flash-incorrect {
-  animation: flash-incorrect 0.8s ease-out;
-}
-
-.flash-timeout {
-  animation: flash-timeout 0.8s ease-out;
-}
-
-/* ── Transitions ───────────────────────────────── */
-@keyframes slide-in-up {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scale-in {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-slide-up {
-  animation: slide-in-up 0.3s ease-out;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.2s ease-out;
-}
-
-/* ── Timer pulse ───────────────────────────────── */
-@keyframes countdown-pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.timer-warning {
-  animation: countdown-pulse 0.8s ease-in-out infinite;
-}
+html.light .bg-surface { background-color: var(--color-light-bg); }
+html.light .bg-card { background-color: var(--color-light-card); }
+html.light .border-card { border-color: rgba(0, 0, 0, 0.08); }
+html.light .text-main { color: #18181B; }
+html.light .text-secondary { color: #52525B; }
+html.light .bg-header { background-color: rgba(244, 244, 245, 0.9); }
+html.light .bg-nav { background-color: rgba(255, 255, 255, 0.9); }
+html.light .border-nav { border-color: rgba(0, 0, 0, 0.08); }
+html.light .text-on-primary { color: #FFFFFF; }
 
 /* ── Material Symbols ──────────────────────────── */
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
 }
+
+.font-thin-ops {
+  font-weight: 200 !important;
+  opacity: 0.7;
+}
+
+/* ── Utilities ─────────────────────────────────── */
+::-webkit-scrollbar { width: 0px; background: transparent; }
+.flat-card { transition: transform 0.2s ease; }
+.flat-card:active { transform: scale(0.98); }
 
 /* ── Range slider ──────────────────────────────── */
 input[type=range] {
   -webkit-appearance: none;
   background: transparent;
-  cursor: pointer;
   width: 100%;
   height: 32px;
-  /* Sufficient height to prevent thumb clipping */
   display: block;
   outline: none;
 }
-
-/* Track styling */
 input[type=range]::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 9999px;
-  background: linear-gradient(to right, var(--color-primary) var(--range-progress, 0%), var(--color-primary-soft) var(--range-progress, 0%));
-  transition: background-color 0.2s ease;
+  background: var(--color-tg-off);
 }
-
-input[type=range]::-moz-range-track {
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--color-primary-soft);
-}
-
-input[type=range]::-moz-range-progress {
-  background-color: var(--color-primary);
-  height: 6px;
-  border-radius: 9999px;
-}
-
-/* Thumb styling */
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 18px;
@@ -420,34 +146,5 @@ input[type=range]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--color-primary);
   margin-top: -6px;
-  /* (Track height 6px / 2) - (Thumb height 18px / 2) = -6px */
   border: 1px solid rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s ease, background-color 0.2s ease;
-}
-
-input[type=range]::-moz-range-thumb {
-  height: 18px;
-  width: 18px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s ease;
-}
-
-/* Range slider */
-input[type=range]:active::-webkit-slider-thumb {
-  transform: scale(0.95);
-}
-
-
-/* Icon visibility — Clean Minimalist (No Glow) */
-.icon-glow-blue,
-.icon-glow-red,
-.icon-glow-amber,
-.icon-glow-emerald,
-.icon-glow-purple,
-.icon-glow-orange,
-.icon-glow-cyan {
-  filter: none;
-  color: var(--color-icon-dynamic);
 }

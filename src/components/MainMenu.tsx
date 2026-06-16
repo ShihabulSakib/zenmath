@@ -77,7 +77,7 @@ export default function MainMenu({ onSelect, game }: MainMenuProps) {
 
     const ops: { mode: GameMode; symbol: string; label: string; color: string; glow: string }[] = [
         { mode: 'addition', symbol: '+', label: 'Addition', color: 'text-primary', glow: 'icon-glow-blue' },
-        { mode: 'subtraction', symbol: '−', label: 'Subtraction', color: 'text-primary/90', glow: 'icon-glow-red' },
+        { mode: 'subtraction', symbol: '-', label: 'Subtraction', color: 'text-primary/90', glow: 'icon-glow-red' },
         { mode: 'multiplication', symbol: '×', label: 'Multiplication', color: 'text-primary/80', glow: 'icon-glow-amber' },
         { mode: 'division', symbol: '÷', label: 'Division', color: 'text-primary/70', glow: 'icon-glow-emerald' },
     ];
@@ -113,7 +113,7 @@ export default function MainMenu({ onSelect, game }: MainMenuProps) {
                                 onClick={() => onSelect(op.mode)}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-2"
                             >
-                                <span className={`text-6xl font-light ${op.color} ${op.glow}`}>
+                                <span className={`text-5xl font-thin-ops ${op.color} ${op.glow}`}>
                                     {op.symbol}
                                 </span>
                                 <span className="text-sm font-semibold text-secondary">{op.label}</span>
@@ -148,7 +148,7 @@ export default function MainMenu({ onSelect, game }: MainMenuProps) {
                                 <span className="material-symbols-outlined text-xl text-primary/80 icon-glow-orange">
                                     grid_on
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Tables</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Tables</span>
                             </button>
                             <button
                                 onClick={() => onSelect('factor-finding')}
@@ -157,43 +157,43 @@ export default function MainMenu({ onSelect, game }: MainMenuProps) {
                                 <span className="material-symbols-outlined text-xl text-primary/75 icon-glow-purple">
                                     exposure
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Factors</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Factors</span>
                             </button>
                             <button
                                 onClick={() => onSelect('square')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
                             >
-                                <span className="text-xl font-bold text-primary/70 icon-glow-cyan">
+                                <span className="text-xl font-thin-ops text-primary/70 icon-glow-cyan">
                                     x²
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Squares</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Squares</span>
                             </button>
                             <button
                                 onClick={() => onSelect('fraction')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
                             >
-                                <span className="text-xl font-bold text-primary/60 icon-glow-emerald">
+                                <span className="text-xl font-thin-ops text-primary/60 icon-glow-emerald">
                                     ½
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Fractions</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Fractions</span>
                             </button>
                             <button
                                 onClick={() => onSelect('percentage')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
                             >
-                                <span className="text-xl font-bold text-primary/90 icon-glow-purple">
+                                <span className="text-xl font-thin-ops text-primary/90 icon-glow-purple">
                                     %
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Percent</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Percent</span>
                             </button>
                             <button
                                 onClick={() => onSelect('square-root')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
                             >
-                                <span className="text-xl font-bold text-primary/80 icon-glow-cyan">
+                                <span className="text-xl font-thin-ops text-primary/80 icon-glow-cyan">
                                     √
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Roots</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Roots</span>
                             </button>
                             <button
                                 onClick={() => onSelect('number-series')}
@@ -202,16 +202,16 @@ export default function MainMenu({ onSelect, game }: MainMenuProps) {
                                 <span className="material-symbols-outlined text-xl text-primary/75 icon-glow-blue">
                                     linear_scale
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Series</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Series</span>
                             </button>
                             <button
                                 onClick={() => onSelect('ratio')}
                                 className="flat-card aspect-square bg-card border border-card rounded-2xl flex flex-col items-center justify-center gap-1 p-2 text-center"
                             >
-                                <span className="text-xl font-bold text-primary/65 icon-glow-emerald">
+                                <span className="text-xl font-thin-ops text-primary/65 icon-glow-emerald">
                                     ::
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Ratio</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Ratio</span>
                             </button>
                             <button
                                 onClick={() => onSelect('chain-calculation')}
@@ -220,7 +220,7 @@ export default function MainMenu({ onSelect, game }: MainMenuProps) {
                                 <span className="material-symbols-outlined text-xl text-primary/85 icon-glow-red">
                                     multiple_stop
                                 </span>
-                                <span className="text-[9px] font-bold text-secondary uppercase tracking-tighter truncate w-full">Chain</span>
+                                <span className="text-[8px] font-medium text-secondary/70 uppercase tracking-tight truncate w-full">Chain</span>
                             </button>
                         </div>
                     </div>
