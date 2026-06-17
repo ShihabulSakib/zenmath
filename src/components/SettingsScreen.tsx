@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../hooks/useTheme';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { 
@@ -38,6 +40,8 @@ interface SettingsScreenProps {
 }
 
 export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLoaded, onLoadAudioSprites }: SettingsScreenProps) {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [totalQuestions, setTotalQuestions] = useState(settings.totalQuestions);
     const [timeLimit, setTimeLimit] = useState(settings.timeLimit);
     const [ttsEnabled, setTtsEnabled] = useState(settings.ttsEnabled);
@@ -49,9 +53,22 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.adaptiveDifficulty);
     const [showStreak, setShowStreak] = useState(settings.showStreak);
     const [notificationsEnabled, setNotificationsEnabled] = useState(settings.notificationsEnabled);
-    const [notificationTimes, setNotificationTimes] = useState<string[]>(settings.notificationTimes && settings.notificationTimes.length > 0 ? settings.notificationTimes : [TIME_SLOTS[2].value]);
+    const [notificationTimes, setNotificationTimes] = useState<string[]>(settings.notificationTimes || []);
     const [voices, setVoices] = useState<VoiceOption[]>([]);
     const { showToast } = useToast();
+
+    // Calculate timeline progress
+    const timelineProgress = useMemo(() => {
+        const now = new Date();
+        const hour = now.getHours();
+        const minutes = now.getMinutes();
+        const totalMinutes = hour * 60 + minutes;
+        
+        const start = 480; // 8 AM
+        const end = 1200;  // 8 PM
+        const progress = Math.max(0, Math.min(100, ((totalMinutes - start) / (end - start)) * 100));
+        return progress;
+    }, []);
 
     // Load available voices
     useEffect(() => {
@@ -60,12 +77,11 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
         }
     }, []);
 
-const handleSave = async () => {
+    const handleSave = async () => {
         cancelSpeech();
         audioSpritePlayer.stop();
         invalidateSettingsCache();
         
-        // Request permission when saving if notifications are enabled
         if (notificationsEnabled && Notification.permission !== 'granted') {
             const perm = await requestNotificationPermission();
             if (perm !== 'granted') {
@@ -103,110 +119,90 @@ const handleSave = async () => {
     const showTTS = isTTSSupported();
 
     return (
-        <div className="flex flex-col h-full animate-fade-in">
+        <div className="flex flex-col h-full overflow-hidden bg-surface">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-header backdrop-blur-sm px-4 pt-6 pb-2 flex items-center justify-center">
-                <h1 className="text-xl font-bold tracking-tight text-center flex-1 text-main">
-                    Settings
-                </h1>
-            </div>
+            <header className="sticky top-0 z-30 bg-surface/80 backdrop-blur-xl px-4 pt-8 pb-4 flex items-center justify-between">
+                <button 
+                    onClick={onBack}
+                    className="size-10 rounded-full flex items-center justify-center text-main active:bg-card transition-colors"
+                >
+                    <span className="material-symbols-outlined">arrow_back</span>
+                </button>
+                <h1 className="text-lg font-bold tracking-tight text-main">Settings</h1>
+                <button
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
+                >
+                    Save
+                </button>
+            </header>
 
-            <main className="flex-1 px-5 pb-48 flex flex-col gap-6 overflow-y-auto pt-4">
-                {/* Session Limits */}
-                <section>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                        Session Configuration
-                    </h3>
+            <main className="flex-1 px-5 pb-52 overflow-y-auto pt-6 space-y-10">
+                {/* Session Configuration */}
+                <section className="space-y-4">
+                    <header className="px-1">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary opacity-40">Session Limits</h3>
+                    </header>
+                    
                     <div className="grid grid-cols-2 gap-4">
-                        {/* Question Count */}
-                        <div className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative group overflow-hidden">
-                            <label className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Count</label>
+                        <motion.div 
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden"
+                        >
+                            <label className="text-[10px] text-secondary font-black uppercase tracking-widest opacity-40">Count</label>
                             <div className="flex items-end justify-between mt-auto w-full relative z-10">
                                 <span className="text-5xl font-black text-main leading-none tracking-tighter">{totalQuestions}</span>
-                                <div className="text-primary/20">
-                                    <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>format_list_numbered</span>
-                                </div>
+                                <span className="material-symbols-outlined text-primary/20 text-4xl">format_list_numbered</span>
                             </div>
-                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-2xl" />
-                        </div>
-                        {/* Time Limit */}
-                        <div className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative group overflow-hidden">
-                            <label className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Time</label>
+                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-3xl" />
+                        </motion.div>
+
+                        <motion.div 
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden"
+                        >
+                            <label className="text-[10px] text-secondary font-black uppercase tracking-widest opacity-40">Time</label>
                             <div className="flex items-end justify-between mt-auto w-full relative z-10">
                                 <span className="text-5xl font-black text-main leading-none tracking-tighter">{timeLimit}</span>
-                                <div className="flex flex-col items-center justify-end">
-                                    <div className="text-primary/20">
-                                        <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>timer</span>
-                                    </div>
-                                    <span className="text-[9px] font-black text-primary/40 uppercase tracking-widest -mt-1">sec</span>
+                                <div className="flex flex-col items-end">
+                                    <span className="material-symbols-outlined text-primary/20 text-4xl">timer</span>
+                                    <span className="text-[8px] font-black text-primary/30 uppercase tracking-[0.3em] -mt-1">SEC</span>
                                 </div>
                             </div>
-                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-2xl" />
-                        </div>
+                            <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-3xl" />
+                        </motion.div>
                     </div>
-                </section>
 
-                {/* Questions slider */}
-                <section>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                        Questions per Session
-                    </h3>
-                    <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
-                        <div className="flex justify-between items-center mb-8 px-1">
-                            <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-60">Selection</span>
-                            <span className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-bold">{totalQuestions} Questions</span>
+                    <div className="bg-card border border-card rounded-3xl p-6 space-y-8">
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-40">Session Questions</span>
+                                <span className="text-sm font-bold text-primary">{totalQuestions}</span>
+                            </div>
+                            <RangeSlider value={totalQuestions} min={1} max={50} onChange={setTotalQuestions} />
                         </div>
-                        <div className="px-2">
-                            <RangeSlider
-                                value={totalQuestions}
-                                min={1}
-                                max={50}
-                                onChange={setTotalQuestions}
-                            />
-                        </div>
-                        <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
-                            <span>1</span>
-                            <span>50</span>
-                        </div>
-                    </div>
-                </section>
 
-                {/* Timer slider */}
-                <section>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                        Time per Question
-                    </h3>
-                    <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
-                        <div className="flex justify-between items-center mb-8 px-1">
-                            <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-60">Time Limit</span>
-                            <span className="bg-primary text-on-primary px-3 py-1 rounded-lg text-xs font-bold">{timeLimit} Seconds</span>
-                        </div>
-                        <div className="px-2">
-                            <RangeSlider
-                                value={timeLimit}
-                                min={6}
-                                max={60}
-                                onChange={setTimeLimit}
-                            />
-                        </div>
-                        <div className="flex justify-between text-[10px] font-black text-secondary mt-3 px-2 uppercase tracking-widest opacity-30">
-                            <span>6s</span>
-                            <span>60s</span>
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-40">Time Limit</span>
+                                <span className="text-sm font-bold text-primary">{timeLimit}s</span>
+                            </div>
+                            <RangeSlider value={timeLimit} min={6} max={60} onChange={setTimeLimit} />
                         </div>
                     </div>
                 </section>
 
                 {/* Training Settings */}
-                <section>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                        Training
-                    </h3>
+                <section className="space-y-4">
+                    <header className="px-1">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary opacity-40">Training Behavior</h3>
+                    </header>
 
                     <ToggleCard
                         enabled={adaptiveDifficulty}
                         onChange={setAdaptiveDifficulty}
                         label="Adaptive Difficulty"
-                        description='Auto-increase difficulty when accuracy {">"}85%'
+                        description='Auto-adjust based on performance'
                         icon="trending_up"
                     />
 
@@ -214,384 +210,318 @@ const handleSave = async () => {
                         enabled={showStreak}
                         onChange={setShowStreak}
                         label="Streak Counter"
-                        description="Show consecutive correct answer streak"
+                        description="Show correct answer sequence"
                         icon="local_fire_department"
                     />
                 </section>
 
                 {/* Notifications Section */}
-                <section>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                        Notifications
-                    </h3>
+                <section className="space-y-4">
+                    <header className="px-1">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary opacity-40">Notifications</h3>
+                    </header>
                     
-                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4">
+                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>notifications</span>
+                            <div className="flex items-center gap-4">
+                                <div className={`size-10 rounded-2xl flex items-center justify-center transition-colors ${notificationsEnabled ? 'bg-primary/10 text-primary' : 'bg-surface text-secondary/40'}`}>
+                                    <span className="material-symbols-outlined" style={{ fontVariationSettings: notificationsEnabled ? "'FILL' 1" : "'FILL' 0" }}>notifications</span>
+                                </div>
                                 <div>
                                     <span className="text-sm font-bold text-main">Daily Reminder</span>
-                                    <p className="text-[10px] text-secondary opacity-60 mt-0.5">
+                                    <p className="text-[10px] text-secondary opacity-50 mt-0.5">
                                         {getTodayProgress().goalAchieved 
-                                            ? 'Goal achieved! Great job!' 
-                                            : `${getTodayProgress().goal - getTodayProgress().count} sessions to go`}
+                                            ? 'Daily goal completed!' 
+                                            : `${getTodayProgress().goal - getTodayProgress().count} sessions remaining`}
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    if (!notificationsEnabled) {
-                                        if ('Notification' in window) {
-                                            const perm = await Notification.requestPermission();
-                                            if (perm === 'granted') {
-                                                setNotificationsEnabled(true);
-                                                await subscribeToPush();
-                                            } else {
-                                                showToast('Please allow notifications in browser settings');
-                                            }
+                            <ToggleSwitch 
+                                enabled={notificationsEnabled} 
+                                onChange={async (val) => {
+                                    if (val) {
+                                        const perm = await requestNotificationPermission();
+                                        if (perm === 'granted') {
+                                            setNotificationsEnabled(true);
+                                            await subscribeToPush();
                                         } else {
-                                            showToast('Notifications not supported in this browser');
+                                            showToast('Permissions required');
                                         }
                                     } else {
                                         setNotificationsEnabled(false);
                                         await unsubscribeFromPush();
                                     }
-                                }}
-                                className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${notificationsEnabled ? 'bg-primary' : 'bg-toggle-off'}`}
-                                role="switch"
-                                aria-checked={notificationsEnabled}
-                            >
-                                <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${notificationsEnabled ? 'translate-x-5' : ''}`} />
-                            </button>
+                                }} 
+                            />
                         </div>
                     </div>
                     
-                    {notificationsEnabled && (
-                        <div className="bg-card border border-card rounded-3xl p-5 shadow-sm animate-fade-in">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>schedule</span>
-                                <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Reminder Times</span>
-                            </div>
-
-                            {/* Grouped time slots by period */}
-                            {(['morning', 'midday', 'afternoon', 'evening', 'night'] as TimeSlotInfo['period'][]).map((period) => {
-                                const periodSlots = TIME_SLOTS.filter(s => s.period === period);
-                                if (periodSlots.length === 0) return null;
-                                return (
-                                    <div key={period} className="mb-3 last:mb-0">
-                                        <div className="text-[9px] font-black uppercase tracking-widest text-secondary opacity-40 mb-2 ml-1">
-                                            {period === 'morning' ? 'Morning' :
-                                             period === 'midday' ? 'Midday' :
-                                             period === 'afternoon' ? 'Afternoon' :
-                                             period === 'evening' ? 'Evening' : 'Night'}
+                    <AnimatePresence>
+                        {notificationsEnabled && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10, height: 0 }}
+                                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                exit={{ opacity: 0, y: 10, height: 0 }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                                className="overflow-hidden space-y-4"
+                            >
+                                {/* Timeline Card */}
+                                <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>history_toggle_off</span>
+                                            <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Smart Timeline</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {periodSlots.map((slot) => (
-                                                <button
-                                                    key={slot.value}
-                                                    onClick={() => {
-                                                        invalidateSettingsCache();
-                                                        if (notificationTimes.includes(slot.value)) {
-                                                            setNotificationTimes(notificationTimes.filter(t => t !== slot.value));
-                                                        } else {
-                                                            setNotificationTimes([...notificationTimes, slot.value]);
-                                                        }
-                                                    }}
-                                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                                                        notificationTimes.includes(slot.value)
-                                                            ? 'bg-primary text-on-primary'
-                                                            : 'bg-primary/10 text-secondary border border-primary/20'
-                                                    }`}
-                                                >
-                                                    {slot.label}
-                                                </button>
-                                            ))}
+                                        <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">
+                                            <div className="size-1.5 rounded-full bg-primary" />
+                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                                                {notificationTimes.length} Active
+                                            </span>
                                         </div>
                                     </div>
-                                );
-                            })}
 
-                            <p className="text-[10px] text-secondary opacity-40 mt-3 ml-1">
-                                Send up to 3 reminders at these times if goal not met
-                            </p>
+                                    <div className="relative flex flex-col gap-6">
+                                        {/* The Glow Timeline Line */}
+                                        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-primary/5 rounded-full" />
+                                        <motion.div 
+                                            className={`absolute left-[19px] top-4 w-0.5 bg-primary rounded-full ${isDark ? 'shadow-[0_0_10px_rgba(228,228,231,0.5)]' : 'shadow-[0_0_10px_rgba(0,0,0,0.1)]'}`}
+                                            initial={{ height: 0 }}
+                                            animate={{ height: `${timelineProgress}%` }}
+                                            style={{ maxHeight: 'calc(100% - 32px)' }}
+                                            transition={{ duration: 1, ease: 'easeOut' }}
+                                        />
 
-                            {/* Next scheduled notification */}
-                            {notificationTimes.length > 0 && (() => {
-                                const now = new Date();
-                                const currentMinutes = now.getHours() * 60 + now.getMinutes();
-                                const upcoming = notificationTimes
-                                    .map(t => {
-                                        const [h, m] = t.split(':').map(Number);
-                                        return { time: t, totalMinutes: h * 60 + m };
-                                    })
-                                    .filter(t => t.totalMinutes > currentMinutes)
-                                    .sort((a, b) => a.totalMinutes - b.totalMinutes);
-                                if (upcoming.length > 0) {
-                                    const slot = TIME_SLOTS.find(s => s.value === upcoming[0].time);
-                                    return (
-                                        <p className="text-[10px] font-bold text-primary mt-2 ml-1">
-                                            Next reminder: {slot ? slot.label : upcoming[0].time}
-                                        </p>
-                                    );
-                                }
-                                return null;
-                            })()}
-
-                            {/* Message preview */}
-                            {(() => {
-                                const { goal, count } = getTodayProgress();
-                                const remaining = Math.max(0, goal - count);
-                                const now = new Date();
-                                const hour = now.getHours();
-                                const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-                                return (
-                                    <div className="mt-4 bg-surface border border-card rounded-2xl p-3">
-                                        <div className="text-[9px] font-black uppercase tracking-widest text-secondary opacity-40 mb-1">Message Preview</div>
-                                        <p className="text-xs text-secondary opacity-80">
-                                            {remaining > 0
-                                                ? `"${greeting}! ${remaining} of ${goal} sessions remaining."`
-                                                : '"Goal achieved! Great job!"'}
-                                        </p>
+                                        {(['morning', 'midday', 'afternoon', 'evening', 'night'] as TimeSlotInfo['period'][]).map((period) => {
+                                            const periodSlots = TIME_SLOTS.filter(s => s.period === period);
+                                            const isActive = periodSlots.some(s => notificationTimes.includes(s.value));
+                                            const periodIcon = 
+                                                period === 'morning' ? 'light_mode' :
+                                                period === 'midday' ? 'wb_sunny' :
+                                                period === 'afternoon' ? 'wb_twilight' :
+                                                period === 'evening' ? 'nights_stay' : 'bedtime';
+                                            
+                                            return (
+                                                <div key={period} className="relative flex items-start gap-5 z-10">
+                                                    <motion.div 
+                                                        animate={{ scale: isActive ? 1.05 : 1 }}
+                                                        className={`size-10 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-colors ${
+                                                            isActive 
+                                                                ? 'bg-primary border-primary text-on-primary' 
+                                                                : 'bg-card border-card text-secondary/30'
+                                                        }`}
+                                                    >
+                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                            {periodIcon}
+                                                        </span>
+                                                    </motion.div>
+                                                    
+                                                    <div className="flex-1 space-y-2.5">
+                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-secondary opacity-30">
+                                                            {period}
+                                                        </span>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {periodSlots.map((slot) => (
+                                                                <motion.button
+                                                                    key={slot.value}
+                                                                    whileTap={{ scale: 0.95 }}
+                                                                    onClick={() => {
+                                                                        invalidateSettingsCache();
+                                                                        if (notificationTimes.includes(slot.value)) {
+                                                                            setNotificationTimes(notificationTimes.filter(t => t !== slot.value));
+                                                                        } else {
+                                                                            if (notificationTimes.length >= 3) {
+                                                                                showToast('Limit: 3 reminders');
+                                                                                return;
+                                                                            }
+                                                                            setNotificationTimes([...notificationTimes, slot.value]);
+                                                                        }
+                                                                    }}
+                                                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                                                                        notificationTimes.includes(slot.value)
+                                                                            ? 'bg-primary text-on-primary border-primary shadow-[0_4px_12px_rgba(var(--color-brand-rgb),0.3)]'
+                                                                            : 'bg-surface border-card text-secondary opacity-60'
+                                                                    }`}
+                                                                >
+                                                                    {slot.label}
+                                                                </motion.button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                );
-                            })()}
+                                </div>
 
-                            {('Notification' in window) && (
-                                <div className="flex flex-col gap-2 mt-4">
-                                    <button
+                                {/* Status & Rescue Card */}
+                                <div className="bg-card border border-card rounded-3xl p-5 shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between px-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>cloud_done</span>
+                                            <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Sync Health</span>
+                                        </div>
+                                        <button 
+                                            onClick={async () => {
+                                                const { subscribeToPush } = await import('../services/notifications');
+                                                const success = await subscribeToPush();
+                                                if (success) showToast('Cloud sync restored');
+                                                else showToast('Sync failed');
+                                            }}
+                                            className="text-[9px] font-black text-primary uppercase tracking-[0.2em] bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 active:scale-95 transition-transform"
+                                        >
+                                            Fix / Resync
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-surface rounded-2xl p-3 border border-card flex items-center gap-3">
+                                            <div className="size-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse" />
+                                            <span className="text-[10px] font-bold text-main">Local OK</span>
+                                        </div>
+                                        <div className="bg-surface rounded-2xl p-3 border border-card flex items-center gap-3">
+                                            <div className={`size-2 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.4)] ${Notification.permission === 'granted' ? 'bg-green-500 shadow-green-500/40' : 'bg-red-500 shadow-red-500/40'}`} />
+                                            <span className="text-[10px] font-bold text-main">Cloud OK</span>
+                                        </div>
+                                    </div>
+
+                                    <motion.button
+                                        whileTap={{ scale: 0.98 }}
                                         onClick={() => {
                                             const { goal, count } = getTodayProgress();
                                             const remaining = Math.max(0, goal - count);
-                                            showLocalNotification(
-                                                remaining > 0
-                                                    ? 'ZenMath — Practice Reminder'
-                                                    : 'ZenMath — Goal Achieved',
-                                                remaining > 0 
-                                                    ? `${remaining} of ${goal} sessions remaining`
-                                                    : 'Great job! You\'ve met your daily goal!'
-                                            );
+                                            showLocalNotification('ZenMath Test', remaining > 0 ? `${remaining} sessions to go!` : 'Goal met!');
                                         }}
-                                        className="w-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold py-3 px-4 rounded-2xl active:scale-[0.98] transition-transform"
+                                        className="w-full bg-primary text-on-primary text-sm font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl"
                                     >
-                                        Test Notification (Immediate)
-                                    </button>
+                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
+                                        Send Test Signal
+                                    </motion.button>
 
-                                    {/* Debug Section */}
-                                    <div className="mt-4 pt-4 border-t border-primary/10">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-secondary opacity-40 mb-3 ml-1">Advanced / Debug</h4>
-                                        <button
-                                            onClick={async () => {
-                                                if (!('serviceWorker' in navigator)) return;
-                                                const reg = await navigator.serviceWorker.ready;
-                                                if (reg.active) {
-                                                    reg.active.postMessage({ type: 'TEST_PERIODIC_CHECK' });
-                                                    showToast('Simulating background check...');
-                                                }
-                                            }}
-                                            className="w-full bg-surface border border-card text-secondary text-[11px] font-bold py-2 px-4 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-                                        >
-                                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
-                                            Simulate Background Sync
-                                        </button>
-                                        <button
-                                            onClick={async () => {
-                                                try {
+                                    {/* Discreet Dev Tools */}
+                                    <div className="pt-4 border-t border-card/50 flex items-center justify-between px-1">
+                                        <span className="text-[8px] font-black text-secondary uppercase tracking-[0.3em] opacity-20">Dev Diagnostics</span>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={async () => {
+                                                    const reg = await navigator.serviceWorker.ready;
+                                                    reg.active?.postMessage({ type: 'TEST_PERIODIC_CHECK' });
+                                                }}
+                                                className="size-7 bg-surface rounded-lg flex items-center justify-center text-secondary/40 active:text-primary transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
+                                            </button>
+                                            <button 
+                                                onClick={async () => {
                                                     const { triggerTestPush, subscribeToPush } = await import('../services/notifications');
-                                                    // Ensure subscribed first
                                                     await subscribeToPush();
                                                     await triggerTestPush();
-                                                    showToast('Triggering server push...');
-                                                } catch (e: any) {
-                                                    showToast(e.message || 'Push test failed');
-                                                }
-                                            }}
-                                            className="w-full mt-2 bg-surface border border-card text-secondary text-[11px] font-bold py-2 px-4 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
-                                        >
-                                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>cloud_sync</span>
-                                            Simulate Server Push
-                                        </button>
-                                        <p className="text-[9px] text-secondary opacity-40 mt-2 px-1">
-                                            Tests if the server can wake your phone even if the browser is completely closed.
-                                        </p>
+                                                }}
+                                                className="size-7 bg-surface rounded-lg flex items-center justify-center text-secondary/40 active:text-primary transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>cloud_sync</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </section>
 
-                {/* Voice Settings — only shown when TTS is supported */}
+                {/* Voice Settings */}
                 {showTTS && (
-                    <section>
-                        <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-secondary mb-4 px-1 ml-1 opacity-70">
-                            Voice Settings
-                        </h3>
+                    <section className="space-y-4">
+                        <header className="px-1">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary opacity-40">Audio & Voice</h3>
+                        </header>
 
-                        {/* TTS Toggle */}
-                        <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-primary" style={{ fontSize: 22, fontVariationSettings: "'FILL' 1" }}>record_voice_over</span>
-                                    <div>
-                                        <span className="text-sm font-bold text-main">Read Aloud</span>
-                                        <p className="text-[10px] text-secondary opacity-60 mt-0.5">Speak questions during gameplay</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        const newTtsState = !ttsEnabled;
-                                        setTtsEnabled(newTtsState);
-                                        // When enabling TTS, default Listen Only to ON.
-                                        // When disabling TTS, Listen Only must also be OFF.
-                                        setListenOnlyMode(newTtsState);
-                                    }}
-                                    className={`relative w-12 h-7 rounded-full transition-colors duration-200 ${ttsEnabled ? 'bg-primary' : 'bg-toggle-off'}`}
-                                    role="switch"
-                                    aria-checked={ttsEnabled}
-                                >
-                                    <div className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${ttsEnabled ? 'translate-x-5' : ''}`} />
-                                </button>
-                            </div>
-                        </div>
+                        <ToggleCard
+                            enabled={ttsEnabled}
+                            onChange={(v) => {
+                                setTtsEnabled(v);
+                                if (v) setListenOnlyMode(true);
+                            }}
+                            label="Speech Output"
+                            description="Voice guidance during practice"
+                            icon="record_voice_over"
+                        />
 
-                        {/* Audio Sprite Toggle — shown when TTS is enabled, triggers lazy load on first enable */}
                         {ttsEnabled && (
-                            <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4 animate-fade-in">
-                                <ToggleSwitch
-                                    enabled={audioSpriteEnabled}
-                                    onChange={(v) => {
-                                        if (v && !audioSpriteLoaded) {
-                                            onLoadAudioSprites();
-                                        }
-                                        setAudioSpriteEnabled(v);
-                                    }}
-                                    label="HD Voice"
-                                    description={audioSpriteLoaded ? "Pre-recorded audio sprites (works offline)" : "Loading audio assets..."}
-                                    icon="graphic_eq"
-                                />
-                            </div>
-                        )}
-
-                        {/* Sprite Speed — only when HD Voice is enabled */}
-                        {ttsEnabled && audioSpriteEnabled && audioSpriteLoaded && (
-                            <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm mb-4 animate-fade-in">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>speed</span>
-                                        <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Voice Speed</span>
-                                    </div>
-                                    <span className="text-sm text-primary font-black">{spriteSpeed.toFixed(2)}×</span>
-                                </div>
-                                <div className="px-2">
-                                    <RangeSlider
-                                        value={spriteSpeed}
-                                        min={1}
-                                        max={2}
-                                        step={0.25}
-                                        onChange={setSpriteSpeed}
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="space-y-4"
+                            >
+                                <div className="bg-card border border-card rounded-3xl p-5">
+                                    <ToggleSwitch
+                                        enabled={audioSpriteEnabled}
+                                        onChange={(v) => {
+                                            if (v && !audioSpriteLoaded) onLoadAudioSprites();
+                                            setSpriteSpeed(1.25); // Default speed for sprites
+                                            setAudioSpriteEnabled(v);
+                                        }}
+                                        label="HD Audio (Studio)"
+                                        description={audioSpriteLoaded ? "Crystal clear offline voice" : "Optimizing assets..."}
+                                        icon="graphic_eq"
                                     />
                                 </div>
-                                <div className="flex justify-between text-[10px] font-black text-secondary mt-2 px-2 uppercase tracking-widest opacity-40">
-                                    <span>1.0x</span>
-                                    <span>1.25x</span>
-                                    <span>1.5x</span>
-                                    <span>1.75x</span>
-                                    <span>2.0x</span>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Listen Only Mode — only when TTS is enabled */}
-                        {ttsEnabled && (
-                            <div className="bg-card border border-card rounded-3xl p-5 shadow-sm mb-4 animate-fade-in">
-                                <ToggleSwitch
-                                    enabled={listenOnlyMode}
-                                    onChange={setListenOnlyMode}
-                                    label="Listen Only"
-                                    description="Hide questions — practice by ear"
-                                    icon="visibility_off"
-                                />
-                            </div>
-                        )}
-
-                        {ttsEnabled && !audioSpriteEnabled && (
-                            <div className="flex flex-col gap-4 animate-fade-in">
-                                {/* Speech Rate */}
-                                <div className="bg-card border border-card rounded-3xl p-6 pb-8 shadow-sm">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>speed</span>
-                                            <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Speed</span>
+                                {audioSpriteEnabled && audioSpriteLoaded ? (
+                                    <div className="bg-card border border-card rounded-3xl p-6 space-y-6">
+                                        <div className="flex justify-between items-center px-1">
+                                            <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-40">Voice Speed</span>
+                                            <span className="text-sm font-bold text-primary">{spriteSpeed.toFixed(2)}x</span>
                                         </div>
-                                        <span className="text-sm text-primary font-black">{speechRate.toFixed(2)}×</span>
+                                        <RangeSlider value={spriteSpeed} min={1} max={2} step={0.25} onChange={setSpriteSpeed} />
                                     </div>
-                                    <div className="px-2">
-                                        <RangeSlider
-                                            value={speechRate}
-                                            min={0.25}
-                                            max={2.0}
-                                            step={0.25}
-                                            onChange={setSpeechRate}
-                                        />
-                                    </div>
-                                    <div className="flex justify-between text-[10px] font-black text-secondary mt-2 px-2 uppercase tracking-widest opacity-40">
-                                        <span>0.25x</span>
-                                        <span>1.0x</span>
-                                        <span>2.0x</span>
-                                    </div>
-                                </div>
-
-                                {/* Voice Selection */}
-                                {voices.length > 0 && (
-                                    <div className="bg-card border border-card rounded-3xl p-5 shadow-sm">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>mic</span>
-                                            <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Voice</span>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="bg-card border border-card rounded-3xl p-6 space-y-6">
+                                            <div className="flex justify-between items-center px-1">
+                                                <span className="text-[10px] font-black text-secondary uppercase tracking-widest opacity-40">Speech Rate</span>
+                                                <span className="text-sm font-bold text-primary">{speechRate.toFixed(2)}x</span>
+                                            </div>
+                                            <RangeSlider value={speechRate} min={0.25} max={2} step={0.25} onChange={setSpeechRate} />
                                         </div>
-                                        <select
-                                            value={preferredVoiceURI}
-                                            onChange={(e) => setPreferredVoiceURI(e.target.value)}
-                                            className="w-full bg-surface border border-card rounded-2xl px-4 py-3 text-sm text-main font-medium appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/30"
-                                        >
-                                            <option value="">System Default</option>
-                                            {voices.map((v) => (
-                                                <option key={v.voiceURI} value={v.voiceURI}>
-                                                    {v.name} {v.isLocal ? '⚡' : '☁️'}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <p className="text-[10px] text-secondary opacity-40 mt-2 ml-1">
-                                            ⚡ = Offline &nbsp; ☁️ = Requires network
-                                        </p>
+
+                                        {voices.length > 0 && (
+                                            <div className="bg-card border border-card rounded-3xl p-5">
+                                                <select
+                                                    value={preferredVoiceURI}
+                                                    onChange={(e) => setPreferredVoiceURI(e.target.value)}
+                                                    className="w-full bg-surface border border-card rounded-2xl px-4 py-3 text-sm text-main font-medium appearance-none outline-none"
+                                                >
+                                                    <option value="">System Default</option>
+                                                    {voices.map((v) => (
+                                                        <option key={v.voiceURI} value={v.voiceURI}>{v.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
-                            </div>
-                        )}
 
-                        {/* Test Button — always shown when TTS is enabled */}
-                        {ttsEnabled && (
-                            <button
-                                onClick={handleTest}
-                                className="bg-card border border-card rounded-3xl p-4 shadow-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform mt-4"
-                            >
-                                <span className="material-symbols-outlined text-primary" style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}>play_circle</span>
-                                <span className="text-sm font-bold text-primary">Test Voice</span>
-                            </button>
+                                <ToggleCard
+                                    enabled={listenOnlyMode}
+                                    onChange={setListenOnlyMode}
+                                    label="Listen-Only Mode"
+                                    description="No numbers shown — practice by ear"
+                                    icon="visibility_off"
+                                />
+
+                                <motion.button
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleTest}
+                                    className="w-full bg-card border border-card rounded-3xl p-4 text-primary font-bold text-sm flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
+                                    Test Voice Configuration
+                                </motion.button>
+                            </motion.div>
                         )}
                     </section>
                 )}
             </main>
-
-            {/* Fixed bottom CTA — adjusted for Zen Island Navbar */}
-            <div className="fixed bottom-24 left-0 w-full px-5 z-20">
-                <button
-                    onClick={handleSave}
-                    className="w-full bg-primary text-on-primary font-bold text-lg py-4 px-6 rounded-2xl shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
-                >
-                    <span>Save Settings</span>
-                </button>
-            </div>
         </div>
     );
 }

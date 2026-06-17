@@ -269,6 +269,13 @@ export async function registerPeriodicSync(): Promise<boolean> {
 
 // ─── Web Push ─────────────────────────────────────────────────
 
+/**
+ * FEATURE TOGGLE: Set to true to enable server-side push notifications.
+ * When false, only local browser-based notifications will work.
+ * (For development/testing purposes)
+ */
+const PUSH_ENABLED = false; 
+
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -284,9 +291,10 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 /**
  * Syncs user's daily progress to the server for smart push notifications.
+ * If PUSH_ENABLED is false, this is a no-op.
  */
 export async function syncProgressToServer(): Promise<void> {
-  if (!('serviceWorker' in navigator)) return;
+  if (!PUSH_ENABLED || !('serviceWorker' in navigator)) return;
   
   try {
     const registration = await navigator.serviceWorker.ready;
@@ -315,7 +323,7 @@ export async function syncProgressToServer(): Promise<void> {
 }
 
 export async function subscribeToPush(): Promise<boolean> {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !VAPID_PUBLIC_KEY) {
+  if (!PUSH_ENABLED || !('serviceWorker' in navigator) || !('PushManager' in window) || !VAPID_PUBLIC_KEY) {
     return false;
   }
   try {
@@ -346,7 +354,7 @@ export async function subscribeToPush(): Promise<boolean> {
 }
 
 export async function unsubscribeFromPush(): Promise<boolean> {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+  if (!PUSH_ENABLED || !('serviceWorker' in navigator) || !('PushManager' in window)) return false;
   try {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
@@ -367,7 +375,9 @@ export async function unsubscribeFromPush(): Promise<boolean> {
 }
 
 export async function triggerTestPush(): Promise<void> {
-  if (!('serviceWorker' in navigator)) return;
+  if (!PUSH_ENABLED || !('serviceWorker' in navigator)) {
+    throw new Error('Push notifications are currently disabled in the code.');
+  }
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
   

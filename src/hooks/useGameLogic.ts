@@ -134,11 +134,11 @@ function loadSettings(): GameSettings {
                 adaptiveDifficulty: typeof parsed.adaptiveDifficulty === 'boolean' ? parsed.adaptiveDifficulty : false,
                 showStreak: typeof parsed.showStreak === 'boolean' ? parsed.showStreak : true,
                 notificationsEnabled: typeof parsed.notificationsEnabled === 'boolean' ? parsed.notificationsEnabled : false,
-                notificationTimes: Array.isArray(parsed.notificationTimes) ? parsed.notificationTimes : ['21:00'],
+                notificationTimes: Array.isArray(parsed.notificationTimes) ? parsed.notificationTimes : [],
             };
         }
     } catch { /* ignore */ }
-    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, notificationsEnabled: false, notificationTimes: ['21:00'] };
+    return { totalQuestions: DEFAULT_TOTAL_QUESTIONS, timeLimit: DEFAULT_TIME_LIMIT, dailyGoal: DEFAULT_DAILY_GOAL, ttsEnabled: false, audioSpriteEnabled: false, spriteSpeed: DEFAULT_SPRITE_SPEED, listenOnlyMode: false, speechRate: DEFAULT_SPEECH_RATE, preferredVoiceURI: '', adaptiveDifficulty: false, showStreak: true, notificationsEnabled: false, notificationTimes: [] };
 }
 
 function saveSettings(settings: GameSettings): GameSettings {
@@ -326,43 +326,27 @@ export function useGameLogic(onSessionComplete?: (
             setFractionQuestionDisplay('');
             setFractionCorrectAnswer('');
         } else if (mode === 'multiplication-table') {
-            if (tableRange[0] === tableRange[1]) {
-                const n1 = tableRange[0];
-                const n2 = randomInRange(1, 12);
-                setNum1(n1);
-                setNum2(n2);
-                setCurrentOperation('×');
-                setCorrectAnswer(n1 * n2);
-            } else {
-                const n1 = randomInRange(tableRange[0], tableRange[1]);
-                const n2 = randomInRange(tableRange[0], tableRange[1]);
-                setNum1(n1);
-                setNum2(n2);
-                setCurrentOperation('×');
-                setCorrectAnswer(n1 * n2);
-            }
+            const n1 = randomInRange(tableRange[0], tableRange[1]);
+            const n2 = randomInRange(1, 12);
+            setNum1(n1);
+            setNum2(n2);
+            setCurrentOperation('×');
+            setCorrectAnswer(n1 * n2);
             setFractionQuestionDisplay('');
             setFractionCorrectAnswer('');
         } else if (mode === 'factor-finding') {
+            const n1 = randomInRange(tableRange[0], tableRange[1]);
+            const n2 = randomInRange(1, 12);
+            const product = n1 * n2;
+            setNum1(product);
+            setNum2(n1);
             if (tableRange[0] === tableRange[1]) {
-                const n1 = tableRange[0];
-                const n2 = randomInRange(1, 12);
-                const product = n1 * n2;
-                setNum1(product);
-                setNum2(n1);
                 setFractionQuestionDisplay(String(product));
-                setCorrectAnswer(n2);
-                setCurrentOperation('×');
             } else {
-                const n1 = randomInRange(tableRange[0], tableRange[1]);
-                const n2 = randomInRange(tableRange[0], tableRange[1]);
-                const product = n1 * n2;
-                setNum1(product);
-                setNum2(n1);
                 setFractionQuestionDisplay(`${product} = ${n1} × __`);
-                setCorrectAnswer(n2);
-                setCurrentOperation('×');
             }
+            setCorrectAnswer(n2);
+            setCurrentOperation('×');
             setFractionCorrectAnswer('');
         } else if (mode === 'mixed') {
             const ops: Operation[] = ['+', '-', '*', '/'];
