@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useTheme } from '../hooks/useTheme';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
@@ -56,6 +56,11 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
     const [notificationTimes, setNotificationTimes] = useState<string[]>(settings.notificationTimes || []);
     const [voices, setVoices] = useState<VoiceOption[]>([]);
     const { showToast } = useToast();
+
+    // AutoAnimate parent refs for zero-config smooth transitions
+    const [notifParent] = useAutoAnimate();
+    const [audioParent] = useAutoAnimate();
+    const [mainParent] = useAutoAnimate();
 
     // Calculate timeline progress
     const timelineProgress = useMemo(() => {
@@ -137,7 +142,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                 </button>
             </header>
 
-            <main className="flex-1 px-5 pb-52 overflow-y-auto pt-6 space-y-10">
+            <main ref={mainParent} className="flex-1 px-5 pb-52 overflow-y-auto pt-6 space-y-10">
                 {/* Session Configuration */}
                 <section className="space-y-4">
                     <header className="px-1">
@@ -145,22 +150,16 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                     </header>
                     
                     <div className="grid grid-cols-2 gap-4">
-                        <motion.div 
-                            whileTap={{ scale: 0.98 }}
-                            className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden"
-                        >
+                        <div className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden active:scale-[0.98] transition-transform">
                             <label className="text-[10px] text-secondary font-black uppercase tracking-widest opacity-40">Count</label>
                             <div className="flex items-end justify-between mt-auto w-full relative z-10">
                                 <span className="text-5xl font-black text-main leading-none tracking-tighter">{totalQuestions}</span>
                                 <span className="material-symbols-outlined text-primary/20 text-4xl">format_list_numbered</span>
                             </div>
                             <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-3xl" />
-                        </motion.div>
+                        </div>
 
-                        <motion.div 
-                            whileTap={{ scale: 0.98 }}
-                            className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden"
-                        >
+                        <div className="bg-card border border-card rounded-3xl p-5 flex flex-col justify-between h-36 shadow-sm relative overflow-hidden active:scale-[0.98] transition-transform">
                             <label className="text-[10px] text-secondary font-black uppercase tracking-widest opacity-40">Time</label>
                             <div className="flex items-end justify-between mt-auto w-full relative z-10">
                                 <span className="text-5xl font-black text-main leading-none tracking-tighter">{timeLimit}</span>
@@ -170,7 +169,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                 </div>
                             </div>
                             <div className="absolute -bottom-4 -right-4 size-20 bg-primary/5 rounded-full blur-3xl" />
-                        </motion.div>
+                        </div>
                     </div>
 
                     <div className="bg-card border border-card rounded-3xl p-6 space-y-8">
@@ -216,7 +215,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                 </section>
 
                 {/* Notifications Section */}
-                <section className="space-y-4">
+                <section ref={notifParent} className="space-y-4">
                     <header className="px-1">
                         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary opacity-40">Notifications</h3>
                     </header>
@@ -256,181 +255,167 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         </div>
                     </div>
                     
-                    <AnimatePresence>
-                        {notificationsEnabled && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10, height: 0 }}
-                                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                                exit={{ opacity: 0, y: 10, height: 0 }}
-                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                                className="overflow-hidden space-y-4"
-                            >
-                                {/* Timeline Card */}
-                                <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>history_toggle_off</span>
-                                            <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Smart Timeline</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">
-                                            <div className="size-1.5 rounded-full bg-primary" />
-                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest">
-                                                {notificationTimes.length} Active
-                                            </span>
-                                        </div>
+                    {notificationsEnabled && (
+                        <div className="space-y-4">
+                            {/* Timeline Card */}
+                            <div className="bg-card border border-card rounded-3xl p-6 shadow-sm">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>history_toggle_off</span>
+                                        <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Smart Timeline</span>
                                     </div>
+                                    <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">
+                                        <div className="size-1.5 rounded-full bg-primary" />
+                                        <span className="text-[9px] font-black text-primary uppercase tracking-widest">
+                                            {notificationTimes.length} Active
+                                        </span>
+                                    </div>
+                                </div>
 
-                                    <div className="relative flex flex-col gap-6">
-                                        {/* The Glow Timeline Line */}
-                                        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-primary/5 rounded-full" />
-                                        <motion.div 
-                                            className={`absolute left-[19px] top-4 w-0.5 bg-primary rounded-full ${isDark ? 'shadow-[0_0_10px_rgba(228,228,231,0.5)]' : 'shadow-[0_0_10px_rgba(0,0,0,0.1)]'}`}
-                                            initial={{ height: 0 }}
-                                            animate={{ height: `${timelineProgress}%` }}
-                                            style={{ maxHeight: 'calc(100% - 32px)' }}
-                                            transition={{ duration: 1, ease: 'easeOut' }}
-                                        />
+                                <div className="relative flex flex-col gap-6">
+                                    {/* The Glow Timeline Line */}
+                                    <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-primary/5 rounded-full" />
+                                    <div 
+                                        className={`absolute left-[19px] top-4 w-0.5 bg-primary rounded-full transition-[height] duration-1000 ease-out ${isDark ? 'shadow-[0_0_10px_rgba(228,228,231,0.5)]' : 'shadow-[0_0_10px_rgba(0,0,0,0.1)]'}`}
+                                        style={{ height: `${timelineProgress}%`, maxHeight: 'calc(100% - 32px)' }}
+                                    />
 
-                                        {(['morning', 'midday', 'afternoon', 'evening', 'night'] as TimeSlotInfo['period'][]).map((period) => {
-                                            const periodSlots = TIME_SLOTS.filter(s => s.period === period);
-                                            const isActive = periodSlots.some(s => notificationTimes.includes(s.value));
-                                            const periodIcon = 
-                                                period === 'morning' ? 'light_mode' :
-                                                period === 'midday' ? 'wb_sunny' :
-                                                period === 'afternoon' ? 'wb_twilight' :
-                                                period === 'evening' ? 'nights_stay' : 'bedtime';
-                                            
-                                            return (
-                                                <div key={period} className="relative flex items-start gap-5 z-10">
-                                                    <motion.div 
-                                                        animate={{ scale: isActive ? 1.05 : 1 }}
-                                                        className={`size-10 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-colors ${
-                                                            isActive 
-                                                                ? 'bg-primary border-primary text-on-primary' 
-                                                                : 'bg-card border-card text-secondary/30'
-                                                        }`}
-                                                    >
-                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                            {periodIcon}
-                                                        </span>
-                                                    </motion.div>
-                                                    
-                                                    <div className="flex-1 space-y-2.5">
-                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-secondary opacity-30">
-                                                            {period}
-                                                        </span>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {periodSlots.map((slot) => (
-                                                                <motion.button
-                                                                    key={slot.value}
-                                                                    whileTap={{ scale: 0.95 }}
-                                                                    onClick={() => {
-                                                                        invalidateSettingsCache();
-                                                                        if (notificationTimes.includes(slot.value)) {
-                                                                            setNotificationTimes(notificationTimes.filter(t => t !== slot.value));
-                                                                        } else {
-                                                                            if (notificationTimes.length >= 3) {
-                                                                                showToast('Limit: 3 reminders');
-                                                                                return;
-                                                                            }
-                                                                            setNotificationTimes([...notificationTimes, slot.value]);
+                                    {(['morning', 'midday', 'afternoon', 'evening', 'night'] as TimeSlotInfo['period'][]).map((period) => {
+                                        const periodSlots = TIME_SLOTS.filter(s => s.period === period);
+                                        const isActive = periodSlots.some(s => notificationTimes.includes(s.value));
+                                        const periodIcon = 
+                                            period === 'morning' ? 'light_mode' :
+                                            period === 'midday' ? 'wb_sunny' :
+                                            period === 'afternoon' ? 'wb_twilight' :
+                                            period === 'evening' ? 'nights_stay' : 'bedtime';
+                                        
+                                        return (
+                                            <div key={period} className="relative flex items-start gap-5 z-10">
+                                                <div 
+                                                    className={`size-10 rounded-2xl flex items-center justify-center border-2 shadow-lg transition-all duration-300 ${
+                                                        isActive 
+                                                            ? 'bg-primary border-primary text-on-primary scale-105' 
+                                                            : 'bg-card border-card text-secondary/30 scale-100'
+                                                    }`}
+                                                >
+                                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                        {periodIcon}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="flex-1 space-y-2.5">
+                                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-secondary opacity-30">
+                                                        {period}
+                                                    </span>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {periodSlots.map((slot) => (
+                                                            <button
+                                                                key={slot.value}
+                                                                onClick={() => {
+                                                                    invalidateSettingsCache();
+                                                                    if (notificationTimes.includes(slot.value)) {
+                                                                        setNotificationTimes(notificationTimes.filter(t => t !== slot.value));
+                                                                    } else {
+                                                                        if (notificationTimes.length >= 3) {
+                                                                            showToast('Limit: 3 reminders');
+                                                                            return;
                                                                         }
-                                                                    }}
-                                                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                                                                        notificationTimes.includes(slot.value)
-                                                                            ? 'bg-primary text-on-primary border-primary shadow-[0_4px_12px_rgba(var(--color-brand-rgb),0.3)]'
-                                                                            : 'bg-surface border-card text-secondary opacity-60'
-                                                                    }`}
-                                                                >
-                                                                    {slot.label}
-                                                                </motion.button>
-                                                            ))}
-                                                        </div>
+                                                                        setNotificationTimes([...notificationTimes, slot.value]);
+                                                                    }
+                                                                }}
+                                                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 border ${
+                                                                    notificationTimes.includes(slot.value)
+                                                                        ? 'bg-primary text-on-primary border-primary shadow-[0_4px_12px_rgba(var(--color-brand-rgb),0.3)]'
+                                                                        : 'bg-surface border-card text-secondary opacity-60'
+                                                                }`}
+                                                            >
+                                                                {slot.label}
+                                                            </button>
+                                                        ))}
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Status & Rescue Card */}
+                            <div className="bg-card border border-card rounded-3xl p-5 shadow-sm space-y-4">
+                                <div className="flex items-center justify-between px-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>cloud_done</span>
+                                        <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Sync Health</span>
+                                    </div>
+                                    <button 
+                                        onClick={async () => {
+                                            const { subscribeToPush } = await import('../services/notifications');
+                                            const success = await subscribeToPush();
+                                            if (success) showToast('Cloud sync restored');
+                                            else showToast('Sync failed');
+                                        }}
+                                        className="text-[9px] font-black text-primary uppercase tracking-[0.2em] bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 active:scale-95 transition-transform"
+                                    >
+                                        Fix / Resync
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-surface rounded-2xl p-3 border border-card flex items-center gap-3">
+                                        <div className="size-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse" />
+                                        <span className="text-[10px] font-bold text-main">Local Sync</span>
+                                    </div>
+                                    <div className="bg-surface rounded-2xl p-3 border border-card flex items-center gap-3">
+                                        <div className={`size-2 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.4)] ${Notification.permission === 'granted' ? 'bg-green-500 shadow-green-500/40' : 'bg-red-500 shadow-red-500/40'}`} />
+                                        <span className="text-[10px] font-bold text-main">Cloud Sync</span>
                                     </div>
                                 </div>
 
-                                {/* Status & Rescue Card */}
-                                <div className="bg-card border border-card rounded-3xl p-5 shadow-sm space-y-4">
-                                    <div className="flex items-center justify-between px-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-primary/40" style={{ fontSize: 18 }}>cloud_done</span>
-                                            <span className="text-xs text-secondary font-bold uppercase tracking-wider opacity-60">Sync Health</span>
-                                        </div>
+                                <button
+                                    onClick={() => {
+                                        const { goal, count } = getTodayProgress();
+                                        const remaining = Math.max(0, goal - count);
+                                        showLocalNotification('ZenMath Test', remaining > 0 ? `${remaining} sessions to go!` : 'Goal met!');
+                                    }}
+                                    className="w-full bg-primary text-on-primary text-sm font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl active:scale-[0.98] transition-transform"
+                                >
+                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
+                                    Send Test Signal
+                                </button>
+
+                                {/* Discreet Dev Tools */}
+                                <div className="pt-4 border-t border-card/50 flex items-center justify-between px-1">
+                                    <span className="text-[8px] font-black text-secondary uppercase tracking-[0.3em] opacity-20">Dev Diagnostics</span>
+                                    <div className="flex gap-2">
                                         <button 
                                             onClick={async () => {
-                                                const { subscribeToPush } = await import('../services/notifications');
-                                                const success = await subscribeToPush();
-                                                if (success) showToast('Cloud sync restored');
-                                                else showToast('Sync failed');
+                                                const reg = await navigator.serviceWorker.ready;
+                                                reg.active?.postMessage({ type: 'TEST_PERIODIC_CHECK' });
                                             }}
-                                            className="text-[9px] font-black text-primary uppercase tracking-[0.2em] bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 active:scale-95 transition-transform"
+                                            className="size-7 bg-surface rounded-lg flex items-center justify-center text-secondary/40 active:text-primary transition-colors"
                                         >
-                                            Fix / Resync
+                                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
+                                        </button>
+                                        <button 
+                                            onClick={async () => {
+                                                const { triggerTestPush, subscribeToPush } = await import('../services/notifications');
+                                                await subscribeToPush();
+                                                await triggerTestPush();
+                                            }}
+                                            className="size-7 bg-surface rounded-lg flex items-center justify-center text-secondary/40 active:text-primary transition-colors"
+                                        >
+                                            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>cloud_sync</span>
                                         </button>
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-surface rounded-2xl p-3 border border-card flex items-center gap-3">
-                                            <div className="size-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] animate-pulse" />
-                                            <span className="text-[10px] font-bold text-main">Local OK</span>
-                                        </div>
-                                        <div className="bg-surface rounded-2xl p-3 border border-card flex items-center gap-3">
-                                            <div className={`size-2 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.4)] ${Notification.permission === 'granted' ? 'bg-green-500 shadow-green-500/40' : 'bg-red-500 shadow-red-500/40'}`} />
-                                            <span className="text-[10px] font-bold text-main">Cloud OK</span>
-                                        </div>
-                                    </div>
-
-                                    <motion.button
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => {
-                                            const { goal, count } = getTodayProgress();
-                                            const remaining = Math.max(0, goal - count);
-                                            showLocalNotification('ZenMath Test', remaining > 0 ? `${remaining} sessions to go!` : 'Goal met!');
-                                        }}
-                                        className="w-full bg-primary text-on-primary text-sm font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl"
-                                    >
-                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
-                                        Send Test Signal
-                                    </motion.button>
-
-                                    {/* Discreet Dev Tools */}
-                                    <div className="pt-4 border-t border-card/50 flex items-center justify-between px-1">
-                                        <span className="text-[8px] font-black text-secondary uppercase tracking-[0.3em] opacity-20">Dev Diagnostics</span>
-                                        <div className="flex gap-2">
-                                            <button 
-                                                onClick={async () => {
-                                                    const reg = await navigator.serviceWorker.ready;
-                                                    reg.active?.postMessage({ type: 'TEST_PERIODIC_CHECK' });
-                                                }}
-                                                className="size-7 bg-surface rounded-lg flex items-center justify-center text-secondary/40 active:text-primary transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
-                                            </button>
-                                            <button 
-                                                onClick={async () => {
-                                                    const { triggerTestPush, subscribeToPush } = await import('../services/notifications');
-                                                    await subscribeToPush();
-                                                    await triggerTestPush();
-                                                }}
-                                                className="size-7 bg-surface rounded-lg flex items-center justify-center text-secondary/40 active:text-primary transition-colors"
-                                            >
-                                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>cloud_sync</span>
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* Voice Settings */}
                 {showTTS && (
-                    <section className="space-y-4">
+                    <section ref={audioParent} className="space-y-4">
                         <header className="px-1">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary opacity-40">Audio & Voice</h3>
                         </header>
@@ -447,11 +432,7 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                         />
 
                         {ttsEnabled && (
-                            <motion.div 
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="space-y-4"
-                            >
+                            <div className="space-y-4">
                                 <div className="bg-card border border-card rounded-3xl p-5">
                                     <ToggleSwitch
                                         enabled={audioSpriteEnabled}
@@ -509,15 +490,14 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                     icon="visibility_off"
                                 />
 
-                                <motion.button
-                                    whileTap={{ scale: 0.98 }}
+                                <button
                                     onClick={handleTest}
-                                    className="w-full bg-card border border-card rounded-3xl p-4 text-primary font-bold text-sm flex items-center justify-center gap-2"
+                                    className="w-full bg-card border border-card rounded-3xl p-4 text-primary font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                                 >
                                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
                                     Test Voice Configuration
-                                </motion.button>
-                            </motion.div>
+                                </button>
+                            </div>
                         )}
                     </section>
                 )}
