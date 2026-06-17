@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useTheme } from '../hooks/useTheme';
+import { type GameSettings } from '../hooks/useGameLogic';
 import { isTTSSupported, getAvailableVoices, speakTest, cancelSpeech, type VoiceOption } from '../utils/speech';
 import { audioSpritePlayer } from '../services/audio';
 import { 
@@ -33,7 +34,7 @@ interface SettingsScreenProps {
         notificationsEnabled: boolean;
         notificationTimes: string[];
     };
-    onSave: (settings: any) => void;
+    onSave: (settings: GameSettings) => void;
     onBack: () => void;
     audioSpriteLoaded: boolean;
     onLoadAudioSprites: () => void;
