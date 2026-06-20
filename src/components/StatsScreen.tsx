@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { StatsData, RecentPerformance } from '../hooks/useStats';
+import { useToast } from '../hooks/useToast';
 
 interface StatsScreenProps {
     dailyGoal?: number;
@@ -10,6 +11,8 @@ interface StatsScreenProps {
         loading: boolean;
         refreshStats: () => void;
         clearAllData: () => Promise<void>;
+        exportBackup: () => Promise<string>;
+        importBackup: (backupStr: string) => Promise<void>;
     };
 }
 
@@ -99,11 +102,66 @@ function ActivityCalendar({ sessions, goal }: { sessions: { date: string; totalQ
 }
 
 export default function StatsScreen({ dailyGoal = 10, stats }: StatsScreenProps) {
-    const { stats: data, recentPerformance, sessions, loading, refreshStats, clearAllData } = stats;
+    const { stats: data, recentPerformance, sessions, loading, refreshStats, clearAllData, exportBackup, importBackup } = stats;
+    const { showToast } = useToast();
+    const [isPersisted, setIsPersisted] = useState<boolean | null>(null);
 
     useEffect(() => {
         refreshStats();
+        
+        if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persisted) {
+            navigator.storage.persisted().then(setIsPersisted).catch(() => setIsPersisted(false));
+        } else {
+            setIsPersisted(false);
+        }
     }, [refreshStats]);
+
+    const handleBackup = async () => {
+        try {
+            const dataStr = await exportBackup();
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `zenmath-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Backup successfully exported!');
+        } catch (error) {
+            console.error('Failed to export backup:', error);
+            showToast('Failed to export backup.');
+        }
+    };
+
+    const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const confirmRestore = window.confirm(
+            'Importing this backup will overwrite all current stats, settings, and sessions. Are you sure you want to proceed?'
+        );
+        if (!confirmRestore) {
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const text = e.target?.result as string;
+                await importBackup(text);
+                showToast('Backup successfully imported!');
+            } catch (error: any) {
+                console.error('Failed to import backup:', error);
+                showToast(error?.message || 'Failed to import backup.');
+            } finally {
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
 
     if (loading || !data) {
         return (
@@ -201,6 +259,46 @@ export default function StatsScreen({ dailyGoal = 10, stats }: StatsScreenProps)
                             <p className="text-xs text-secondary">{bestMode[1].accuracy.toFixed(0)}% accuracy across {bestMode[1].sessions} sessions</p>
                         </div>
                     )}
+
+                    <div className="bg-card border border-card rounded-2xl p-5 flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-secondary opacity-60">Backup & Protection</h3>
+                            <div className="flex items-center gap-1.5">
+                                <span className={`w-2 h-2 rounded-full ${isPersisted ? 'bg-correct' : 'bg-primary'}`} />
+                                <span className={`text-[10px] font-black uppercase tracking-wider ${isPersisted ? 'text-correct' : 'text-primary'}`}>
+                                    {isPersisted ? 'Protected' : 'Standard'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <p className="text-[11px] text-secondary leading-relaxed">
+                            {isPersisted 
+                                ? "Data Protection is active. Chrome will safeguard your statistics and settings from automatic cache-clearing sweeps." 
+                                : "Chrome currently treats storage as temporary (it may be cleared during cache cleans). To enable automatic protection, please Install the ZenMath PWA (via the button in your browser address bar) or bookmark the page. Chrome grants this silently once you interact with the app."}
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-3 mt-1">
+                            <button
+                                onClick={handleBackup}
+                                className="flex items-center justify-center gap-2 h-11 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-xl hover:bg-primary/20 transition-all cursor-pointer"
+                            >
+                                <span className="material-symbols-outlined text-sm">download</span>
+                                <span>Export Backup</span>
+                            </button>
+                            <label
+                                className="flex items-center justify-center gap-2 h-11 bg-primary/10 border border-primary/20 text-primary text-xs font-bold rounded-xl hover:bg-primary/20 transition-all cursor-pointer text-center"
+                            >
+                                <span className="material-symbols-outlined text-sm">upload</span>
+                                <span>Import Backup</span>
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleRestore}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
+                    </div>
 
                     <button
                         onClick={async () => {

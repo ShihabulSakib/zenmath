@@ -86,6 +86,15 @@ export function useStats() {
         await refreshStats();
     }, [refreshStats]);
 
+    const exportBackup = useCallback(async () => {
+        return db.exportBackup();
+    }, []);
+
+    const importBackup = useCallback(async (backupStr: string) => {
+        await db.importBackup(backupStr);
+        await refreshStats();
+    }, [refreshStats]);
+
     return {
         stats,
         recentPerformance,
@@ -97,5 +106,7 @@ export function useStats() {
         getSessionsByDateRange,
         getQuestionsBySession,
         clearAllData,
+        exportBackup,
+        importBackup,
     };
 }

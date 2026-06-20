@@ -43,6 +43,23 @@ class ZenMathDB {
         if (this.db) return;
         if (this.initPromise) return this.initPromise;
 
+        // Request storage persistence if supported to prevent browser from clearing stats during cache sweeps
+        if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+            navigator.storage.persisted().then(persisted => {
+                if (!persisted) {
+                    navigator.storage.persist().then(granted => {
+                        console.log(`[ZenMathDB] Storage persistence granted: ${granted}`);
+                    }).catch(err => {
+                        console.error('[ZenMathDB] Failed to request storage persistence:', err);
+                    });
+                } else {
+                    console.log('[ZenMathDB] Storage is already persistent');
+                }
+            }).catch(err => {
+                console.error('[ZenMathDB] Failed to check storage persistence:', err);
+            });
+        }
+
         this.initPromise = new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -275,6 +292,112 @@ class ZenMathDB {
             };
             request.onerror = () => reject(request.error);
         });
+    }
+
+    async exportBackup(): Promise<string> {
+        await this.init();
+        
+        const sessions = await new Promise<Session[]>((resolve, reject) => {
+            const tx = this.db!.transaction(['sessions'], 'readonly');
+            const request = tx.objectStore('sessions').getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(tx.error || new Error('Failed to get sessions'));
+        });
+
+        const questions = await new Promise<QuestionRecord[]>((resolve, reject) => {
+            const tx = this.db!.transaction(['questions'], 'readonly');
+            const request = tx.objectStore('questions').getAll();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(tx.error || new Error('Failed to get questions'));
+        });
+
+        const lsKeys = [
+            'zenmath-settings',
+            'zenmath-daily-progress',
+            'zenmath-notification-sent-times',
+            'zenmath-notification-permission',
+            'zenmath-theme',
+            'zenmath-notification-times'
+        ];
+        const lsData: Record<string, string | null> = {};
+        lsKeys.forEach(key => {
+            lsData[key] = localStorage.getItem(key);
+        });
+
+        const backup = {
+            type: 'zenmath-backup',
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            localStorage: lsData,
+            sessions,
+            questions,
+        };
+
+        return JSON.stringify(backup, null, 2);
+    }
+
+    async importBackup(backupStr: string): Promise<void> {
+        await this.init();
+        let backup: any;
+        try {
+            backup = JSON.parse(backupStr);
+        } catch (e) {
+            throw new Error('Invalid JSON format. Please upload a valid ZenMath backup file.');
+        }
+
+        if (!backup || backup.type !== 'zenmath-backup' || backup.version !== 1) {
+            throw new Error('Invalid backup file. This file does not appear to be a ZenMath backup.');
+        }
+
+        // 1. Clear database stores
+        await this.clearAllData();
+
+        // 2. Restore localStorage data
+        if (backup.localStorage) {
+            Object.entries(backup.localStorage).forEach(([key, val]) => {
+                if (val === null) {
+                    localStorage.removeItem(key);
+                } else {
+                    localStorage.setItem(key, val as string);
+                }
+            });
+        }
+
+        // 3. Restore sessions
+        if (Array.isArray(backup.sessions) && backup.sessions.length > 0) {
+            await new Promise<void>((resolve, reject) => {
+                const tx = this.db!.transaction(['sessions'], 'readwrite');
+                const store = tx.objectStore('sessions');
+                let err: any = null;
+                backup.sessions.forEach((s: any) => {
+                    const req = store.put(s);
+                    req.onerror = () => { err = req.error; };
+                });
+                tx.oncomplete = () => {
+                    if (err) reject(err);
+                    else resolve();
+                };
+                tx.onerror = () => reject(tx.error || new Error('Failed to write sessions'));
+            });
+        }
+
+        // 4. Restore questions
+        if (Array.isArray(backup.questions) && backup.questions.length > 0) {
+            await new Promise<void>((resolve, reject) => {
+                const tx = this.db!.transaction(['questions'], 'readwrite');
+                const store = tx.objectStore('questions');
+                let err: any = null;
+                backup.questions.forEach((q: any) => {
+                    const req = store.put(q);
+                    req.onerror = () => { err = req.error; };
+                });
+                tx.oncomplete = () => {
+                    if (err) reject(err);
+                    else resolve();
+                };
+                tx.onerror = () => reject(tx.error || new Error('Failed to write questions'));
+            });
+        }
     }
 }
 
