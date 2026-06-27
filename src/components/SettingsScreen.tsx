@@ -350,10 +350,12 @@ export default function SettingsScreen({ settings, onSave, onBack, audioSpriteLo
                                     </div>
                                     <button 
                                         onClick={async () => {
-                                            const { subscribeToPush } = await import('../services/notifications');
-                                            const success = await subscribeToPush();
-                                            if (success) showToast('Cloud sync restored');
-                                            else showToast('Sync failed');
+                                            const { subscribeToPush, syncProgressToServer: syncFn } = await import('../services/notifications');
+                                            // Always sync local state to SW bridge cache first
+                                            await syncFn();
+                                            const pushOk = await subscribeToPush();
+                                            if (pushOk) showToast('Sync restored');
+                                            else showToast('Local sync updated');
                                         }}
                                         className="text-[9px] font-black text-primary uppercase tracking-[0.2em] bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 active:scale-95 transition-transform"
                                     >

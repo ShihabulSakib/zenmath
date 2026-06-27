@@ -199,6 +199,23 @@ self.addEventListener('push', (event) => {
   });
 });
 
+self.addEventListener('pushsubscriptionchange', (event) => {
+  // Browser rotated the push subscription — re-subscribe and notify server.
+  event.waitUntil(
+    self.registration.pushManager.subscribe(event.oldSubscription.options)
+      .then((newSubscription) => {
+        return fetch('/api/push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'subscribe', subscription: newSubscription }),
+        });
+      })
+      .catch((err) => {
+        console.error('SW: pushsubscriptionchange re-subscribe failed', err);
+      })
+  );
+});
+
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', () => self.clients.claim());
 

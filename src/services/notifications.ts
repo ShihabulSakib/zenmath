@@ -274,7 +274,7 @@ export async function registerPeriodicSync(): Promise<boolean> {
  * When false, only local browser-based notifications will work.
  * (For development/testing purposes)
  */
-const PUSH_ENABLED = false; 
+const PUSH_ENABLED = true; 
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
@@ -294,6 +294,10 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
  * If PUSH_ENABLED is false, this is a no-op.
  */
 export async function syncProgressToServer(): Promise<void> {
+  // Sync state to SW bridge so local periodic background sync has the latest data.
+  // This needs to run even if PUSH_ENABLED is false, as local background sync works offline.
+  await syncStateToServiceWorker();
+
   if (!PUSH_ENABLED || !('serviceWorker' in navigator)) return;
   
   try {
@@ -304,7 +308,7 @@ export async function syncProgressToServer(): Promise<void> {
     const { count, goal, goalAchieved } = getTodayProgress();
     const today = new Date().toISOString().split('T')[0];
 
-    await fetch('/api/push', {
+    const response = await fetch('/api/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -317,6 +321,10 @@ export async function syncProgressToServer(): Promise<void> {
         }
       }),
     });
+
+    if (!response.ok) {
+      console.warn('Failed to sync progress to server:', response.statusText);
+    }
   } catch (e) {
     console.error('Failed to sync progress to server:', e);
   }
@@ -339,11 +347,15 @@ export async function subscribeToPush(): Promise<boolean> {
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
     });
 
-    await fetch('/api/push', {
+    const response = await fetch('/api/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'subscribe', subscription }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to save subscription on server');
+    }
 
     await syncProgressToServer(); // Initial sync
     return true;
@@ -360,11 +372,15 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     const subscription = await registration.pushManager.getSubscription();
     if (!subscription) return true;
 
-    await fetch('/api/push', {
+    const response = await fetch('/api/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'unsubscribe', endpoint: subscription.endpoint }),
     });
+    
+    if (!response.ok) {
+      throw new Error('Failed to remove subscription from server');
+    }
     
     await subscription.unsubscribe();
     return true;

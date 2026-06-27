@@ -1,6 +1,6 @@
 import { useGameLogic, type QuestionResult } from './hooks/useGameLogic';
 import { useStats } from './hooks/useStats';
-import { syncProgressToServer, setFeedbackCallback } from './services/notifications';
+import { syncProgressToServer, setFeedbackCallback, registerPeriodicSync } from './services/notifications';
 import { ToastProvider, useToast } from './hooks/useToast';
 import ErrorBoundary from './components/ErrorBoundary';
 import ZenLayout from './components/ZenLayout';
@@ -32,6 +32,9 @@ function AppInner() {
     
     // Sync progress to server on app entry for smart notifications
     syncProgressToServer();
+
+    // Register periodic background sync
+    registerPeriodicSync();
 
     return () => {
       setFeedbackCallback(null);
