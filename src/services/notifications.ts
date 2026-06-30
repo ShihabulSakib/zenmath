@@ -336,16 +336,14 @@ export async function subscribeToPush(): Promise<boolean> {
   }
   try {
     const registration = await navigator.serviceWorker.ready;
-    const existing = await registration.pushManager.getSubscription();
-    if (existing) {
-      await syncProgressToServer(); // Sync immediately if already subscribed
-      return true;
+    let subscription = await registration.pushManager.getSubscription();
+    
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
+      });
     }
-
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as any,
-    });
 
     const response = await fetch('/api/push', {
       method: 'POST',
