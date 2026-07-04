@@ -103,7 +103,7 @@ function ActivityCalendar({ sessions, goal }: { sessions: { date: string; totalQ
 }
 
 export default function StatsScreen({ dailyGoal = 10, stats }: StatsScreenProps) {
-    const { stats: data, recentPerformance, sessions, loading, refreshStats, clearAllData, exportBackup, importBackup } = stats;
+    const { stats: data, sessions, loading, refreshStats, clearAllData, exportBackup, importBackup } = stats;
     const { showToast } = useToast();
     const [isPersisted, setIsPersisted] = useState<boolean | null>(null);
 
