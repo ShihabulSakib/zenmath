@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { StatsData, RecentPerformance } from '../hooks/useStats';
 import { useToast } from '../hooks/useToast';
+import HorizonWave from './HorizonWave';
 
 interface StatsScreenProps {
     dailyGoal?: number;
@@ -201,6 +202,7 @@ export default function StatsScreen({ dailyGoal = 10, stats }: StatsScreenProps)
                         </div>
                     </div>
 
+                    {/* Commented out Last 7 Days card above HorizonWave as requested
                     {recentPerformance.length > 0 && (
                         <div className="bg-card border border-card rounded-2xl p-5">
                             <h3 className="text-xs font-black uppercase tracking-widest text-secondary opacity-60 mb-3">Last 7 Days</h3>
@@ -222,6 +224,11 @@ export default function StatsScreen({ dailyGoal = 10, stats }: StatsScreenProps)
                                 })}
                             </div>
                         </div>
+                    )}
+                    */}
+
+                    {sessions.length > 0 && (
+                        <HorizonWave sessions={sessions} />
                     )}
 
                     {sessions.length > 0 && (
