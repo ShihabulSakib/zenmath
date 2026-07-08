@@ -292,7 +292,7 @@ export function useGameLogic(onSessionComplete?: (
         timerRef.current = setInterval(() => {
             const elapsed = Date.now() - questionStartRef.current;
             setCurrentQuestionTimeElapsed(elapsed);
-            setTimeRemaining(Math.max(0, settings.timeLimit - Math.floor(elapsed / 1000)));
+            setTimeRemaining(Math.max(0, settings.timeLimit - Math.ceil(elapsed / 1000)));
         }, 200);
     }, [settings.timeLimit, stopTimer]);
 
@@ -388,7 +388,7 @@ export function useGameLogic(onSessionComplete?: (
             setFractionQuestionDisplay(question);
             setFractionCorrectAnswer('');
         } else if (mode === 'approximation') {
-            const { question, answer } = generateApproximationQuestion(difficulty);
+            const { question, answer } = generateApproximationQuestion(difficulty, allowNegativeResults);
             setNum1(0);
             setNum2(0);
             setCurrentOperation('≈');
@@ -593,12 +593,9 @@ export function useGameLogic(onSessionComplete?: (
                         if (!isNaN(uNum) && !isNaN(uDen) && uDen !== 0) {
                             isCorrect = Math.abs((uNum / uDen) - targetVal) < 0.0001;
                         }
-                    } else {
-                        const uVal = parseFloat(userInput);
-                        if (!isNaN(uVal)) {
-                            isCorrect = Math.abs(uVal - targetVal) < 0.0001;
-                        }
                     }
+                    // We purposefully do NOT parse as decimal here to avoid the loophole
+                    // where a user can enter a decimal equivalent for a fraction.
                 }
             }
         } else if (mode === 'division' && allowRemainder) {
@@ -650,8 +647,9 @@ export function useGameLogic(onSessionComplete?: (
         } else if (key === 'backspace') {
             setUserInput(prev => prev.slice(0, -1));
         } else if (key === '-') {
-            if ((mode === 'subtraction' && allowNegativeResults) || mode === 'chain-calculation') {
+            if ((mode === 'subtraction' && allowNegativeResults) || ['chain-calculation', 'approximation', 'number-series'].includes(mode)) {
                 setUserInput(prev => {
+                    if (prev === '0') return '-';
                     if (prev.startsWith('-')) return prev.slice(1);
                     return '-' + prev;
                 });
@@ -674,6 +672,8 @@ export function useGameLogic(onSessionComplete?: (
         else if (/^\d$/.test(key)) {
             setUserInput(prev => {
                 if (prev.length >= USER_INPUT_MAX_LENGTH) return prev;
+                if (prev === '0') return key;
+                if (prev === '-0') return '-' + key;
                 return prev + key;
             });
         }
