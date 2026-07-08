@@ -340,13 +340,9 @@ export function useGameLogic(onSessionComplete?: (
             const product = n1 * n2;
             setNum1(product);
             setNum2(n1);
-            if (tableRange[0] === tableRange[1]) {
-                setFractionQuestionDisplay(String(product));
-            } else {
-                setFractionQuestionDisplay(`${product} = ${n1} × __`);
-            }
             setCorrectAnswer(n2);
             setCurrentOperation('×');
+            setFractionQuestionDisplay('');
             setFractionCorrectAnswer('');
         } else if (mode === 'mixed') {
             const ops: Operation[] = ['+', '-', '*', '/'];

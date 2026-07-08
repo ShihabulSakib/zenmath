@@ -148,7 +148,7 @@ export default function GameScreen({
                                         Finding factors of the {tableRange[0]} × Table
                                     </span>
                                     <span className="text-6xl sm:text-7xl font-mono font-bold">
-                                        {fractionQuestionDisplay}
+                                        {num1}
                                     </span>
                                 </div>
                             ) : mode === 'factor-finding' ? (
