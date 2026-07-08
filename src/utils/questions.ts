@@ -176,7 +176,7 @@ export function generateSquareRootQuestion(diff: Difficulty, range?: [number, nu
 
 const POW10 = [1, 10, 100, 1000, 10000];
 
-export function generateApproximationQuestion(diff: Difficulty): { question: string; answer: number } {
+export function generateApproximationQuestion(diff: Difficulty, allowNegativeResults: boolean): { question: string; answer: number } {
     const ops: Operation[] = ['+', '-', '*'];
     const op = ops[Math.floor(Math.random() * (diff === 'easy' ? 2 : 3))];
 
@@ -186,18 +186,23 @@ export function generateApproximationQuestion(diff: Difficulty): { question: str
     let num1 = randomInRange(min, max);
     let num2 = randomInRange(min, max);
 
-    let exactAnswer: number;
-    switch (op) {
-        case '+': exactAnswer = num1 + num2; break;
-        case '-':
-            if (num1 < num2) [num1, num2] = [num2, num1];
-            exactAnswer = num1 - num2;
-            break;
-        default: exactAnswer = num1 * num2;
-    }
-
     const rounding = diff === 'easy' ? 10 : diff === 'medium' ? 100 : 1000;
-    const approxAnswer = Math.round(exactAnswer / rounding) * rounding;
+    const approxNum1 = Math.round(num1 / rounding) * rounding || min; // Ensure non-zero
+    const approxNum2 = Math.round(num2 / rounding) * rounding || min;
+
+    let approxAnswer: number;
+    switch (op) {
+        case '+': approxAnswer = approxNum1 + approxNum2; break;
+        case '-':
+            if (!allowNegativeResults && num1 < num2) {
+                [num1, num2] = [num2, num1];
+                approxAnswer = Math.round(num1 / rounding) * rounding - Math.round(num2 / rounding) * rounding;
+            } else {
+                approxAnswer = approxNum1 - approxNum2;
+            }
+            break;
+        default: approxAnswer = approxNum1 * approxNum2;
+    }
 
     return { question: `${num1} ${getOperationSymbol(op)} ${num2} ≈ ?`, answer: approxAnswer };
 }
@@ -261,11 +266,11 @@ export function generateRatioQuestion(diff: Difficulty): { question: string; ans
         const a = randomInRange(2, diff === 'hard' ? 20 : 10);
         const b = randomInRange(2, diff === 'hard' ? 20 : 10);
         const mult = randomInRange(2, 5);
-        return { question: `If A:B = ${a}:${b}, then A:${b * mult} = ?`, answer: a * mult };
+        return { question: `If A:B = ${a}:${b} & B = ${b * mult}, A = ?`, answer: a * mult };
     } else {
         const ratio = randomInRange(2, diff === 'hard' ? 10 : 5);
         const a = randomInRange(2, 10) * ratio;
-        return { question: `In ratio ${ratio}:1, if first number is ${a}, second = ?`, answer: a / ratio };
+        return { question: `In ratio ${ratio}:1, if 1st = ${a}, 2nd = ?`, answer: a / ratio };
     }
 }
 
@@ -291,32 +296,29 @@ export function generateChainCalculationQuestion(diff: Difficulty): { question: 
         tokens.push(ops[i], numbers[i + 1]);
     }
 
-    let i = 1;
-    while (i < tokens.length) {
-        if (tokens[i] === '*') {
-            const left = tokens[i - 1] as number;
-            const right = tokens[i + 1] as number;
-            tokens.splice(i - 1, 3, left * right);
-            i = 1;
+    let j = 1;
+    while (j < tokens.length) {
+        if (tokens[j] === '*') {
+            const left = tokens[j - 1] as number;
+            const right = tokens[j + 1] as number;
+            tokens.splice(j - 1, 3, left * right);
         } else {
-            i += 2;
+            j += 2;
         }
     }
 
-    i = 1;
-    while (i < tokens.length) {
-        if (tokens[i] === '+') {
-            const left = tokens[i - 1] as number;
-            const right = tokens[i + 1] as number;
-            tokens.splice(i - 1, 3, left + right);
-            i = 1;
-        } else if (tokens[i] === '-') {
-            const left = tokens[i - 1] as number;
-            const right = tokens[i + 1] as number;
-            tokens.splice(i - 1, 3, left - right);
-            i = 1;
+    let k = 1;
+    while (k < tokens.length) {
+        if (tokens[k] === '+') {
+            const left = tokens[k - 1] as number;
+            const right = tokens[k + 1] as number;
+            tokens.splice(k - 1, 3, left + right);
+        } else if (tokens[k] === '-') {
+            const left = tokens[k - 1] as number;
+            const right = tokens[k + 1] as number;
+            tokens.splice(k - 1, 3, left - right);
         } else {
-            i += 2;
+            k += 2;
         }
     }
 
